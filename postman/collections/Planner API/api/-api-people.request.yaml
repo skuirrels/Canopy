@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/people
+description: ""
+url: "{{baseUrl}}/api/people"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "string"
+    }
+settings: {}
+examples: ./.resources/-api-people.resources/examples
+order: 6000

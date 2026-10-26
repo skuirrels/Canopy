@@ -1,0 +1,24 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/people'
+order: 6100
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"name":"{{personName1}}"}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      pm.collectionVariables.set('personName1', 'Postman assignee ' + pm.variables.replaceIn('{{$guid}}'));
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const value = pm.response.json();
+      const project = value.projects?.find(p => p.id === pm.collectionVariables.get('projectId'));
+      if (project) pm.collectionVariables.set('revision', String(project.revision));
+      pm.test('Assignee 1 created', () => pm.response.to.have.status(200));
+      const person=value.people.find(p=>p.name===pm.collectionVariables.get('personName1')); pm.collectionVariables.set('person1',person.id);

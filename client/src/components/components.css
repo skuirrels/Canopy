@@ -1,0 +1,85 @@
+.epics-view{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--surface-subtle)}
+.epics-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 28px;border-bottom:1px solid var(--line);flex-shrink:0}
+.epics-summary,.epics-toolbar-actions{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.epics-summary{font-size:14px;color:var(--body-text)}.epics-summary>span{display:flex;align-items:center;gap:6px}.epics-summary strong{font-weight:650;color:var(--heading)}.epics-summary>span:first-child>svg{color:var(--accent)}
+.epics-toolbar-actions{gap:8px;margin-left:auto}.epics-scroll{display:flex;flex-direction:column;flex:1;min-height:0;overflow:auto;padding:18px 28px 28px;scrollbar-width:thin;scrollbar-color:var(--border-hover) transparent}
+.epics-explanation{font-size:14px;line-height:1.6;color:var(--secondary-text);margin-bottom:18px;flex-shrink:0}
+.epics-grid{display:flex;flex-wrap:nowrap;width:max-content;min-width:100%;flex:1;min-height:0;gap:20px;align-items:stretch}
+.epic-component{width:370px;flex:0 0 370px;min-width:0;min-height:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow-x:hidden;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border-hover) transparent;box-shadow:0 2px 8px #00000008}
+.epic-component-over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);background:var(--surface-hover)}
+.epic-component-dragging{opacity:.3}.epic-component-grip{cursor:grab;touch-action:none;color:var(--secondary-text);width:24px;height:26px;flex-shrink:0}.epic-component-grip:active{cursor:grabbing}.epic-component-grip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.epic-component-header{padding:16px 18px 18px;border-bottom:1px solid var(--line)}
+.epic-component-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.epic-component-label{display:flex;align-items:center;gap:6px;color:var(--accent);font-size:12px;letter-spacing:.06em;font-weight:650;text-transform:uppercase}
+.epic-component-actions{display:flex;align-items:center;gap:3px}.epic-component h2{font-size:21px;line-height:1.35;font-weight:650;letter-spacing:-.4px;color:var(--heading)}.epic-component h2>button{text-align:left;overflow-wrap:anywhere}.epic-component h2>button:hover,.epic-task-title:hover{color:var(--accent)}
+.epic-spec-preview{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-align:left;width:100%;margin-top:10px;color:var(--secondary-text);font-size:14px;line-height:1.6}.epic-spec-preview:hover{color:var(--foreground)}
+.epic-component-header>.epic-task-metadata{margin-top:12px}
+.epic-task-metadata{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;color:var(--secondary-text);font-size:13px;line-height:1.6}.epic-task-metadata>span{display:inline-flex;align-items:center;gap:5px;min-width:0;overflow-wrap:anywhere}.epic-task-metadata .status-dot{width:7px;height:7px}.epic-task-metadata .epic-assignee{font-size:13px}.epic-task-metadata .avatar{width:21px;height:21px;font-size:9px;flex-shrink:0}
+.epic-blocked{color:var(--map-dependency-text)}
+.epic-component-progress{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:16px;color:var(--body-text);font-size:13px}.epic-component-progress strong{color:var(--heading);font-size:14px;font-weight:650}.epic-progress-track{height:5px;border-radius:4px;overflow:hidden;background:var(--surface-hover);margin-top:8px}.epic-progress-track>span{display:block;height:100%;border-radius:inherit;min-width:0}
+.epic-filter-count,.epic-context-label{display:block;margin-top:7px;font-size:12px;color:var(--secondary-text)}
+.epic-task-tree{list-style:none;margin:0;padding:0}.epic-task-row{display:flex;align-items:flex-start;gap:6px;border-bottom:1px solid var(--line);padding:13px 12px 13px calc(8px + var(--task-depth)*14px);min-width:0}.epic-task-row:hover{background:var(--surface-subtle)}.epic-task-dragging{opacity:.3}.epic-task-main{flex:1;min-width:0}.epic-task-title{font-size:16px;line-height:1.45;font-weight:550;color:var(--heading);overflow-wrap:anywhere;display:block;width:100%;text-align:left;margin-bottom:5px}
+.epic-task-row .epic-drag{width:20px;height:26px;flex-shrink:0;color:var(--secondary-text);cursor:grab;touch-action:none}.epic-task-row .epic-drag:active{cursor:grabbing}.epic-branch{width:20px!important;height:26px!important;flex-shrink:0}.epic-task-mark{display:flex;align-items:center;justify-content:center;width:13px;height:13px;border:1px solid var(--border-hover);border-radius:50%;margin:6px 4px 0 3px;flex-shrink:0;color:var(--accent)}.epic-task-complete{border-color:var(--accent);background:var(--surface-hover)}
+.epic-task-actions{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0}.epic-task-actions>.icon-button{width:26px;height:26px;color:var(--secondary-text)}
+.epic-component-empty{font-size:14px;line-height:1.6;color:var(--secondary-text);padding:22px 18px 8px}.epic-add-task{display:flex;align-items:center;gap:7px;width:100%;padding:14px 18px;color:var(--secondary-text);font-size:14px}.epic-add-task:hover{background:var(--surface-hover);color:var(--accent)}
+.epics-help{padding:8px 28px;border-top:1px solid var(--line);font-size:12px;color:var(--secondary-text);flex-shrink:0}.epic-drag-preview{display:flex;align-items:center;gap:8px;max-width:360px;padding:15px;border:1px solid var(--accent);border-radius:9px;background:var(--surface);color:var(--heading);box-shadow:0 8px 28px #0004;font-size:16px;overflow-wrap:anywhere}
+.epics-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;min-height:300px;padding:28px 16px}.epics-empty>svg{color:var(--accent)}.epics-empty h2{font-size:23px;color:var(--heading)}.epics-empty p{font-size:16px;color:var(--secondary-text);max-width:500px;line-height:1.6}
+@media(max-width:850px){.epics-toolbar{padding:10px 20px}.epics-scroll{padding:16px 20px 24px}.epics-grid{gap:16px}.epics-help{padding:8px 20px}}
+@media(max-width:550px){.epics-summary{gap:8px 14px}.epics-toolbar-actions{width:100%;justify-content:space-between}.epics-toolbar{gap:8px}.epics-scroll{padding:12px 12px 20px}.epics-explanation{font-size:14px}.epic-component-header{padding:14px}.epic-task-row{padding-right:7px;padding-left:calc(5px + var(--task-depth)*9px);gap:4px}.epic-component h2{font-size:20px}.epics-help{display:none}.epic-component{width:310px;flex-basis:310px}}
+
+.component-detail-heading{display:flex;align-items:center;gap:16px;flex-wrap:wrap;min-width:0}.component-back{display:inline-flex;align-items:center;gap:7px;flex-shrink:0}.component-detail-heading h2{font-size:22px;font-weight:650;color:var(--heading);overflow-wrap:anywhere}.component-detail-heading h2 button{text-align:left}.component-detail-count{font-size:14px;color:var(--secondary-text)}.component-list-scroll{flex:1;min-height:0;overflow:auto;padding:20px 28px 28px}.component-detail-summary{margin-bottom:18px}.component-detail-summary>.epic-task-metadata{font-size:14px}.component-task-list{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}.component-list-columns,.component-task-list .epic-task-row{display:grid;grid-template-columns:24px minmax(200px,1fr) 150px 180px 160px 70px;gap:12px;padding:13px 16px;align-items:center}.component-list-columns{color:var(--secondary-text);font-size:13px;font-weight:600;background:var(--surface-subtle);border-bottom:1px solid var(--line)}.component-task-list .epic-task-main{display:contents}.component-task-list .epic-task-title-cell{grid-column:2;min-width:0;padding-left:calc(var(--task-depth)*18px)}.component-task-list .epic-task-title{margin-bottom:0}.component-task-list .epic-branch,.component-task-list .epic-task-mark{grid-column:1;grid-row:1}.component-list-status{grid-column:3}.component-list-dates{grid-column:4}.component-list-assignee{grid-column:5}.component-task-list .epic-task-actions{grid-column:6;flex-direction:row;justify-content:flex-end}.component-task-list .epic-context-label{margin-top:3px}.component-task-list .epic-task-tree>.epic-task:last-child>.epic-task-row{border-bottom:0}.component-task-list .epic-task-tree .epic-task-tree{border-top:1px solid var(--line)}
+@media(max-width:1100px){.component-list-columns,.component-task-list .epic-task-row{grid-template-columns:22px minmax(140px,1fr) 120px 150px 130px 64px;gap:8px}}
+@media(max-width:850px){.component-list-scroll{padding:16px 20px}.component-list-columns{display:none}.component-task-list .epic-task-row{grid-template-columns:22px minmax(0,1fr) 64px;gap:8px}.component-list-status,.component-list-dates,.component-list-assignee{grid-column:2}.component-task-list .epic-task-actions{grid-column:3;grid-row:1;align-self:start}.component-task-list .epic-task-title-cell{padding-left:calc(var(--task-depth)*10px)}.component-detail-heading{gap:8px 14px}.component-detail-heading h2{font-size:21px}}
+@media(max-width:550px){.component-list-scroll{padding:12px}.component-task-list .epic-task-row{padding:12px 10px}.component-back{width:100%}.component-detail-view .epics-toolbar-actions{gap:6px;flex-wrap:wrap}}
+.component-task-list .epic-task-metadata,.component-list-assignee .epic-assignee{font-size:14px}.component-list-columns{font-size:14px}
+
+.components-phone-hint{display:none}
+@media(max-width:550px){
+ .epics-toolbar{padding:6px 12px;gap:4px}
+ .epics-summary{width:100%;font-size:13px;gap:6px 12px}
+ .epics-toolbar-actions{gap:6px}
+ .epics-toolbar-actions .icon-button,.epics-toolbar-actions .button{min-width:44px;min-height:44px}
+ .epics-toolbar-actions .button{font-size:14px}
+ .epics-scroll{display:block;padding:8px 12px max(20px,env(safe-area-inset-bottom));scroll-snap-type:x proximity;scroll-padding-inline:12px;overscroll-behavior-x:contain}
+ .components-desktop-hint{display:none}.components-phone-hint{display:inline}
+ .epics-explanation{font-size:13px;margin-bottom:10px}
+ .epics-grid{flex:none;align-items:flex-start;gap:12px;min-height:0}
+ .epic-component{width:calc(100vw - 44px);flex-basis:calc(100vw - 44px);max-width:480px;overflow:visible;scroll-snap-align:start}
+ .epic-component-header{padding:10px 14px 14px}
+ .epic-component-top{margin-bottom:2px}
+ .epic-component-actions>.icon-button{width:44px;height:44px}
+ .epic-component-actions>.icon-button:first-child{display:none}
+ .epic-component-grip{width:44px;height:44px}
+ .epic-component h2{font-size:22px}
+ .epic-component h2>button{min-height:44px}
+ .epic-spec-preview{font-size:14px;margin-top:4px;min-height:44px}
+ .epic-task-metadata,.epic-task-metadata .epic-assignee,.epic-component-progress{font-size:14px}
+ .epic-task-row{padding:10px 8px;gap:4px}
+ .epic-task-row .epic-drag{width:44px;height:44px}
+ .epic-task-row .epic-branch{width:44px!important;height:44px!important}
+ .epic-task-title{font-size:16px;min-height:44px;display:flex;align-items:center}
+ .epic-task-mark{margin-top:15px}
+ .epic-task-actions>.icon-button{width:44px;height:44px}
+ .epic-add-task{min-height:48px;font-size:16px}
+ .component-detail-heading{gap:3px;width:100%}
+ .component-back{min-height:44px;font-size:14px}
+ .component-detail-heading h2{width:100%;font-size:22px;line-height:1.3}
+ .component-detail-heading h2 button{min-height:44px}
+ .component-detail-count{font-size:13px}
+ .component-detail-view .epics-toolbar-actions{width:100%;justify-content:flex-end}
+ .component-list-scroll{padding:10px 12px max(20px,env(safe-area-inset-bottom));overscroll-behavior-y:contain}
+ .component-detail-summary{margin-bottom:12px}
+ .component-task-list .epic-task-row{grid-template-columns:44px minmax(0,1fr) 44px;gap:4px 6px;padding:10px 8px;align-items:start}
+ .component-task-list .epic-task-title{min-height:44px;line-height:1.45}
+ .component-task-list .epic-task-actions{flex-direction:column;grid-row:1 / span 4;gap:0}
+ .component-task-list .epic-task-title-cell{padding-left:calc(var(--task-depth)*8px)}
+ .component-task-list .epic-task-mark{margin-top:15px}
+ .component-task-list .epic-task-metadata{gap:4px 8px;line-height:1.6}
+ .epics-empty{min-height:220px}
+}
+
+@media(max-width:550px){
+ .epics-view:not(.component-detail-view)>.epics-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}
+ .epics-view:not(.component-detail-view) .epics-summary{width:auto;align-items:flex-start;flex-direction:column;gap:1px;font-size:12px}
+ .epics-view:not(.component-detail-view) .epics-toolbar-actions{width:auto;gap:0;flex-wrap:nowrap}
+ .epics-view:not(.component-detail-view) .epics-toolbar-actions .button{font-size:13px;padding:8px 10px}
+}

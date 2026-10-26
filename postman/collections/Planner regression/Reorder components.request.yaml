@@ -1,0 +1,23 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/projects/{{projectId}}/sibling-order'
+order: 9500
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"expectedRevision":{{revision}},"parentId":null,"itemIds":["{{secondId}}","{{parentId}}"]}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Component order saved',()=>pm.response.to.have.status(200));
+      const value = pm.response.json();
+      pm.collectionVariables.set('revision',String(value.projects.find(p=>p.id===pm.collectionVariables.get('projectId')).revision));
+      const items=value.items.filter(i=>i.projectId===pm.collectionVariables.get('projectId'));
+      pm.test('Different workflow statuses reorder together',()=>pm.expect(items.filter(i=>!i.parentId).sort((a,b)=>a.siblingPosition-b.siblingPosition).map(i=>i.id)).to.eql([pm.collectionVariables.get('secondId'),pm.collectionVariables.get('parentId')]));
+      const clean=items.map(({siblingPosition,...item})=>item).sort((a,b)=>a.id.localeCompare(b.id));
+      const before=JSON.parse(pm.collectionVariables.get('beforeComponentOrder')).sort((a,b)=>a.id.localeCompare(b.id));
+      pm.test('Reordering preserves tasks and workflow positions',()=>pm.expect(clean).to.eql(before));

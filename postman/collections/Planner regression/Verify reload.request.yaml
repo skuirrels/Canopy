@@ -1,0 +1,16 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/workspace'
+order: 10000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const value = pm.response.json();
+      if (value.projects) {
+       const project = value.projects.find(p => p.id === pm.collectionVariables.get('projectId'));
+       if (project) pm.collectionVariables.set('revision', String(project.revision));
+      }
+      pm.test('Spec survives reload',()=>pm.expect(value.items.find(i=>i.id===pm.collectionVariables.get('childId')).specJson).to.include('Stored specification'));
+      pm.test('Child status stays independent',()=>pm.expect(value.items.find(i=>i.id===pm.collectionVariables.get('childId')).statusId).to.eql(pm.collectionVariables.get('statusId')));
+      pm.test('Effort survives intervening edits and reload',()=>pm.expect(value.items.find(i=>i.id===pm.collectionVariables.get('childId')).estimatedHours).to.eql(2.5));

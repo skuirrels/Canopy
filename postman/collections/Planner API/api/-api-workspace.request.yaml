@@ -1,0 +1,10 @@
+$kind: http-request
+name: /api/workspace
+description: ""
+url: "{{baseUrl}}/api/workspace"
+method: GET
+headers:
+  Accept: application/json
+settings: {}
+examples: ./.resources/-api-workspace.resources/examples
+order: 2000

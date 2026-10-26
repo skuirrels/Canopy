@@ -1,0 +1,6 @@
+$kind: collection
+name: Planner regression
+description: Real HTTP and DuckDB invariants. Each run creates and removes its own test project.
+variables:
+  - key: baseUrl
+    value: 'http://127.0.0.1:5274'

@@ -1,0 +1,27 @@
+$kind: http-request
+name: /api/projects/:id/sibling-order
+description: ""
+url: "{{baseUrl}}/api/projects/:id/sibling-order"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: 38834c47-2b4f-9521-3f03-5efd26173de2
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "expectedRevision": 0,
+      "parentId": null,
+      "itemIds": [
+        "c6cd5394-77a2-c370-7872-b69a5554ed54",
+        "1ce95f2f-e987-6171-dcb4-a7b2a91048ff"
+      ]
+    }
+settings: {}
+examples: ./.resources/-api-projects-id-sibling-order.resources/examples
+order: 6000

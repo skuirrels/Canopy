@@ -1,0 +1,25 @@
+$kind: http-request
+name: /api/projects/:id
+description: ""
+url: "{{baseUrl}}/api/projects/:id"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: 38834c47-2b4f-9521-3f03-5efd26173de2
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "expectedRevision": 0,
+      "name": "string",
+      "description": "string",
+      "color": "string"
+    }
+settings: {}
+examples: ./.resources/-api-projects-id.resources/examples
+order: 1000

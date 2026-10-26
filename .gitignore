@@ -1,0 +1,21 @@
+node_modules/
+client/dist/
+**/bin/
+**/obj/
+server/Planner.Api/data/
+*.duckdb
+*.duckdb.wal
+output/
+.DS_Store
+.env*
+!.env.example
+server/Planner.Api/wwwroot/
+*.tsbuildinfo
+.playwright-mcp/
+
+# Local previews, private validation notes and machine-specific configuration
+tmp/
+docs/*.local.md
+*.log
+*.pdf
+*.duckdb.*

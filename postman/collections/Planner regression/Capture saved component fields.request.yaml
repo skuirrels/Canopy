@@ -1,0 +1,11 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/workspace'
+order: 9400
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Saved component snapshot loaded',()=>pm.response.to.have.status(200));
+      const value=pm.response.json();
+      pm.collectionVariables.set('beforeComponentOrder',JSON.stringify(value.items.filter(i=>i.projectId===pm.collectionVariables.get('projectId')).map(({siblingPosition,...item})=>item)));

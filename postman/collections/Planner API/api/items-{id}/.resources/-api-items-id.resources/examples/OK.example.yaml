@@ -1,0 +1,143 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/items/:id"
+  method: PATCH
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: id
+      value: 38834c47-2b4f-9521-3f03-5efd26173de2
+      disabled: false
+      description: "(Required) "
+  body:
+    type: json
+    content: |-
+      {
+        "expectedRevision": 0,
+        "title": "string",
+        "specJson": "string",
+        "statusId": "c9371993-7d3d-0cc1-07bf-e79f07e23d3a",
+        "priority": "string",
+        "assigneeId": null,
+        "startDate": null,
+        "dueDate": null,
+        "dependencyIds": [
+          "ba3828f0-8f6d-6a2f-14c0-2ef86ee67813",
+          "19d52abd-93b6-f3f7-a372-cb2c20f38cc9"
+        ],
+        "assigneeIds": null,
+        "estimatedHours": "-0E+524813485"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "projects": [
+          {
+            "id": "0ac90a08-61ab-2b61-5950-7f8616402b74",
+            "name": "string",
+            "description": "string",
+            "color": "string",
+            "revision": 0,
+            "createdAt": "1963-11-02T08:00:59.044Z"
+          },
+          {
+            "id": "1331fc3b-2678-cfc0-947c-8fabcebcc550",
+            "name": "string",
+            "description": "string",
+            "color": "string",
+            "revision": 0,
+            "createdAt": "1994-12-17T01:16:04.216Z"
+          }
+        ],
+        "items": [
+          {
+            "id": "cc6ee7e1-93e8-ce2a-6c8e-7b708215dfdd",
+            "projectId": "9ccd20ca-e648-605b-8cca-11d0d69f0079",
+            "parentId": null,
+            "statusId": "e46a9776-8a1d-cd72-9639-617b0d2a914f",
+            "title": "string",
+            "specJson": "string",
+            "priority": "string",
+            "assigneeIds": null,
+            "assigneeId": null,
+            "estimatedHours": "3593008e447666",
+            "startDate": null,
+            "dueDate": null,
+            "position": -47070,
+            "x": "-0E530999",
+            "siblingPosition": 1495102,
+            "y": "0.83E723018",
+            "createdAt": "1955-07-15T21:32:29.005Z",
+            "updatedAt": "1960-01-06T01:11:05.123Z"
+          },
+          {
+            "id": "92ee7517-2855-6dfa-da38-7cbb2e0c7758",
+            "projectId": "59b9b7e2-d910-5ead-d6ea-74527b492f60",
+            "parentId": null,
+            "statusId": "b759c973-b8eb-cc2b-94f3-4763bd39c9c2",
+            "title": "string",
+            "specJson": "string",
+            "priority": "string",
+            "assigneeIds": null,
+            "assigneeId": null,
+            "estimatedHours": "7117717",
+            "startDate": null,
+            "dueDate": null,
+            "position": 0,
+            "x": "-0",
+            "siblingPosition": 0,
+            "y": "-0",
+            "createdAt": "2002-10-22T00:43:44.622Z",
+            "updatedAt": "2019-07-29T07:33:07.031Z"
+          }
+        ],
+        "statuses": [
+          {
+            "id": "b66284a8-83cc-b5aa-bf36-1f01de20158a",
+            "projectId": "fb0cefb5-a11b-1113-bfcd-003a89956b2b",
+            "name": "string",
+            "color": "string",
+            "position": 0,
+            "isCompleted": true
+          },
+          {
+            "id": "3ce2e8ed-4dab-612a-d972-c0d036ba2a0d",
+            "projectId": "f7a6ab22-f70f-436f-6a59-453276e02375",
+            "name": "string",
+            "color": "string",
+            "position": -9,
+            "isCompleted": false
+          }
+        ],
+        "dependencies": [
+          {
+            "id": "3a3602af-f69e-edec-9bc1-e1d244cf442d",
+            "itemId": "5926ba12-6d48-c1ca-c3e5-b64222b6aa0a",
+            "dependsOnId": "06829b43-ad98-efa5-2fb1-fa4cec6802f2",
+            "projectId": "39a34785-9e2f-5ea3-110f-b5d3a43a1d4f"
+          },
+          {
+            "id": "76607845-d9fe-6356-3e0c-65e9f166b38f",
+            "itemId": "9fca1099-758c-2462-915e-3908ba4ce45c",
+            "dependsOnId": "b2f31133-de35-031f-85da-866b8eb4d4e9",
+            "projectId": "e630aad3-1a20-0cef-40f0-c02a686817e3"
+          }
+        ],
+        "people": [
+          {
+            "id": "a7f52166-1aef-e635-c290-a657a67591f8",
+            "name": "string"
+          },
+          {
+            "id": "7ce5570b-1c49-173e-714f-4d8bac0ffe6f",
+            "name": "string"
+          }
+        ]
+      }
+order: 1000

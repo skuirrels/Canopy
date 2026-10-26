@@ -1,0 +1,11 @@
+version: 1
+id: 96876007-1cdd-4cec-b8ba-dd7804115b30
+name: Planner MCP read contract
+slug: planner-mcp-read-contract
+protocol: http
+interceptRequests: true
+port: 4500
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

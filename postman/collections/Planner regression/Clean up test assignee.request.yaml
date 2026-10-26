@@ -1,0 +1,9 @@
+$kind: http-request
+method: DELETE
+url: '{{baseUrl}}/api/people/{{person2}}'
+order: 12100
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Temporary assignee removed',()=>{pm.response.to.have.status(200);pm.expect(pm.response.json().people.some(person=>person.id===pm.collectionVariables.get('person2'))).to.eql(false);});

@@ -1,0 +1,34 @@
+$kind: http-request
+name: /api/projects/:id/layout
+description: ""
+url: "{{baseUrl}}/api/projects/:id/layout"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: 38834c47-2b4f-9521-3f03-5efd26173de2
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "expectedRevision": -5459281762,
+      "positions": [
+        {
+          "id": "2780b78d-acd9-c7b5-a234-20c04e8b7ef3",
+          "x": -0.1080701182,
+          "y": 0.5
+        },
+        {
+          "id": "76866618-c209-abee-f26c-e8a1d12af3c2",
+          "x": -4618.25149,
+          "y": null
+        }
+      ]
+    }
+settings: {}
+examples: ./.resources/-api-projects-id-layout.resources/examples
+order: 4000

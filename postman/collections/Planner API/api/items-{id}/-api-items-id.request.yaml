@@ -1,0 +1,35 @@
+$kind: http-request
+name: /api/items/:id
+description: ""
+url: "{{baseUrl}}/api/items/:id"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: 38834c47-2b4f-9521-3f03-5efd26173de2
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "expectedRevision": 0,
+      "title": "string",
+      "specJson": "string",
+      "statusId": "73eacbef-f375-725e-13f0-956ad461afce",
+      "priority": "string",
+      "assigneeId": null,
+      "startDate": null,
+      "dueDate": null,
+      "dependencyIds": [
+        "35692db6-77de-6e67-d342-5afdb7a211eb",
+        "e5fa3f84-c919-f132-375c-0d30a39b18fd"
+      ],
+      "assigneeIds": null,
+      "estimatedHours": "0.07176766644E+750598841"
+    }
+settings: {}
+examples: ./.resources/-api-items-id.resources/examples
+order: 1000

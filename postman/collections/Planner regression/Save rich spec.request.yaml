@@ -1,0 +1,23 @@
+$kind: http-request
+method: PATCH
+url: '{{baseUrl}}/api/items/{{childId}}'
+order: 6000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"title": "Child", "specJson": "{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"type\": \"text\", \"text\": \"Stored specification\"}]}]}", "statusId": "{{statusId}}", "priority": "high", "estimatedHours": 2.5, "assigneeId": null, "startDate": "2026-10-26", "dueDate": "2026-11-01", "dependencyIds": ["{{parentId}}"],"expectedRevision":{{revision}}}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const value = pm.response.json();
+      if (value.projects) {
+       const project = value.projects.find(p => p.id === pm.collectionVariables.get('projectId'));
+       if (project) pm.collectionVariables.set('revision', String(project.revision));
+      }
+      pm.test('Spec saved',()=>{ pm.response.to.have.status(200); pm.expect(value.items.find(i=>i.id===pm.collectionVariables.get('childId')).specJson).to.include('Stored specification'); });
+      pm.test('Dependency saved',()=>pm.expect(value.dependencies.some(d=>d.itemId===pm.collectionVariables.get('childId'))).to.eql(true));
+      pm.test('Effort saved independently of dates',()=>pm.expect(value.items.find(i=>i.id===pm.collectionVariables.get('childId')).estimatedHours).to.eql(2.5));

@@ -1,0 +1,75 @@
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { TableKit } from '@tiptap/extension-table';
+import Placeholder from '@tiptap/extension-placeholder';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+import { X, ChevronRight, Plus, GitBranch, Link2, CalendarDays, Trash2, Check, Loader2, Bold, Italic, Heading2, List, ListChecks, ListOrdered, Code2, Undo2, FileText, ArrowUpRight, CircleAlert, Save, Clock3 } from 'lucide-react';
+import { toast } from 'sonner';
+import type { Item, EditFields } from '../lib/types';
+import { descendants, fields, priorities, restoreDraft } from '../lib/types';
+import { useWorkspace } from '../lib/workspace';
+import { Button } from './ui/button';
+import { Dialog } from './ui/dialog';
+import { AssigneePicker } from './AssigneePicker';
+
+export function Inspector({ item, onClose, onOpen, onFocus, onAdd }: { item: Item; onClose: () => void; onOpen: (id: string) => void; onFocus: (id: string) => void; onAdd: (parentId: string) => void }) {
+ const { data, mutate } = useWorkspace(); const initial = fields(item, data.dependencies); const storageKey = `sprout:draft:${item.id}`;
+ const [draft, setDraft] = useState<EditFields>(() => { try { const stored = localStorage.getItem(storageKey); return stored ? restoreDraft(initial, JSON.parse(stored)) : initial; } catch { return initial; } });
+ const latest = useRef(draft); latest.current = draft; const saved = useRef(JSON.stringify(initial)); const inFlight = useRef<Promise<void> | null>(null); const [saveState, setSaveState] = useState<'saved' | 'saving' | 'unsaved' | 'error'>(JSON.stringify(draft) === saved.current ? 'saved' : 'unsaved');
+ const [deleting, setDeleting] = useState(false); const [dependencyDialog, setDependencyDialog] = useState(false); const [dependencySearch, setDependencySearch] = useState(''); const [tab, setTab] = useState<'spec' | 'subitems'>('spec');
+ const save = useCallback(async (): Promise<void> => {
+  if (inFlight.current) { await inFlight.current; if (saved.current !== JSON.stringify(latest.current)) await save(); return; }
+  const current = latest.current; const serial = JSON.stringify(current); if (serial === saved.current) return;
+  setSaveState('saving');
+  const operation = (async () => {
+   try { await mutate(`/api/items/${item.id}`, 'PATCH', current, item.projectId); saved.current = serial; setSaveState(JSON.stringify(latest.current) === serial ? 'saved' : 'unsaved'); if (JSON.stringify(latest.current) === serial) localStorage.removeItem(storageKey); }
+   catch { setSaveState('error'); throw new Error('Your task has unsaved changes.'); }
+   finally { inFlight.current = null; }
+  })();
+  inFlight.current = operation; await operation;
+ }, [item.id, item.projectId, mutate, storageKey]);
+ useEffect(() => {
+  const incoming = fields(item, data.dependencies); const incomingSerial = JSON.stringify(incoming);
+  if (incomingSerial === saved.current) return;
+  const baseline = JSON.parse(saved.current) as EditFields;
+  const merged = { ...latest.current };
+  for (const key of Object.keys(incoming) as (keyof EditFields)[]) {
+   if (JSON.stringify(latest.current[key]) === JSON.stringify(baseline[key])) Object.assign(merged, { [key]: incoming[key] });
+  }
+  saved.current = incomingSerial;
+  if (JSON.stringify(merged) !== JSON.stringify(latest.current)) setDraft(merged);
+ }, [item, data.dependencies]);
+ useEffect(() => {
+  if (JSON.stringify(draft) === saved.current) return;
+  localStorage.setItem(storageKey, JSON.stringify(draft)); setSaveState('unsaved');
+  const timer = setTimeout(() => { void save().catch(() => {}); }, 700); return () => clearTimeout(timer);
+ }, [draft, save, storageKey]);
+ useEffect(() => () => { void save().catch(() => {}); }, [save]);
+ useEffect(() => {
+  const beforeUnload = (event: BeforeUnloadEvent) => { if (JSON.stringify(latest.current) !== saved.current) event.preventDefault(); };
+  window.addEventListener('beforeunload', beforeUnload); return () => window.removeEventListener('beforeunload', beforeUnload);
+ }, []);
+ function patch(change: Partial<EditFields>) { setDraft(d => ({ ...d, ...change })); }
+ const editor = useEditor({ shouldRerenderOnTransaction: true, extensions: [StarterKit, TableKit, TaskList, TaskItem.configure({ nested: true }), Placeholder.configure({ placeholder: 'Give this idea a little more shape…\nWrite a specification, capture a thought, or make a list.' })], content: JSON.parse(draft.specJson), editorProps: { attributes: { class: 'spec-editor', 'aria-label': 'Task specification', role: 'textbox' } }, onUpdate: ({ editor: current }) => patch({ specJson: JSON.stringify(current.getJSON()) }) });
+ const children = data.items.filter(i => i.parentId === item.id); const allDescendants = descendants(data.items, item.id); const parent = data.items.find(i => i.id === item.parentId); const project = data.projects.find(p => p.id === item.projectId)!;
+ const statuses = data.statuses.filter(s => s.projectId === item.projectId); const complete = children.filter(i => statuses.find(s => s.id === i.statusId)?.isCompleted).length;
+ const candidates = data.items.filter(i => i.projectId === item.projectId && i.id !== item.id && i.title.toLowerCase().includes(dependencySearch.toLowerCase()));
+ const blockers = draft.dependencyIds.map(id => data.items.find(i => i.id === id)).filter((i): i is Item => !!i);
+ async function close() { try { await save(); onClose(); } catch { toast.error('Resolve the save error, or close again after keeping your draft.'); } }
+ return <aside className="inspector" aria-label="Task details">
+  <div className="inspector-top"><div className="inspector-breadcrumb"><span style={{ background: project.color }} className="project-dot"/>{project.name}{parent && <><ChevronRight size={12}/><button onClick={() => onOpen(parent.id)}>{parent.title}</button></>}</div><button className="icon-button" onClick={() => { void close(); }} aria-label="Close task details"><X size={18}/></button></div>
+  <div className="inspector-scroll"><div className="inspector-title-row"><span className="eyebrow"><FileText size={12}/> TASK DETAILS</span><span className={`save-indicator ${saveState}`} aria-live="polite">{saveState === 'saving' ? <Loader2 size={11} className="spin"/> : saveState === 'saved' ? <Check size={11}/> : <CircleAlert size={11}/>}{{ saved: 'All changes saved', saving: 'Saving…', unsaved: 'Unsaved changes', error: 'Save failed' }[saveState]}</span></div>
+  <textarea className="task-title-input" aria-label="Task title" value={draft.title} onChange={e => patch({ title: e.target.value })} rows={2} maxLength={200}/>
+  {saveState === 'error' && <div className="save-error">Your draft is kept in this browser. Check the fields below and retry.<Button size="sm" variant="secondary" onClick={() => { void save().catch(() => {}); }}><Save size={13}/>Retry save</Button><button className="text-button" onClick={onClose}>Close and keep draft</button></div>}
+  <div className="task-properties"><label><span><span className="property-icon">◉</span>Status</span><select value={draft.statusId} onChange={e => patch({ statusId: e.target.value })}>{statuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label><div className="assignee-property"><span>Assignees</span><AssigneePicker people={data.people} value={draft.assigneeIds} onChange={assigneeIds => patch({ assigneeIds })}/></div><label><span><span className="property-icon">▥</span>Priority</span><select value={draft.priority} onChange={e => patch({ priority: e.target.value as EditFields['priority'] })}>{priorities.map(p => <option key={p} value={p}>{p === 'none' ? 'No priority' : p[0].toUpperCase() + p.slice(1)}</option>)}</select></label><label><span><Clock3 size={14}/>Estimated hours</span><input aria-label="Estimated hours" aria-describedby={`estimate-help-${item.id}`} type="number" inputMode="decimal" min="0" step="any" placeholder="Not estimated" value={draft.estimatedHours ?? ''} onChange={event => { const input = event.currentTarget; if (input.validity.badInput) return; const value = input.value === '' ? null : input.valueAsNumber; if (value === null || Number.isFinite(value)) patch({ estimatedHours: value }); }}/></label><p className="estimate-help" id={`estimate-help-${item.id}`}>Effort in hours, independent of dates.</p><label><span><CalendarDays size={14}/>Start date</span><input aria-label="Start date" type="date" value={draft.startDate || ''} onChange={e => patch({ startDate: e.target.value || null })}/></label><label><span><CalendarDays size={14}/>Due date</span><input aria-label="Due date" type="date" value={draft.dueDate || ''} min={draft.startDate || undefined} onChange={e => patch({ dueDate: e.target.value || null })}/></label></div>
+  <div className="inspector-tabs"><button className={tab === 'spec' ? 'active' : ''} onClick={() => setTab('spec')}><FileText size={14}/>Specification</button><button className={tab === 'subitems' ? 'active' : ''} onClick={() => setTab('subitems')}><GitBranch size={14}/>Subitems<span>{children.length}</span></button></div>
+  {tab === 'spec' ? <div className="spec-section"><div className="editor-toolbar">{[{ label: 'Bold', icon: Bold, active: editor?.isActive('bold'), action: () => editor?.chain().focus().toggleBold().run() }, { label: 'Italic', icon: Italic, active: editor?.isActive('italic'), action: () => editor?.chain().focus().toggleItalic().run() }, { label: 'Heading', icon: Heading2, active: editor?.isActive('heading'), action: () => editor?.chain().focus().toggleHeading({ level: 2 }).run() }, { label: 'Bullet list', icon: List, active: editor?.isActive('bulletList'), action: () => editor?.chain().focus().toggleBulletList().run() }, { label: 'Checklist', icon: ListChecks, active: editor?.isActive('taskList'), action: () => editor?.chain().focus().toggleTaskList().run() }, { label: 'Numbered list', icon: ListOrdered, active: editor?.isActive('orderedList'), action: () => editor?.chain().focus().toggleOrderedList().run() }, { label: 'Code block', icon: Code2, active: editor?.isActive('codeBlock'), action: () => editor?.chain().focus().toggleCodeBlock().run() }, { label: 'Undo typing', icon: Undo2, active: false, action: () => editor?.chain().focus().undo().run() }].map(tool => <button key={tool.label} className={`icon-button ${tool.active ? 'active' : ''}`} title={tool.label} aria-label={tool.label} aria-pressed={tool.active} onClick={tool.action}><tool.icon size={15}/></button>)}</div><EditorContent editor={editor}/></div> : <div className="subitems-section">{children.length > 0 && <div className="subitems-progress"><span>{complete} of {children.length} complete</span><button className="text-button" onClick={() => onFocus(item.id)}>Explore branch<ArrowUpRight size={12}/></button></div>}{children.map(child => <button className="subitem-row" key={child.id} onClick={() => onOpen(child.id)}><span className={`task-check ${statuses.find(s => s.id === child.statusId)?.isCompleted ? 'checked' : ''}`}>{statuses.find(s => s.id === child.statusId)?.isCompleted && <Check size={10}/>}</span><span>{child.title}</span><ChevronRight size={14}/></button>)}<button className="add-subitem" onClick={() => onAdd(item.id)}><Plus size={15}/>Add a subitem</button></div>}
+  <div className="dependency-section"><div className="section-label"><span><Link2 size={14}/>DEPENDS ON</span><button className="icon-button" aria-label="Add dependency" onClick={() => setDependencyDialog(true)}><Plus size={15}/></button></div>{blockers.length ? blockers.map(blocker => <div className="dependency-row" key={blocker.id}><span className="status-dot" style={{ background: statuses.find(s => s.id === blocker.statusId)?.color }}/><button onClick={() => onOpen(blocker.id)}>{blocker.title}</button><button className="icon-button" aria-label={`Remove dependency ${blocker.title}`} onClick={() => patch({ dependencyIds: draft.dependencyIds.filter(id => id !== blocker.id) })}><X size={13}/></button></div>) : <button className="dependency-empty" onClick={() => setDependencyDialog(true)}>Nothing blocking the way. Add a dependency.</button>}</div>
+  <div className="structure-section"><label>Parent item<select value={item.parentId || ''} aria-label="Parent item" onChange={e => { void (async () => { try { await save(); await mutate(`/api/items/${item.id}/move`, 'POST', { parentId: e.target.value || null, statusId: latest.current.statusId, beforeId: null }, item.projectId); } catch { /* reported */ } })(); }}><option value="">Project root</option>{data.items.filter(i => i.projectId === item.projectId && i.id !== item.id && !allDescendants.has(i.id)).map(i => <option key={i.id} value={i.id}>{i.title}</option>)}</select></label></div>
+  </div><div className="inspector-bottom"><span>Created {new Date(item.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span><button className="icon-button" aria-label="Delete task" title="Delete task" onClick={() => setDeleting(true)}><Trash2 size={15}/></button></div>
+  <Dialog open={deleting} onOpenChange={setDeleting} title="Delete this task?" description={`“${item.title}”${allDescendants.size ? ` and its ${allDescendants.size} subitems` : ''} will be permanently removed. Dependency links will be removed too.`}><div className="dialog-footer"><Button variant="ghost" onClick={() => setDeleting(false)}>Keep task</Button><Button variant="danger" onClick={() => { void (async () => { try { await save(); await mutate(`/api/items/${item.id}`, 'DELETE', undefined, item.projectId); saved.current = JSON.stringify(latest.current); localStorage.removeItem(storageKey); onClose(); toast.success('Task deleted'); } catch { /* reported */ } })(); }}>Delete task</Button></div></Dialog>
+  <Dialog open={dependencyDialog} onOpenChange={setDependencyDialog} title="What needs to happen first?" description="Select prerequisite tasks. Circular dependencies are prevented."><input autoFocus placeholder="Find a task…" aria-label="Search dependencies" value={dependencySearch} onChange={e => setDependencySearch(e.target.value)}/><div className="dependency-options">{candidates.map(candidate => <label key={candidate.id}><input type="checkbox" checked={draft.dependencyIds.includes(candidate.id)} onChange={e => patch({ dependencyIds: e.target.checked ? [...draft.dependencyIds, candidate.id] : draft.dependencyIds.filter(id => id !== candidate.id) })}/><span className="status-dot" style={{ background: statuses.find(s => s.id === candidate.statusId)?.color }}/>{candidate.title}</label>)}{!candidates.length && <p className="muted">No other tasks match. Create another task first.</p>}</div><div className="dialog-footer"><Button onClick={() => setDependencyDialog(false)}>Done</Button></div></Dialog>
+ </aside>;
+}

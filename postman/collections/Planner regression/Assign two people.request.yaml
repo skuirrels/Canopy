@@ -1,0 +1,30 @@
+$kind: http-request
+method: PATCH
+url: '{{baseUrl}}/api/items/{{childId}}'
+order: 6300
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {{assignmentBody}}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      const task=JSON.parse(pm.collectionVariables.get('assignmentTask'));
+      const body=Object.fromEntries(['title','specJson','statusId','priority','startDate','dueDate'].map(key=>[key,task[key]]));
+      body.expectedRevision=Number(pm.collectionVariables.get('revision'));
+      body.dependencyIds=[pm.collectionVariables.get('parentId')];
+      body.assigneeIds=[pm.collectionVariables.get('person1'),pm.collectionVariables.get('person2')];
+      pm.collectionVariables.set('assignmentBody',JSON.stringify(body));
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const value = pm.response.json();
+      const project = value.projects?.find(p => p.id === pm.collectionVariables.get('projectId'));
+      if (project) pm.collectionVariables.set('revision', String(project.revision));
+      const task=value.items.find(i=>i.id===pm.collectionVariables.get('childId'));
+      pm.test('Both people assigned',()=>pm.expect(task.assigneeIds).to.eql([pm.collectionVariables.get('person1'),pm.collectionVariables.get('person2')]));
+      pm.test('Legacy first assignee exposed',()=>pm.expect(task.assigneeId).to.eql(pm.collectionVariables.get('person1')));

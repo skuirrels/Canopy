@@ -1,0 +1,25 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/projects'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"name":"{{runName}}","description":"Temporary Postman validation project","color":"#337755"}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      pm.collectionVariables.set('runName', 'Postman verification ' + pm.variables.replaceIn('{{$guid}}'));
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Project created', () => pm.response.to.have.status(200));
+      const state = pm.response.json(); const project = state.projects.find(p => p.name === pm.collectionVariables.get('runName'));
+      pm.collectionVariables.set('projectId',project.id); pm.collectionVariables.set('revision',String(project.revision));
+      const statuses = state.statuses.filter(s=>s.projectId===project.id);
+      pm.collectionVariables.set('statusId',statuses[0].id); pm.collectionVariables.set('doneId',statuses.at(-1).id);
+      pm.test('Configured workflow exists',()=>pm.expect(statuses.length).to.be.above(0));

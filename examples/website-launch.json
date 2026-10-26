@@ -1,0 +1,428 @@
+{
+  "name": "Example · Website launch",
+  "description": "A fictional, editable project to explore Kanban and Mind Map. Includes three task levels, rich specs, dates, blockers and four example assignees.",
+  "color": "#6c63a8",
+  "people": [
+    "Alex Morgan (example)",
+    "Jordan Lee (example)",
+    "Sam Taylor (example)",
+    "Casey Patel (example)"
+  ],
+  "tasks": [
+    {
+      "key": "discover",
+      "title": "Discover the opportunity",
+      "parent": null,
+      "status": "Done",
+      "assignee": "Alex Morgan (example)",
+      "startOffsetDays": -7,
+      "dueOffsetDays": -1,
+      "priority": "medium",
+      "dependsOn": [],
+      "outcome": "Agree who the website is for and what a successful launch should achieve.",
+      "acceptance": [
+        "Identify the primary audience and their top needs",
+        "Record measurable launch outcomes and the agreed scope"
+      ]
+    },
+    {
+      "key": "audience",
+      "title": "Interview the audience",
+      "parent": "discover",
+      "status": "Done",
+      "assignee": "Alex Morgan (example)",
+      "startOffsetDays": -7,
+      "dueOffsetDays": -5,
+      "priority": "medium",
+      "dependsOn": [],
+      "outcome": "Capture a short research brief from five fictional customer interviews.",
+      "acceptance": [
+        "Summarise the recurring needs and frustrations",
+        "Share a one-page findings note with the project team"
+      ]
+    },
+    {
+      "key": "scope",
+      "title": "Agree the project brief",
+      "parent": "discover",
+      "status": "Done",
+      "assignee": "Jordan Lee (example)",
+      "startOffsetDays": -5,
+      "dueOffsetDays": -3,
+      "priority": "high",
+      "dependsOn": [
+        "audience"
+      ],
+      "outcome": "Turn research findings into a clear problem statement, scope and delivery brief.",
+      "acceptance": [
+        "Record the included pages and explicitly excluded work",
+        "Agree the delivery milestones and review owners"
+      ]
+    },
+    {
+      "key": "inventory",
+      "title": "Audit the existing content",
+      "parent": "discover",
+      "status": "Done",
+      "assignee": "Casey Patel (example)",
+      "startOffsetDays": -4,
+      "dueOffsetDays": -1,
+      "priority": "low",
+      "dependsOn": [
+        "scope"
+      ],
+      "outcome": "Create an inventory of existing pages and decide what to retain, rewrite or retire.",
+      "acceptance": [
+        "Assign a disposition to every page in the example inventory",
+        "Identify content gaps and the owner of each rewrite"
+      ]
+    },
+    {
+      "key": "design",
+      "title": "Design a welcoming experience",
+      "parent": null,
+      "status": "In progress",
+      "assignee": "Jordan Lee (example)",
+      "startOffsetDays": -1,
+      "dueOffsetDays": 6,
+      "priority": "high",
+      "dependsOn": [
+        "discover"
+      ],
+      "outcome": "Design a clear, accessible path from the landing page to a confident enquiry.",
+      "acceptance": [
+        "Review the information architecture with the team",
+        "Approve the desktop and mobile prototype before hand-off"
+      ]
+    },
+    {
+      "key": "sitemap",
+      "title": "Map the visitor journeys",
+      "parent": "design",
+      "status": "Done",
+      "assignee": "Jordan Lee (example)",
+      "startOffsetDays": -1,
+      "dueOffsetDays": 1,
+      "priority": "medium",
+      "dependsOn": [
+        "scope"
+      ],
+      "outcome": "Map the two primary visitor journeys and the navigation structure.",
+      "acceptance": [
+        "Show the path from landing to enquiry",
+        "Ensure every primary page has a clear next action"
+      ]
+    },
+    {
+      "key": "prototype",
+      "title": "Create the interactive prototype",
+      "parent": "design",
+      "status": "In progress",
+      "assignee": "Jordan Lee (example)",
+      "startOffsetDays": 0,
+      "dueOffsetDays": 5,
+      "priority": "high",
+      "dependsOn": [
+        "sitemap"
+      ],
+      "outcome": "Build an interactive design prototype covering the landing, product and contact pages.",
+      "acceptance": [
+        "Include realistic empty, loading and validation states",
+        "Capture review feedback next to the relevant screen"
+      ]
+    },
+    {
+      "key": "mobile",
+      "title": "Check the mobile layout",
+      "parent": "prototype",
+      "status": "To do",
+      "assignee": "Jordan Lee (example)",
+      "startOffsetDays": 2,
+      "dueOffsetDays": 4,
+      "priority": "medium",
+      "dependsOn": [
+        "sitemap"
+      ],
+      "outcome": "Review how the proposed screens adapt to narrow widths and touch input.",
+      "acceptance": [
+        "Keep headings, actions and form fields readable at narrow widths",
+        "Check that sticky elements do not obscure content"
+      ]
+    },
+    {
+      "key": "review",
+      "title": "Review the prototype with the team",
+      "parent": "prototype",
+      "status": "To do",
+      "assignee": "Alex Morgan (example)",
+      "startOffsetDays": 4,
+      "dueOffsetDays": 5,
+      "priority": "high",
+      "dependsOn": [
+        "mobile"
+      ],
+      "outcome": "Walk through the prototype together and resolve the remaining design decisions.",
+      "acceptance": [
+        "Record decisions and assign owners to follow-ups",
+        "Approve the interactions needed for implementation"
+      ]
+    },
+    {
+      "key": "voice",
+      "title": "Write the content voice guide",
+      "parent": "design",
+      "status": "In progress",
+      "assignee": "Casey Patel (example)",
+      "startOffsetDays": -2,
+      "dueOffsetDays": -1,
+      "priority": "medium",
+      "dependsOn": [
+        "inventory"
+      ],
+      "outcome": "Define a friendly, direct writing style. This task is intentionally overdue so the date treatment is visible.",
+      "acceptance": [
+        "Include examples for headings, buttons and error messages",
+        "Agree how product terminology should be used consistently"
+      ]
+    },
+    {
+      "key": "build",
+      "title": "Build the new website",
+      "parent": null,
+      "status": "To do",
+      "assignee": "Sam Taylor (example)",
+      "startOffsetDays": 5,
+      "dueOffsetDays": 16,
+      "priority": "high",
+      "dependsOn": [
+        "design"
+      ],
+      "outcome": "Implement the approved experience and connect the content and enquiry flows.",
+      "acceptance": [
+        "Build reusable page sections from the approved design",
+        "Keep configuration and content separate from presentation code"
+      ]
+    },
+    {
+      "key": "foundation",
+      "title": "Set up the application foundation",
+      "parent": "build",
+      "status": "To do",
+      "assignee": "Sam Taylor (example)",
+      "startOffsetDays": 5,
+      "dueOffsetDays": 7,
+      "priority": "high",
+      "dependsOn": [
+        "review"
+      ],
+      "outcome": "Prepare the application structure, shared styles and local development workflow.",
+      "acceptance": [
+        "Document the local startup and build commands",
+        "Make a minimal end-to-end page work before expanding it"
+      ]
+    },
+    {
+      "key": "pages",
+      "title": "Implement the core pages",
+      "parent": "build",
+      "status": "To do",
+      "assignee": "Sam Taylor (example)",
+      "startOffsetDays": 7,
+      "dueOffsetDays": 13,
+      "priority": "medium",
+      "dependsOn": [
+        "foundation",
+        "voice"
+      ],
+      "outcome": "Build the landing, product and contact pages using the agreed content and components.",
+      "acceptance": [
+        "Match the approved layout at desktop and mobile widths",
+        "Keep page content editable through the established content path"
+      ]
+    },
+    {
+      "key": "enquiry",
+      "title": "Connect the enquiry form",
+      "parent": "build",
+      "status": "Backlog",
+      "assignee": "Sam Taylor (example)",
+      "startOffsetDays": 10,
+      "dueOffsetDays": 14,
+      "priority": "high",
+      "dependsOn": [
+        "foundation"
+      ],
+      "outcome": "Implement clear validation, confirmation and failure recovery for enquiries.",
+      "acceptance": [
+        "Show helpful field-level validation messages",
+        "Do not report a successful enquiry until delivery is confirmed"
+      ]
+    },
+    {
+      "key": "analytics",
+      "title": "Define the launch measurement plan",
+      "parent": "build",
+      "status": "Backlog",
+      "assignee": "Alex Morgan (example)",
+      "startOffsetDays": 12,
+      "dueOffsetDays": 16,
+      "priority": "low",
+      "dependsOn": [
+        "scope"
+      ],
+      "outcome": "Define which events will answer the agreed launch questions. No live tracking is enabled by this example.",
+      "acceptance": [
+        "Map each launch outcome to a clear event definition",
+        "Document consent and data-minimisation requirements for later review"
+      ]
+    },
+    {
+      "key": "quality",
+      "title": "Make it ready for people",
+      "parent": null,
+      "status": "Backlog",
+      "assignee": "Casey Patel (example)",
+      "startOffsetDays": 15,
+      "dueOffsetDays": 22,
+      "priority": "high",
+      "dependsOn": [
+        "build"
+      ],
+      "outcome": "Review the complete experience for usability, accessibility and reliability.",
+      "acceptance": [
+        "Resolve release-blocking defects against the agreed acceptance checks",
+        "Record the tested browser and device coverage"
+      ]
+    },
+    {
+      "key": "accessibility",
+      "title": "Run the accessibility review",
+      "parent": "quality",
+      "status": "Backlog",
+      "assignee": "Casey Patel (example)",
+      "startOffsetDays": 15,
+      "dueOffsetDays": 19,
+      "priority": "high",
+      "dependsOn": [
+        "pages",
+        "enquiry"
+      ],
+      "outcome": "Review keyboard access, focus order, text contrast and form feedback.",
+      "acceptance": [
+        "Complete the primary journeys using only the keyboard",
+        "Record automated findings and verify the important paths manually"
+      ]
+    },
+    {
+      "key": "browser",
+      "title": "Test the browser and device journeys",
+      "parent": "quality",
+      "status": "Backlog",
+      "assignee": "Casey Patel (example)",
+      "startOffsetDays": 17,
+      "dueOffsetDays": 21,
+      "priority": "medium",
+      "dependsOn": [
+        "pages",
+        "enquiry"
+      ],
+      "outcome": "Test navigation and enquiry handling across the supported browsers and representative screen sizes.",
+      "acceptance": [
+        "Capture the actual browser and device versions tested",
+        "Check slow loading, failed requests and retry behaviour"
+      ]
+    },
+    {
+      "key": "fixes",
+      "title": "Resolve the release blockers",
+      "parent": "quality",
+      "status": "Backlog",
+      "assignee": "Sam Taylor (example)",
+      "startOffsetDays": 19,
+      "dueOffsetDays": 22,
+      "priority": "urgent",
+      "dependsOn": [
+        "accessibility",
+        "browser"
+      ],
+      "outcome": "Triage the review findings and fix the issues that block a confident release.",
+      "acceptance": [
+        "Give each blocking issue a clear reproduction and owner",
+        "Retest the original failing scenario after each fix"
+      ]
+    },
+    {
+      "key": "launch",
+      "title": "Launch and learn",
+      "parent": null,
+      "status": "Backlog",
+      "assignee": "Alex Morgan (example)",
+      "startOffsetDays": 22,
+      "dueOffsetDays": 25,
+      "priority": "medium",
+      "dependsOn": [
+        "quality"
+      ],
+      "outcome": "Plan a controlled launch, review the first feedback and capture what comes next.",
+      "acceptance": [
+        "Agree the release checklist and recovery plan",
+        "Schedule a short learning review after launch"
+      ]
+    },
+    {
+      "key": "release",
+      "title": "Prepare the launch checklist",
+      "parent": "launch",
+      "status": "To do",
+      "assignee": "Alex Morgan (example)",
+      "startOffsetDays": 20,
+      "dueOffsetDays": 23,
+      "priority": "medium",
+      "dependsOn": [
+        "analytics"
+      ],
+      "outcome": "Write the release steps and define the signals that would trigger a rollback.",
+      "acceptance": [
+        "Identify who makes the release decision",
+        "Record the verification and recovery steps in order"
+      ]
+    },
+    {
+      "key": "publish",
+      "title": "Review and publish the release",
+      "parent": "launch",
+      "status": "Backlog",
+      "assignee": "Sam Taylor (example)",
+      "startOffsetDays": 23,
+      "dueOffsetDays": 24,
+      "priority": "high",
+      "dependsOn": [
+        "fixes",
+        "release"
+      ],
+      "outcome": "A fictional milestone for trying dependencies. This example does not deploy or publish any website.",
+      "acceptance": [
+        "Complete the release-readiness review",
+        "Verify the intended experience after the simulated release"
+      ]
+    },
+    {
+      "key": "learn",
+      "title": "Capture the first-week learnings",
+      "parent": "launch",
+      "status": "Backlog",
+      "assignee": "Alex Morgan (example)",
+      "startOffsetDays": 24,
+      "dueOffsetDays": 25,
+      "priority": "low",
+      "dependsOn": [
+        "publish"
+      ],
+      "outcome": "Compare the first feedback with the original goals and shape the next iteration.",
+      "acceptance": [
+        "Summarise the important observations without inventing results",
+        "Create follow-up tasks for the next improvement cycle"
+      ]
+    }
+  ]
+}

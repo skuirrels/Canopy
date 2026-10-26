@@ -1,0 +1,9 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/health'
+order: 1000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('DuckDB API ready', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().database).to.eql('DuckDB'); });

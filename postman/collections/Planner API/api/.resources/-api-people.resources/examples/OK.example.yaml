@@ -1,0 +1,119 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/people"
+  method: POST
+  headers:
+    Accept: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "name": "string"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "projects": [
+          {
+            "id": "bfc3bd50-79f4-c1a5-8908-330a17ca4da2",
+            "name": "string",
+            "description": "string",
+            "color": "string",
+            "revision": -2800225,
+            "createdAt": "1995-07-26T05:49:27.223Z"
+          },
+          {
+            "id": "19432bd5-b85d-9eb4-84d2-a9abf044d9b2",
+            "name": "string",
+            "description": "string",
+            "color": "string",
+            "revision": 0,
+            "createdAt": "2009-05-28T16:01:55.878Z"
+          }
+        ],
+        "items": [
+          {
+            "id": "a9a202c1-98d3-61a3-30d8-c0592ef9611b",
+            "projectId": "137cb16c-0ade-5229-2821-b6c28c00485f",
+            "parentId": null,
+            "statusId": "9b7b2daa-d0e4-6291-9120-1e2ba028b390",
+            "title": "string",
+            "specJson": "string",
+            "priority": "string",
+            "assigneeId": null,
+            "startDate": null,
+            "dueDate": null,
+            "position": 0,
+            "x": "0",
+            "y": "9391.68301332521",
+            "createdAt": "1969-03-22T07:22:26.022Z",
+            "updatedAt": "1981-11-24T11:52:12.074Z"
+          },
+          {
+            "id": "0e1def28-f864-8e1c-0a90-5c202880b898",
+            "projectId": "bb72a1d6-ef48-0778-e068-dd59625b3458",
+            "parentId": null,
+            "statusId": "c7c0e3f9-4601-a260-9e42-29f29e1e2c96",
+            "title": "string",
+            "specJson": "string",
+            "priority": "string",
+            "assigneeId": null,
+            "startDate": null,
+            "dueDate": null,
+            "position": 45960,
+            "x": "0.6e1",
+            "y": "-0.67849E8",
+            "createdAt": "1972-10-26T13:26:46.106Z",
+            "updatedAt": "1990-07-06T14:43:44.985Z"
+          }
+        ],
+        "statuses": [
+          {
+            "id": "e6b6bf26-30ea-8b64-424d-b2186a26f2a0",
+            "projectId": "6c670016-36d4-c759-b03d-888bd9fdb461",
+            "name": "string",
+            "color": "string",
+            "position": 0,
+            "isCompleted": true
+          },
+          {
+            "id": "91c5e28e-82a0-45ae-95a6-09888d7f1f51",
+            "projectId": "f20a5811-2de2-3c07-ad00-3555a4573646",
+            "name": "string",
+            "color": "string",
+            "position": 0,
+            "isCompleted": true
+          }
+        ],
+        "dependencies": [
+          {
+            "id": "59d4bd94-4bfc-dd49-4242-caca6c495d95",
+            "itemId": "ac971aa5-afa1-5d38-4cd0-bc2f606e4b19",
+            "dependsOnId": "87f85fd3-bbc6-0dac-4cc0-7929a51548ba",
+            "projectId": "ef72b7bd-2541-ea77-22b1-358691e9f907"
+          },
+          {
+            "id": "11066715-1cfd-ead4-2d51-d186592f23b7",
+            "itemId": "cbb786ff-373d-c566-ee62-1101e10f7e1a",
+            "dependsOnId": "359bc88e-8a7e-19a6-9b89-532076a4179f",
+            "projectId": "08f0d719-c204-ac9a-aac9-8dcd8b9ff2a7"
+          }
+        ],
+        "people": [
+          {
+            "id": "a04b7112-fb6f-aac3-dc16-346ad1e4d2a9",
+            "name": "string"
+          },
+          {
+            "id": "081b7743-5be3-dd92-596e-19d77d7e846f",
+            "name": "string"
+          }
+        ]
+      }
+order: 1000

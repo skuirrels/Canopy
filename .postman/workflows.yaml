@@ -1,0 +1,4 @@
+workflows:
+  syncSpecToCollection:
+    - spec: ../postman/specs/planner.openapi.json
+      collection: ../postman/collections/Planner API

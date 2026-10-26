@@ -1,0 +1,16 @@
+$kind: http-request
+method: PATCH
+url: '{{baseUrl}}/api/items/{{parentId}}'
+order: 7000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"title": "Parent", "specJson": "{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"type\": \"text\", \"text\": \"Stored specification\"}]}]}", "statusId": "{{statusId}}", "priority": "high", "assigneeId": null, "startDate": "2026-10-26", "dueDate": "2026-11-01", "dependencyIds": ["{{childId}}"],"expectedRevision":{{revision}}}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Dependency cycles return 400',()=>pm.response.to.have.status(400));

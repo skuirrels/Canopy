@@ -1,0 +1,25 @@
+$kind: http-request
+name: /api/items/:id/move
+description: ""
+url: "{{baseUrl}}/api/items/:id/move"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: 38834c47-2b4f-9521-3f03-5efd26173de2
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "expectedRevision": 0,
+      "parentId": null,
+      "statusId": "d21d5cba-d9ea-6a14-c323-67b190a66899",
+      "beforeId": null
+    }
+settings: {}
+examples: ./.resources/-api-items-id-move.resources/examples
+order: 3000

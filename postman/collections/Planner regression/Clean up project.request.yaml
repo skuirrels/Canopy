@@ -1,0 +1,9 @@
+$kind: http-request
+method: DELETE
+url: '{{baseUrl}}/api/projects/{{projectId}}?expectedRevision={{revision}}'
+order: 12000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Temporary project removed',()=>{ pm.response.to.have.status(200); pm.expect(pm.response.json().projects.some(p=>p.id===pm.collectionVariables.get('projectId'))).to.eql(false); });

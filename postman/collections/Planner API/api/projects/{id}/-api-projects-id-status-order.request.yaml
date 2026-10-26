@@ -1,0 +1,26 @@
+$kind: http-request
+name: /api/projects/:id/status-order
+description: ""
+url: "{{baseUrl}}/api/projects/:id/status-order"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: 38834c47-2b4f-9521-3f03-5efd26173de2
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "expectedRevision": 0,
+      "statusIds": [
+        "9ab4f3b6-23c7-3925-2a2c-a8c20c54deb2",
+        "3c82522f-43e5-c0ca-093f-281c923a6426"
+      ]
+    }
+settings: {}
+examples: ./.resources/-api-projects-id-status-order.resources/examples
+order: 5000

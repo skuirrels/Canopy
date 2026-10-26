@@ -1,0 +1,21 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/projects/{{projectId}}/items'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"expectedRevision":{{revision}},"title":"Child","parentId":"{{parentId}}","statusId":"{{statusId}}"}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const value = pm.response.json();
+      if (value.projects) {
+       const project = value.projects.find(p => p.id === pm.collectionVariables.get('projectId'));
+       if (project) pm.collectionVariables.set('revision', String(project.revision));
+      }
+      const child=value.items.find(i=>i.projectId===pm.collectionVariables.get('projectId')&&i.title==='Child'); pm.collectionVariables.set('childId',child.id); pm.test('Child nested under parent',()=>pm.expect(child.parentId).to.eql(pm.collectionVariables.get('parentId')));

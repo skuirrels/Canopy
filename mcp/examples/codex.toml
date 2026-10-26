@@ -1,0 +1,7 @@
+[mcp_servers.canopy-planner]
+command = "/absolute/path/to/node"
+args = ["/absolute/path/to/Canopy/mcp/src/index.mjs"]
+
+[mcp_servers.canopy-planner.env]
+PLANNER_URL = "http://127.0.0.1:5274/"
+PLANNER_SPEC_ROOT = "/absolute/path/to/Canopy"

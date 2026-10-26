@@ -1,0 +1,25 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/items/{{parentId}}/move'
+order: 8000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"expectedRevision":{{revision}},"parentId":null,"statusId":"{{doneId}}"}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      pm.collectionVariables.set('staleRevision',pm.collectionVariables.get('revision'));
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const value = pm.response.json();
+      if (value.projects) {
+       const project = value.projects.find(p => p.id === pm.collectionVariables.get('projectId'));
+       if (project) pm.collectionVariables.set('revision', String(project.revision));
+      }
+      pm.test('Parent moved',()=>pm.response.to.have.status(200));

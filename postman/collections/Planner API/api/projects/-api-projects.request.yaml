@@ -1,0 +1,19 @@
+$kind: http-request
+name: /api/projects
+description: ""
+url: "{{baseUrl}}/api/projects"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "string",
+      "description": "string",
+      "color": "string"
+    }
+settings: {}
+examples: ./.resources/-api-projects.resources/examples
+order: 1000

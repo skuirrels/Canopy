@@ -1,0 +1,15 @@
+$kind: http-request
+name: /api/people/:id
+description: ""
+url: "{{baseUrl}}/api/people/:id"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: 38834c47-2b4f-9521-3f03-5efd26173de2
+    disabled: false
+    description: "(Required) "
+settings: {}
+examples: ./.resources/-api-people-id.resources/examples
+order: 2000

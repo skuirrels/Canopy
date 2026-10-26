@@ -1,0 +1,14 @@
+$kind: http-request
+method: DELETE
+url: '{{baseUrl}}/api/people/{{person1}}'
+order: 6500
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const value = pm.response.json();
+      const project = value.projects?.find(p => p.id === pm.collectionVariables.get('projectId'));
+      if (project) pm.collectionVariables.set('revision', String(project.revision));
+      const task=value.items.find(i=>i.id===pm.collectionVariables.get('childId'));
+      pm.test('Remaining assignee preserved',()=>pm.expect(task.assigneeIds).to.eql([pm.collectionVariables.get('person2')]));
+      pm.test('Task spec preserved',()=>pm.expect(task.specJson).to.include('Stored specification'));

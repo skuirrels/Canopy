@@ -1,0 +1,132 @@
+/* Shared colour tokens keep both themes consistent across views and portalled dialogs. */
+:root {
+  color-scheme: light;
+  --input-scheme: light;
+  --surface: #ffffff;
+  --surface-subtle: #f8fafc;
+  --surface-hover: #f1f5f9;
+  --surface-translucent: #ffffffed;
+  --heading: #0f172a;
+  --foreground: #1e293b;
+  --body-text: #334155;
+  --secondary-text: #475569;
+  --muted: #64748b;
+  --decoration: #94a3b8;
+  --border-hover: #cbd5e1;
+  --line: #e2e8f0;
+  --accent: #142d4e;
+  --accent-fill: #142d4e;
+  --accent-hover: #203e63;
+  --accent-border: #294565;
+  --on-accent-muted: #d4deeb;
+  --map-grid: #cbd5e1;
+  --map-tree: #94a3b8;
+  --map-dependency: #c29141;
+  --map-dependency-text: #92400e;
+  --map-dependency-bg: #fffbeb;
+  --map-mini-node: #cbd5e1;
+  --map-mini-mask: rgba(248,250,252,.8);
+}
+
+:root[data-theme="react-flow"] {
+  color-scheme: dark;
+  --input-scheme: dark;
+  --surface: #19191d;
+  --surface-subtle: #111114;
+  --surface-hover: #25252b;
+  --surface-translucent: #19191df2;
+  --heading: #fafafa;
+  --foreground: #ededf0;
+  --body-text: #c6c6cf;
+  --secondary-text: #aaaab7;
+  --muted: #aaaab7;
+  --decoration: #777784;
+  --border-hover: #51515e;
+  --line: #303036;
+  --accent: #ff4f9c;
+  /* The deeper fill keeps white button labels readable at 14px. */
+  --accent-fill: #df0065;
+  --accent-hover: #c50059;
+  --accent-border: #883555;
+  --on-accent-muted: #f4c6db;
+  --map-grid: #37373f;
+  --map-tree: #777784;
+  --map-dependency: #e4b16c;
+  --map-dependency-text: #f2c58b;
+  --map-dependency-bg: #302419;
+  --map-mini-node: #666673;
+  --map-mini-mask: rgba(17,17,20,.8);
+  background: var(--surface-subtle);
+}
+
+.topbar-right { flex-shrink: 0; }
+.appearance-trigger[data-state="open"] { background: var(--surface-hover); color: var(--accent); }
+.appearance-menu { min-width: 240px; padding: 8px; }
+.appearance-label { display: block; padding: 8px 10px; color: var(--secondary-text); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+.appearance-menu [role="menuitemradio"] { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; font-size: 14px; cursor: pointer; outline: none; }
+.appearance-menu [role="menuitemradio"][data-highlighted] { background: var(--surface-hover); }
+.appearance-menu [role="menuitemradio"][data-state="checked"] { color: var(--heading); background: var(--surface-hover); }
+.appearance-menu small { display: block; color: var(--secondary-text); font-size: 12px; margin-top: 2px; }
+.theme-indicator { margin-left: auto; color: var(--accent); }
+.theme-swatch { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid; border-radius: 10px; }
+.theme-swatch-flow { background: #1c171d; color: #ff4f9c; border-color: #72334f; }
+.theme-swatch-navy { background: #f8fafc; color: #142d4e; border-color: #cbd5e1; }
+
+/* React Flow Pro inspired charcoal panels, pink highlights and rounded controls. */
+[data-theme="react-flow"] .main-shell { background: var(--surface-subtle); }
+[data-theme="react-flow"] .topbar { background: var(--surface-subtle); }
+[data-theme="react-flow"] .sidebar { background: #151518; }
+[data-theme="react-flow"] .brand-mark { border-radius: 10px; background: #2c1924; color: var(--accent); border: 1px solid #623048; }
+[data-theme="react-flow"] .brand-period { color: var(--accent); }
+[data-theme="react-flow"] .sidebar-nav>button.active,
+[data-theme="react-flow"] .project-nav>button.active { background: #30202a; color: #ff9dc7; }
+[data-theme="react-flow"] .sidebar-nav>button.active svg,
+[data-theme="react-flow"] .sidebar-nav>button.active .nav-count,
+[data-theme="react-flow"] .project-nav>button.active .nav-count { color: #ff9dc7; }
+[data-theme="react-flow"] .button,
+[data-theme="react-flow"] .view-tabs,
+[data-theme="react-flow"] .view-tabs>button { border-radius: 999px; }
+[data-theme="react-flow"] .button-primary { border-color: var(--accent-fill); box-shadow: 0 0 0 1px #ff4f9c12,0 3px 12px #0003; }
+[data-theme="react-flow"] .view-tabs { background: #1b1b20; }
+[data-theme="react-flow"] .view-tabs>button.active { background: #30202a; color: #ff9dc7; box-shadow: inset 0 0 0 1px #6f3450; }
+[data-theme="react-flow"] .kanban-column,
+[data-theme="react-flow"] .column-heading { background: #151518; }
+[data-theme="react-flow"] .kanban-column { border-color: #222227; border-radius: 14px; }
+[data-theme="react-flow"] .task-card,
+[data-theme="react-flow"] .project-card { border-radius: 14px; box-shadow: 0 3px 8px #0002; }
+[data-theme="react-flow"] .task-card:hover,
+[data-theme="react-flow"] .project-card:hover { border-color: #87405f; box-shadow: 0 4px 16px #0003; }
+[data-theme="react-flow"] .avatar,
+[data-theme="react-flow"] .task-properties .avatar { background: #30202a; color: #ff9dc7; border-color: #643047; }
+[data-theme="react-flow"] .owner-avatar { background: #29212d; color: #e2c8ea; border-color: #413348; }
+[data-theme="react-flow"] .priority-high,
+[data-theme="react-flow"] .priority-medium { color: #e7c786; }
+[data-theme="react-flow"] .priority-urgent,
+[data-theme="react-flow"] .overdue { color: #ff9b9b!important; }
+[data-theme="react-flow"] .priority-low { color: #a4ccc7; }
+[data-theme="react-flow"] .blocked-badge { background: #302719; border-color: #5e4b2d; color: #e8c58c; }
+[data-theme="react-flow"] .danger,
+[data-theme="react-flow"] .dropdown .danger,
+[data-theme="react-flow"] .save-indicator.error { color: #ff9b9b; }
+[data-theme="react-flow"] .save-indicator.unsaved,
+[data-theme="react-flow"] .sync-pending { color: #e8c58c; }
+[data-theme="react-flow"] .save-error { background: #30231d; color: #f3c5a5; border-color: #67452f; }
+[data-theme="react-flow"] .dialog-overlay { background: #0009; }
+[data-theme="react-flow"] .dialog-content { box-shadow: 0 24px 80px #0008; }
+[data-theme="react-flow"] .task-title-input { background: transparent; }
+[data-theme="react-flow"] .task-check.checked { background: var(--accent-fill); border-color: var(--accent-fill); }
+[data-theme="react-flow"] input:focus,
+[data-theme="react-flow"] textarea:focus,
+[data-theme="react-flow"] select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #ff00731f; }
+[data-theme="react-flow"] button:focus-visible,
+[data-theme="react-flow"] a:focus-visible { outline-color: var(--accent); }
+[data-theme="react-flow"] .map-root { background: linear-gradient(135deg,#2b1924,#201b25); border-color: #8d3a5d; box-shadow: 0 4px 24px #ff00730a; }
+[data-theme="react-flow"] .map-root-footer>button { background: #422638; }
+[data-theme="react-flow"] .map-toolbar { border-radius: 12px; box-shadow: 0 4px 20px #0004; }
+[data-theme="react-flow"] .react-flow { --xy-background-color: var(--surface-subtle); --xy-minimap-background-color: var(--surface); }
+[data-theme="react-flow"] .react-flow__node-task.selected .map-card { box-shadow: 0 0 0 2px var(--accent),0 0 20px #ff007316; }
+[data-theme="react-flow"] .react-flow__controls { box-shadow: 0 3px 16px #0004!important; }
+[data-theme="react-flow"] .map-drop-target .map-root { background: #422638; }
+[data-theme="react-flow"] .sprout-toast { background: var(--surface); color: var(--foreground); border-color: var(--line); }
+[data-theme="react-flow"] .sprout-toast[data-type="error"] [data-title] { color: #ff9b9b!important; }
+[data-theme="react-flow"] .welcome-art svg rect { fill: var(--surface); stroke: var(--line); }

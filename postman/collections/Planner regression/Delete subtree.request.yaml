@@ -1,0 +1,14 @@
+$kind: http-request
+method: DELETE
+url: '{{baseUrl}}/api/items/{{parentId}}?expectedRevision={{revision}}'
+order: 11000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const value = pm.response.json();
+      if (value.projects) {
+       const project = value.projects.find(p => p.id === pm.collectionVariables.get('projectId'));
+       if (project) pm.collectionVariables.set('revision', String(project.revision));
+      }
+      pm.test('Subtree and links deleted',()=>{ pm.response.to.have.status(200); pm.expect(value.items.some(i=>i.id===pm.collectionVariables.get('childId'))).to.eql(false); pm.expect(value.dependencies.some(d=>d.projectId===pm.collectionVariables.get('projectId'))).to.eql(false); });
