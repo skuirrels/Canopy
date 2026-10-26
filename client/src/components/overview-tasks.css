@@ -30,7 +30,7 @@
 .attention-task-details{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;color:var(--secondary-text);font-size:14px}
 .attention-task-details>span{display:inline-flex;align-items:center;gap:5px}.attention-task-status .status-dot{width:7px;height:7px}.attention-waiting{color:var(--map-dependency-text)}
 .attention-task-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:13px;font-size:14px}
-.attention-due{display:flex;align-items:center;gap:6px;color:var(--secondary-text)}.attention-due-today{color:var(--accent-soft-text)}.attention-due-overdue{color:var(--attention-danger)}
+.attention-due{display:flex;align-items:center;gap:6px;color:var(--secondary-text)}.attention-due-today,.attention-due-tomorrow{color:var(--accent-soft-text)}.attention-due-overdue{color:var(--attention-danger)}
 .attention-assignees{display:flex;align-items:center;flex-wrap:wrap;gap:7px 12px;color:var(--body-text)}.attention-assignees>span{display:flex;align-items:center;gap:6px}.attention-unassigned{color:var(--attention-danger)}
 .attention-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:32px 20px;text-align:center;min-height:150px;color:var(--secondary-text);font-size:14px}.attention-empty>svg{color:var(--accent-soft-text)}.attention-empty strong{color:var(--heading);font-weight:500}
 .attention-undated{border:1px solid var(--line);border-radius:10px;margin-top:16px;overflow:hidden;background:var(--surface-subtle)}

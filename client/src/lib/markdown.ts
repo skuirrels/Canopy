@@ -1,0 +1,10 @@
+import { MarkdownManager } from '@tiptap/markdown';
+import StarterKit from '@tiptap/starter-kit';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+import { TableKit } from '@tiptap/extension-table';
+import { getSchema } from '@tiptap/core';
+import { createSpecCodec } from '../../../shared/spec-markdown.mjs';
+const extensions = [StarterKit, TaskList, TaskItem.configure({ nested: true }), TableKit];
+export const { parseMarkdown, toMarkdown, specJson } = createSpecCodec(new MarkdownManager({ extensions }), getSchema(extensions));
+export { MAX_SPEC_BYTES } from '../../../shared/spec-markdown.mjs';

@@ -10,6 +10,8 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<Dependency> Dependencies => Set<Dependency>();
     public DbSet<Person> People => Set<Person>();
     public DbSet<WorkItemAssignee> Assignments => Set<WorkItemAssignee>();
+    public DbSet<ProjectAgentConnection> AgentConnections => Set<ProjectAgentConnection>();
+    public DbSet<AgentRun> AgentRuns => Set<AgentRun>();
     protected override void OnModelCreating(ModelBuilder model)
     {
         model.Entity<Project>().HasKey(x => x.Id);
@@ -17,6 +19,13 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
         model.Entity<WorkflowStatus>().HasKey(x => x.Id);
         model.Entity<Dependency>().HasKey(x => x.Id);
         model.Entity<Person>().HasKey(x => x.Id);
+        model.Entity<ProjectAgentConnection>().HasKey(x => x.Id);
+        model.Entity<ProjectAgentConnection>().Ignore(x => x.Model).Ignore(x => x.Settings);
+        model.Entity<ProjectAgentConnection>().HasIndex(x => x.ProjectId).IsUnique();
+        model.Entity<AgentRun>().HasKey(x => x.Id);
+        model.Entity<AgentRun>().Ignore(x => x.Active);
+        model.Entity<AgentRun>().HasIndex(x => x.RequestId).IsUnique();
+        model.Entity<AgentRun>().HasIndex(x => x.ItemId);
         model.Entity<WorkItem>().Ignore(x => x.AssigneeId).Ignore(x => x.AssigneeIds);
         model.Entity<WorkItemAssignee>().HasKey(x => x.Id);
         model.Entity<WorkItemAssignee>().HasIndex(x => new { x.ItemId, x.PersonId }).IsUnique();

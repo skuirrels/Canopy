@@ -7,7 +7,7 @@ const statuses = [{ id: 'open', projectId: project.id, name: 'In review', isComp
 const item = (id, fields = {}) => ({ id, title: id, projectId: project.id, parentId: 'component', statusId: 'open', priority: 'none', dueDate: null, startDate: null, estimatedHours: null, assigneeIds: [], assigneeId: null, ...fields });
 const workspace = items => ({ projects: [project], people: [], statuses, items: [item('component', { parentId: null }), ...items], dependencies: [] });
 
-test('overview separates due-today, past, future and undated tasks using completion flags', () => {
+test('overview separates due-today, tomorrow, past and undated tasks using completion flags', () => {
  const data = workspace([
   item('today', { dueDate: '2026-10-26' }), item('past', { dueDate: '2026-10-24' }),
   item('future', { dueDate: '2026-10-27' }), item('start only', { startDate: '2026-10-20' }),
@@ -16,6 +16,7 @@ test('overview separates due-today, past, future and undated tasks using complet
  data.items[0].dueDate = '2026-10-20'; data.items[0].statusId = 'complete';
  const before = structuredClone(data), result = overviewTasks(data, '2026-10-26');
  assert.deepEqual(result.dueToday.map(x => x.item.id), ['today']);
+ assert.deepEqual(result.dueTomorrow.map(x => x.item.id), ['future']);
  assert.deepEqual(result.overdue.map(x => x.item.id), ['past']);
  assert.deepEqual(result.withoutDueDate.map(x => x.item.id), ['start only']);
  assert.equal(result.taskCount, 5); assert.equal(result.openCount, 4); assert.equal(result.completedCount, 1);
@@ -56,7 +57,7 @@ test('missing references are exposed instead of fabricating ownership, component
 
 test('an empty workspace produces empty groups and no synthetic dates or people', () => {
  const result = overviewTasks({ projects: [], items: [], statuses: [], people: [], dependencies: [] }, '2026-10-26');
- assert.deepEqual(result, { dueToday: [], overdue: [], withoutDueDate: [], taskCount: 0, openCount: 0, completedCount: 0, unassignedAttention: 0 });
+ assert.deepEqual(result, { dueToday: [], dueTomorrow: [], overdue: [], withoutDueDate: [], taskCount: 0, openCount: 0, completedCount: 0, unassignedAttention: 0 });
 });
 
 test('a new calendar day moves yesterday’s deadline into overdue without changing the task', () => {
@@ -65,4 +66,24 @@ test('a new calendar day moves yesterday’s deadline into overdue without chang
  const next = overviewTasks(data, '2026-10-27');
  assert.equal(next.dueToday.length, 0); assert.equal(next.overdue[0].daysOverdue, 1);
  assert.equal(data.items[1].dueDate, '2026-10-26');
+});
+
+test('tomorrow uses the next calendar date across DST, leap day and year boundaries', () => {
+ for (const [today, tomorrow] of [['2026-03-28', '2026-03-29'], ['2026-03-29', '2026-03-30'], ['2026-10-24', '2026-10-25'], ['2028-02-28', '2028-02-29'], ['2026-12-31', '2027-01-01']]) {
+  const data = workspace([item('tomorrow', { dueDate: tomorrow })]);
+  const result = overviewTasks(data, today);
+  assert.deepEqual(result.dueTomorrow.map(row => row.item.id), ['tomorrow']);
+  assert.equal(result.dueTomorrow[0].daysOverdue, 0);
+  assert.equal(result.unassignedAttention, 1);
+ }
+});
+
+test('tomorrow excludes components, completed work and later deadlines, then rolls into today and overdue', () => {
+ const data = workspace([item('tomorrow', { dueDate: '2026-10-27' }), item('completed', { dueDate: '2026-10-27', statusId: 'complete' }), item('later', { dueDate: '2026-10-28' })]);
+ data.items[0].dueDate = '2026-10-27';
+ const before = structuredClone(data);
+ assert.deepEqual(overviewTasks(data, '2026-10-26').dueTomorrow.map(row => row.item.id), ['tomorrow']);
+ assert.deepEqual(overviewTasks(data, '2026-10-27').dueToday.map(row => row.item.id), ['tomorrow']);
+ assert.deepEqual(overviewTasks(data, '2026-10-28').overdue.map(row => row.item.id), ['tomorrow']);
+ assert.deepEqual(data, before);
 });

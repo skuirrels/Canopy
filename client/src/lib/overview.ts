@@ -1,7 +1,7 @@
 import type { Item, Person, Project, Status, Workspace } from './types.ts';
 import { assignedIds, priorities } from './types.ts';
 import { componentForTask } from './board.ts';
-import { dateDay } from './gantt.ts';
+import { dateDay, dayDate } from './gantt.ts';
 
 export type AttentionTask = {
  item: Item; project?: Project; component?: Item; status?: Status;
@@ -27,8 +27,10 @@ export function overviewTasks(workspace: Workspace, today: string) {
  }
  const compare = (a: AttentionTask, b: AttentionTask) => (a.item.dueDate ?? '').localeCompare(b.item.dueDate ?? '') || priorityOrder.get(a.item.priority)! - priorityOrder.get(b.item.priority)! || a.item.title.localeCompare(b.item.title) || a.item.id.localeCompare(b.item.id);
  const dueToday = outstanding.filter(item => item.dueDate === today).map(row).sort(compare);
+ const tomorrow = dayDate(dateDay(today) + 1);
+ const dueTomorrow = outstanding.filter(item => item.dueDate === tomorrow).map(row).sort(compare);
  const overdue = outstanding.filter(item => item.dueDate && item.dueDate < today).map(row).sort(compare);
  const withoutDueDate = outstanding.filter(item => !item.dueDate).map(row).sort(compare);
- return { dueToday, overdue, withoutDueDate, taskCount: tasks.length, openCount: outstanding.length, completedCount: tasks.length - outstanding.length,
-  unassignedAttention: [...dueToday, ...overdue].filter(task => task.assignees.length === 0).length };
+ return { dueToday, dueTomorrow, overdue, withoutDueDate, taskCount: tasks.length, openCount: outstanding.length, completedCount: tasks.length - outstanding.length,
+  unassignedAttention: [...dueToday, ...dueTomorrow, ...overdue].filter(task => task.assignees.length === 0).length };
 }

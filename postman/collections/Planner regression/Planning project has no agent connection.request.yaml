@@ -1,0 +1,12 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/agents/projects/{{projectId}}/connection'
+order: 2100
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Agent connections remain optional', () => {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json()).to.eql(null);
+      });
