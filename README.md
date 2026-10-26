@@ -33,7 +33,7 @@ The existing `./scripts/start.sh` command remains available for a single-process
 
 ## Use
 
-- **Overview** groups incomplete tasks into **Due today** and **Overdue**, with their project, component, all assignees, workflow status, priority, effort and outstanding prerequisites. Click a task to open its details. Expand the separate list for open tasks without due dates. Completion comes from configured workflow flags; components and completed tasks are excluded from task counts. Calendar dates follow this browser’s local day and refresh when the day changes.
+- **Overview** groups incomplete tasks into **Due today**, **Overdue** and **Due tomorrow**, with their project, component, all assignees, workflow status, priority, effort and outstanding prerequisites. Click a task to open its details. Expand the separate list for open tasks without due dates. Completion comes from configured workflow flags; components and completed tasks are excluded from task counts. Calendar dates follow this browser’s local day and refresh when the day changes.
 - Create a project. Its starting workflow comes from `WorkflowDefaults` in `appsettings.json`: **To Do → In Progress → Blocked → In Testing → Done**.
 - Add tasks and open their details to write a rich specification, create nested checklists, set dates, enter an hours estimate, choose priority, assign two or more people, or link prerequisites. Changes autosave; a failed save is shown explicitly and the draft is kept in this browser.
 - Drag cards between columns or reorder them. Use a column's grip to reorder the workflow, and its menu to rename it or mark it as completed. Columns with tasks cannot be deleted.
@@ -70,6 +70,20 @@ Back up the native DuckDB file before applying changes. Add `--apply --snapshot 
 ## Claude and Codex (MCP)
 
 The local MCP server exposes projects, nested tasks, Markdown spec uploads, hours estimates, dates, assignees, dependencies and component ordering through the same Canopy API and DuckDB backend. Install with `npm --prefix mcp ci`, then run `node mcp/src/index.mjs --check` and `node mcp/src/index.mjs --print-config` for ready-to-copy Claude Desktop/Codex connection settings. See [MCP setup and tools](mcp/README.md) for the complete guide, upload folder configuration, read-only mode and example prompts.
+
+## Optional agent writing and execution
+
+Canopy works as a planner without connecting an agent. Use **Project options → Agent connection** to optionally choose an existing local repository, base Git ref, preferred Codex/Claude CLI, separate model and effort defaults for each agent, and shared instructions. This binds a code workspace; it does not synchronize vendor app project containers. The installed CLI supplies authentication. Backend executable paths and run limits are configured under `Agents` in `appsettings.json` (or .NET environment overrides such as `Agents__CodexExecutable`).
+
+In task details, **Specification → Import Markdown** previews a UTF-8 `.md`/`.markdown` file before you append or replace its content. **Download Markdown** exports the editable specification. These actions need no agent connection and share the same Markdown codec as MCP, including headings, tables and nested checklists.
+
+The optional **Agents** tab offers **Draft / refine spec**, **Write documentation** and **Run implementation**. Writing runs have read-only tools and return Markdown to preview/import or download. Only an explicit run request starts work; connecting a project, saving a spec, assigning a task or changing status never dispatches it. Choose **Model** and **Effort** for each run: inherit project defaults, use the agent’s own defaults, or specify overrides. Model IDs/aliases must be available to your signed-in account; effort support depends on the model. Each run captures the saved task spec and requested settings, which remain visible in history. Follow-ups inherit the selected run’s settings. Results never overwrite the specification automatically.
+
+Implementation runs use a separate detached Git worktree from the configured base ref. The agent runs relevant checks and reports evidence; Canopy retains the result, activity, session, starting commit and diff for review. It does not merge, push, deploy or change the task’s workflow status. Uncommitted changes in the original checkout are not copied into the worktree. Agent completion is separate from your acceptance of the work.
+
+Use **Stop run** to cancel the process tree, or **Continue this session** to send follow-up instructions to a specific saved session and workspace. One local worker executes runs in order. Restarted unfinished runs are marked interrupted and never automatically replayed. Active runs prevent deleting their tasks/projects or changing their connection. Disconnecting retains history; explicitly deleting a task/project removes its history. Worktrees are retained on disk for review and may be removed manually with Git once no longer needed.
+
+Agent controls are local and reject cross-site browser requests. Run output, timeouts and workspace locations are configurable. Missing executables, sign-in, repositories, refs and denied permissions are surfaced explicitly. See [agent contract and lifecycle](docs/AGENT-WORKFLOW.md). Run the isolated process-boundary regression with `python3 scripts/agent-regression.py` after building the backend; it uses a temporary database/repository and fixture CLIs, and never contacts a model service.
 
 ## Optional example project
 

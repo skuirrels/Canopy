@@ -15,6 +15,8 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
     public Task<WorkspaceData> DeleteProject(Guid id, long revision, CancellationToken ct) => store.WriteAsync(data =>
     {
         var graph = data.Graph(id, revision);
+        if (data.AgentRuns.Any(x => x.ProjectId == id && x.Active)) throw new RuleException("Stop active agent runs before deleting this project.", 409);
+        data.AgentConnections.RemoveAll(x => x.ProjectId == id); data.AgentRuns.RemoveAll(x => x.ProjectId == id);
         data.Dependencies.RemoveAll(x => x.ProjectId == id); data.Items.RemoveAll(x => x.ProjectId == id);
         data.Statuses.RemoveAll(x => x.ProjectId == id); data.Projects.Remove(graph.Project);
     }, ct);
@@ -42,6 +44,8 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
     public Task<WorkspaceData> DeleteItem(Guid id, long revision, CancellationToken ct) => store.WriteAsync(data =>
     {
         var graph = data.ForItem(id, revision); var deleted = graph.Subtree(id);
+        if (data.AgentRuns.Any(x => deleted.Contains(x.ItemId) && x.Active)) throw new RuleException("Stop active agent runs before deleting these tasks.", 409);
+        data.AgentRuns.RemoveAll(x => deleted.Contains(x.ItemId));
         data.Dependencies.RemoveAll(x => deleted.Contains(x.ItemId) || deleted.Contains(x.DependsOnId)); data.Items.RemoveAll(x => deleted.Contains(x.Id)); graph.Project.Touch();
     }, ct);
     public Task<WorkspaceData> Layout(Guid id, SaveLayout input, CancellationToken ct) => store.WriteAsync(data =>

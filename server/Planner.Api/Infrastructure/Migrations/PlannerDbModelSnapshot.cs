@@ -17,6 +17,117 @@ namespace Planner.Api.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.13");
 
+            modelBuilder.Entity("Planner.Api.Domain.AgentRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("BaseCommit")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("BaseRef")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("Diff")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Effort")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("Instructions")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Model")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Output")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid?>("PreviousRunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ProjectInstructions")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<long>("ProjectRevision")
+                        .HasColumnType("BIGINT");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("RepositoryPath")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("RequestedEffort")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("RequestedModel")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("SessionId")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("SpecJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("WorkspacePath")
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique();
+
+                    b.ToTable("AgentRuns");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.Dependency", b =>
                 {
                     b.Property<Guid>("Id")
@@ -78,6 +189,50 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Projects");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.ProjectAgentConnection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("BaseRef")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("ClaudeEffort")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("ClaudeModel")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("CodexEffort")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("CodexModel")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Instructions")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("RepositoryPath")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId")
+                        .IsUnique();
+
+                    b.ToTable("AgentConnections");
                 });
 
             modelBuilder.Entity("Planner.Api.Domain.WorkItem", b =>

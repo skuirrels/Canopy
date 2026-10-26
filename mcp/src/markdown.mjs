@@ -6,30 +6,13 @@ import { TableKit } from '@tiptap/extension-table';
 import { getSchema } from '@tiptap/core';
 import { open, realpath } from 'node:fs/promises';
 import { relative, resolve, extname, isAbsolute } from 'node:path';
+import { createSpecCodec, MAX_SPEC_BYTES } from '../../shared/spec-markdown.mjs';
 
 const extensions = [StarterKit,TaskList,TaskItem.configure({nested:true}),TableKit];
 const manager = new MarkdownManager({extensions});
 const schema = getSchema(extensions);
-export const MAX_SPEC_BYTES = 2_000_000; // Same resource limit enforced by Rules.Spec in the backend.
-function checkBytes(value) { if (Buffer.byteLength(value,'utf8') > MAX_SPEC_BYTES) throw new Error('The specification is too large (maximum 2 MB, including rich-text JSON).'); }
-export function parseMarkdown(markdown) {
- checkBytes(markdown);
- // The editor has no image or raw-HTML nodes. Reject them before parsing so no
- // uploaded content is silently discarded or interpreted as executable HTML.
- manager.instance.walkTokens(manager.instance.lexer(markdown),token => {
-  if (token.type === 'image' || token.type === 'html') throw new Error('Images and raw HTML are not supported in task specs. Use Markdown links and text instead. No changes were saved.');
-  if (token.type === 'link' && !['http:','https:','mailto:','tel:'].includes(new URL(token.href,'https://planner.invalid/').protocol)) throw new Error('Specification links must use HTTP(S), mailto, tel or a relative URL. No changes were saved.');
- });
- const document = manager.parse(markdown); schema.nodeFromJSON(document).check();
- checkBytes(JSON.stringify(document)); return document;
-}
-export function toMarkdown(document) { schema.nodeFromJSON(document).check(); return manager.serialize(document); }
-export function specJson(markdown, previous, mode) {
- const incoming = parseMarkdown(markdown);
- const document = mode === 'append' ? {type:'doc',content:[...(JSON.parse(previous).content ?? []),...(incoming.content ?? [])]} : incoming;
- schema.nodeFromJSON(document).check();
- const json = JSON.stringify(document); checkBytes(json); return json;
-}
+export { MAX_SPEC_BYTES };
+export const { parseMarkdown, toMarkdown, specJson } = createSpecCodec(manager, schema);
 export async function readMarkdownFile(specRoot, filePath) {
  const root = await realpath(specRoot); const file = await realpath(resolve(root,filePath));
  const inside = relative(root,file);

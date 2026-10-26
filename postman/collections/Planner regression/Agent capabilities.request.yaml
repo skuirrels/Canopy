@@ -1,0 +1,19 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/agents/providers'
+order: 1500
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Local agent capabilities are discoverable', () => {
+        pm.response.to.have.status(200);
+        const value = pm.response.json();
+        pm.expect(value.providers.map(p => p.id)).to.have.members(['codex', 'claude']);
+        pm.expect(value.pollIntervalMs).to.be.above(0);
+        value.providers.forEach(p => {
+          pm.expect(p.available).to.be.a('boolean');
+          pm.expect(p.effortLevels).to.be.an('array').that.is.not.empty;
+          p.effortLevels.forEach(level => pm.expect(level).to.be.a('string').that.is.not.empty);
+        });
+      });

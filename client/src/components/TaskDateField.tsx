@@ -19,7 +19,7 @@ export function TaskDateField({ label, value, min, max, onChange }: { label: str
     const target = offset === 0 ? today : taskDateShortcut(1);
     const allowed = dateWithinBounds(target, min, max);
     const reason = min && target < min ? `Must be on or after the start date (${min}).` : `Must be on or before the due date (${max}).`;
-    return <button type="button" key={name} aria-label={`Set ${label.toLowerCase()} to ${name.toLowerCase()}`} title={allowed ? `Set ${label.toLowerCase()} to ${target}` : reason} disabled={!allowed} onClick={() => { const next = taskDateShortcut(offset); setToday(taskDateShortcut(0)); if (dateWithinBounds(next, min, max)) onChange(next); }}>{name}</button>;
+    return <button type="button" key={name} aria-label={`Set ${label.toLowerCase()} to ${name.toLowerCase()}`} data-tooltip={allowed ? `Set ${label.toLowerCase()} to ${target}` : reason} disabled={!allowed} onClick={() => { const next = taskDateShortcut(offset); setToday(taskDateShortcut(0)); if (dateWithinBounds(next, min, max)) onChange(next); }}>{name}</button>;
    })}
   </div>
  </div></div>;

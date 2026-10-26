@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Planner.Api.Application;
 using Planner.Api.Domain;
 using Planner.Api.Infrastructure;
+using Planner.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
@@ -13,6 +14,14 @@ builder.Services.AddDbContextFactory<PlannerDb>(options => options.UseDuckDB($"D
 builder.Services.AddSingleton<IWorkspaceStore, DuckDbWorkspaceStore>();
 builder.Services.AddSingleton<IReadOnlyList<WorkflowDefault>>(builder.Configuration.GetSection("WorkflowDefaults").Get<List<WorkflowDefault>>() ?? []);
 builder.Services.AddScoped<PlannerService>();
+var agentOptions = builder.Configuration.GetSection("Agents").Get<AgentOptions>() ?? throw new InvalidOperationException("Configure Agents.");
+agentOptions.WorkspaceRoot = Path.GetFullPath(agentOptions.WorkspaceRoot, builder.Environment.ContentRootPath);
+agentOptions.Validate();
+builder.Services.AddSingleton(agentOptions);
+builder.Services.AddSingleton<LocalAgentEnvironment>();
+builder.Services.AddSingleton<IAgentEnvironment>(services => services.GetRequiredService<LocalAgentEnvironment>());
+builder.Services.AddScoped<AgentService>();
+builder.Services.AddHostedService<LocalAgentRunner>();
 var app = builder.Build();
 app.Use(async (context, next) =>
 {
@@ -27,6 +36,7 @@ await using (var scope = app.Services.CreateAsyncScope())
     await db.Database.MigrateAsync();
 }
 app.MapOpenApi();
+app.MapAgentEndpoints();
 app.UseDefaultFiles(); app.UseStaticFiles();
 app.MapGet("/api/health", () => Results.Ok(new { status = "ready", database = "DuckDB", authentication = "phase-2" }));
 app.MapGet("/api/workspace", (PlannerService service, CancellationToken ct) => service.Read(ct));

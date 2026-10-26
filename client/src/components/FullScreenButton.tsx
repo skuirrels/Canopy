@@ -21,7 +21,7 @@ export function FullScreenButton() {
    toast.error('Full screen could not be changed. Your browser may have blocked it.');
   } finally { setPending(false); }
  }
- return <button className="icon-button fullscreen-toggle" aria-label={label} aria-pressed={fullScreen} disabled={pending || (!available && !fullScreen)} title={!available && !fullScreen ? 'Full screen is unavailable in this browser' : fullScreen ? 'Exit Full Screen (Esc)' : label} onClick={() => { void toggle(); }}>
+ return <button className="icon-button fullscreen-toggle" aria-label={label} aria-pressed={fullScreen} disabled={pending || (!available && !fullScreen)} data-tooltip={!available && !fullScreen ? 'Full screen is unavailable in this browser' : fullScreen ? 'Exit Full Screen (Esc)' : label} onClick={() => { void toggle(); }}>
   {fullScreen ? <Minimize size={17}/> : <Maximize size={17}/>}<span>{label}</span>
  </button>;
 }

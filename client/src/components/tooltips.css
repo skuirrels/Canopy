@@ -1,0 +1,6 @@
+.canopy-tooltip{position:fixed;z-index:10000;max-width:min(340px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;padding:11px 14px;border:1px solid var(--border-hover);border-left:3px solid var(--accent);border-radius:9px;background:var(--surface);color:var(--body-text);font:400 13px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:0 8px 28px #0003;overflow-wrap:anywhere;pointer-events:auto;animation:tooltip-appear 90ms ease-out}
+.canopy-tooltip>strong{font-size:14px;line-height:1.45;font-weight:600;color:var(--heading)}
+.canopy-tooltip>span{white-space:pre-wrap}
+@keyframes tooltip-appear{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.canopy-tooltip{animation:none}}
+@media print{.canopy-tooltip{display:none!important}}

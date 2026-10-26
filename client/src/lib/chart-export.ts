@@ -19,6 +19,8 @@ function freezeElement(source: HTMLElement): { clone: HTMLElement; css: string }
   }).join('');
   let className = rules.get(style); if (!className) { className = `snapshot-${rules.size}`; rules.set(style, className); }
   copy.removeAttribute('style'); copy.setAttribute('class', `${copy.getAttribute('class') ?? ''} ${className}`.trim());
+  // Offline snapshots retain native hover text without the application's UI.
+  if (copy.hasAttribute('data-tooltip')) { copy.setAttribute('title', copy.getAttribute('data-tooltip')!); copy.removeAttribute('data-tooltip'); }
   for (const attribute of [...copy.attributes]) {
    if (attribute.name.startsWith('on') || ['srcset','autofocus','contenteditable','formaction'].includes(attribute.name)) copy.removeAttribute(attribute.name);
    if (['href','xlink:href','src'].includes(attribute.name) && !attribute.value.startsWith('#') && !attribute.value.startsWith('data:')) copy.removeAttribute(attribute.name);

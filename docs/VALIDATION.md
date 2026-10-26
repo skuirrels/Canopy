@@ -13,7 +13,7 @@ npm --prefix mcp ci
 npm --prefix mcp test
 ```
 
-The frontend suite currently contains 51 passing checks for hierarchy views, component ordering, assignee preservation, independent effort, calendar arithmetic, timeline range, map orientation, readable project-colour accents and offline export safety. The MCP unit/compatibility suite contains 5 passing checks, including legacy protocol negotiation and specification handling.
+The frontend suite currently contains 74 passing checks for hierarchy views, component ordering, assignee preservation, independent effort, calendar arithmetic, timeline range, map orientation, readable project-colour accents and offline export safety. The MCP unit/compatibility suite contains 5 passing checks, including legacy protocol negotiation and specification handling.
 
 ## Integration checks
 
@@ -32,7 +32,7 @@ PLANNER_TEST_URL=http://127.0.0.1:5275 npm --prefix mcp run test:integration
 
 Run mutation suites sequentially. The API suite has passed 57 checks, including hierarchy/dependency cycles, revision conflicts, component ordering, task metadata, multiple assignees, independent fractional effort, explicit clearing and invalid-value atomicity. The real stdio MCP suite has passed 13 checks, including Markdown upload and metadata preservation. Exact workspace comparisons across backend restart and populated migration checks have preserved pre-existing public fields.
 
-Saved local Postman regressions have passed 26 requests and 38 assertions. The OpenAPI syntax and collections have linted successfully. No cloud mock or collection publication is required.
+Saved local Postman regressions have passed 32 requests and 47 assertions. The OpenAPI syntax and collections have linted successfully. No cloud mock or collection publication is required.
 
 ## Interface verification
 
@@ -143,3 +143,43 @@ The production build and 62 frontend checks passed. The local Postman regression
 Gantt blank tracks and empty viewport space now support mouse grab panning on both scroll axes. The shared pan binder retains the Components horizontal-only behavior. Panning starts only on explicitly marked blank surfaces after a movement threshold; task bars, resize handles, labels, controls, scrollbar gutters, modifiers and touch input retain their existing behavior. Pointer capture, cancelled gestures, Escape, focus loss and unmount clean up the grab. The cursor changes between grab and grabbing.
 
 The production build and all 66 frontend tests passed, including both-axis movement and clamping, vertical-only overflow, the movement threshold, excluded controls/touch, cancellation, and the original Components pan checks. Running-browser checks verified diagonal panning and exact reverse movement with task details open, released capture and normal bar opening afterward. A disposable timeline in the isolated DuckDB confirmed that panning leaves the entire workspace unchanged. Dragging a bar moved both dates by one day, and dragging its end handle extended only the due date by one more day, retaining all other task metadata and all unrelated tasks. Switching away and back remounted the Gantt cleanly. The disposable project was deleted, the exact isolated baseline restored and the test backend stopped. Working project dates were not edited.
+
+## Styled tooltips — 26 October 2026
+
+Application hover hints use one delegated tooltip layer, with a 150 ms hover delay, immediate keyboard-focus hints, readable wrapped text, project-colour accents and theme colours. Pointer presses and Escape dismiss hints; scrolling keeps focused keyboard hints positioned. The layer adds no wrappers to chart bars, drag handles or buttons. Existing ARIA descriptions are retained, and offline chart snapshots retain native title text. Dialog headings and iframe labels remain unchanged.
+
+The frontend production build and all 66 tests passed. Running-browser checks verified Gantt title/date/assignee content, single-day wording, placement within a 484-pixel viewport, React Flow and Navy theme colours, keyboard focus and Escape, preserved Gantt instructions, normal task opening and accessible hints inside the task dialog. No console errors were recorded. This frontend-only change required no database or API mutations.
+
+## Overview Due Tomorrow — 26 October 2026
+
+Overview includes a Due tomorrow lane beneath the existing due-today and overdue lanes, before undated tasks. It uses the next calendar date from the same local-day projection, excludes components and completed tasks, and retains component context, status, priority, estimates, dependencies and all assignees. Tomorrow's tasks contribute to the attention count and missing-assignee note. Existing day rollover refreshes the groups.
+
+The production build and all 68 frontend tests passed, including tomorrow's date across DST, leap day and year boundaries, completion/component exclusion and rollover into today and overdue. The running interface showed three tasks due tomorrow with their assignees and a combined attention count of five. Opening a tomorrow task loaded the correct task and both assignees in the shared editor. No task fields or database data were changed during verification.
+
+## Optional agent writing and execution
+
+Projects remain usable without agent connections. New local endpoints persist optional repository bindings and explicit task runs through the existing `IWorkspaceStore` and native EFCoreProvider path. A new additive migration creates only agent connection/run tables. Captured task specifications, settings and revisions remain distinct from live task fields and workflow status. Browser and MCP Markdown imports use one shared codec.
+
+The .NET build passed with zero warnings/errors and EF reported no pending model changes. The frontend production build and 71 checks passed; the MCP unit/compatibility suite passed 5 checks. The isolated real HTTP/DuckDB/process-boundary suite (`python3 scripts/agent-regression.py`) passed 19 checks covering optional connections, origin/repository/ref validation, explicit dispatch, idempotency, immutable work orders, agent protocol handling, exact session continuation, permission arguments, isolated worktrees and diffs, prerequisite gating, cancellation, visible failures, delete/disconnect rules, restart persistence and interruption recovery. Its CLI responses are test-only protocol fixtures; they make no model-service claim.
+
+Separate live checks used installed Codex CLI 0.150.1 and Claude Code 2.1.309 against a disposable repository. Both returned writing results and both implemented a small input-derived Python function in separate worktrees. Independent Python assertions passed for each implementation; the original repository remained unchanged. A live Claude documentation follow-up retained its session. These checks establish the installed local CLI path, not hosted execution or vendor app project synchronization.
+
+Running-browser verification covered project connection settings, explicit dispatch, live results, generated-spec preview/import, editable imported content, UTF-8 Markdown file upload, preserved existing text, nested checklists/tables, unchanged workflow status, and follow-up prompt retention across expanding the task details. Reopening an imported spec exposed a destroyed-editor synchronization error; guarding editor lifecycle and synchronizing on tab/size changes fixed the observed failure. A narrow browser check measured 375 CSS pixels with no page overflow, stacked agent fields and scrollable output. This is browser breakpoint verification, not physical-phone validation.
+
+The unchanged planning suite passed 57 real API/DuckDB checks and 13 real stdio MCP checks. The saved Postman collection linted and passed 32 requests / 47 assertions against the isolated backend with cloud event reporting disabled. The checked-in OpenAPI contract was refreshed from the running service; no remote resources were published.
+
+An exact comparison across an isolated backend restart retained the browser-imported spec, connection and live run history. A stopped populated workspace copy passed migration with every pre-existing public field unchanged. The original local database was backed up, upgraded and compared against its pre-upgrade public snapshot with no differences. Disposable fixture projects/people and test servers were cleaned up; the original local backend runs the new build.
+
+## Per-run model and reasoning effort
+
+Project connections retain separate Codex and Claude model/effort defaults. Explicit run overrides, agent-default choices and continuation settings are captured with the work order. Capabilities expose configured effort levels; model IDs remain user inputs, and unavailable or incompatible choices surface provider errors without model substitution. The legacy connection model input still updates only the preferred provider.
+
+All 74 frontend checks and 28 isolated HTTP/native DuckDB/process-boundary agent checks passed. New coverage verifies provider-specific defaults, exact CLI flags and omitted flags, explicit clearing, invalid effort atomicity, request-id conflicts, immutable history and continuation after project defaults change. The backend and production frontend builds passed. A populated database copy migrated and rolled back without changing existing workspace fields, connection models or historical runs. The original local database was backed up and upgraded with an exact comparison of existing tables and fields.
+
+Running-browser checks covered saving and reopening independent defaults, switching agents, model/effort overrides, captured history, expanded task details and continuation settings. At 375 CSS pixels, controls stacked with no page overflow. Live disposable writing runs succeeded with Codex’s default model plus explicit low effort and Claude’s sonnet alias plus low effort. A model ID advertised in the local Codex cache was rejected by the signed-in provider; Canopy retained the failed run and surfaced the error without falling back. These checks establish requested settings and provider outcomes, not the provider’s internal resolved model or effective reasoning budget.
+
+The refreshed OpenAPI and saved collection linted, and all 32 Postman requests / 47 assertions passed locally, including configured effort capability checks. The existing planner API suite passed all 57 checks on the migrated isolated database. EF reported no pending model changes. The disposable verification project was removed; the retained Tiny Counter project and original repository were left unchanged.
+
+## Agent connection landscape layout
+
+The connection dialog uses two columns on desktop and tablet, with repository settings and project instructions alongside provider model/effort defaults. At 600 CSS pixels and below it stacks into a scrollable phone layout. The production frontend build passed. Running-browser checks measured a 999-by-687 dialog on desktop and a 735-by-687 dialog at a 768-pixel tablet viewport, both without internal overflow. At 375-by-667 pixels, the form used one column with no horizontal page or dialog overflow, and keyboard focus brought the footer actions into view. No project connection values were saved during verification; the backend stayed running.
