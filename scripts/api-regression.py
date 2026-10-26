@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Real HTTP / DuckDB regression. Creates and removes its own isolated projects."""
 import concurrent.futures
+import importlib.util
+import tempfile
 import json
 import os
 import urllib.error
 import urllib.request
 import uuid
+from pathlib import Path
 
 BASE = os.environ.get('PLANNER_URL', 'http://127.0.0.1:5274')
 count = 0
@@ -36,7 +39,9 @@ try:
     project = next(p for p in state['projects'] if p['name'] == name)
     pid = project['id']; created.append(pid)
     statuses = [s for s in state['statuses'] if s['projectId'] == pid]
-    check(len(statuses) > 0, 'New project gets configured workflow columns')
+    defaults = json.loads((Path(__file__).resolve().parents[1] / 'server/Planner.Api/appsettings.json').read_text())['WorkflowDefaults']
+    actual = [{'Name': s['name'], 'Color': s['color'], 'IsCompleted': s['isCompleted']} for s in sorted(statuses, key=lambda s: s['position'])]
+    check(actual == defaults, 'New project gets configured workflow columns in order with completion flags')
     ordered = [s['id'] for s in reversed(statuses)]
     state = call(f'/api/projects/{pid}/status-order', 'POST', {'expectedRevision': project['revision'], 'statusIds': ordered})
     check([s['id'] for s in sorted([s for s in state['statuses'] if s['projectId'] == pid], key=lambda s:s['position'])] == ordered, 'Workflow column ordering persists')
@@ -83,6 +88,23 @@ try:
     state = call(f"/api/items/{sibling['id']}", 'PATCH', fields(sibling) | {'assigneeIds': both})
     assigned = next(i for i in call('/api/workspace')['items'] if i['id'] == sibling['id'])
     check(assigned['assigneeIds'] == both and assigned['assigneeId'] == person['id'], 'Two assignees persist with legacy first-assignee compatibility')
+    before_rename = call('/api/workspace')
+    renamed_name = 'Renamed ' + person_name
+    state = call(f"/api/people/{person['id']}", 'PATCH', {'name': '  ' + renamed_name + '  '})
+    check(next(p for p in state['people'] if p['id'] == person['id'])['name'] == renamed_name, 'Assignee rename trims the name and preserves its identity')
+    after_rename = call('/api/workspace')
+    check(all(before_rename[key] == after_rename[key] for key in ['items', 'projects', 'statuses', 'dependencies']) and {p['id']: p for p in before_rename['people'] if p['id'] != person['id']} == {p['id']: p for p in after_rename['people'] if p['id'] != person['id']}, 'Assignee rename preserves every task field, both assignments, project revisions and other people')
+    for invalid_name in ['   ', 'x' * 201, second_name.upper(), None]:
+        call(f"/api/people/{person['id']}", 'PATCH', {'name': invalid_name}, 400)
+        check(call('/api/workspace') == after_rename, 'Invalid or duplicate assignee name rejects atomically: ' + repr(invalid_name)[:30])
+    state = call(f"/api/people/{person['id']}", 'PATCH', {'name': renamed_name.upper()})
+    check(next(p for p in state['people'] if p['id'] == person['id'])['name'] == renamed_name.upper(), 'Case-only rename of the same assignee is allowed')
+    same_name = call('/api/workspace')
+    state = call(f"/api/people/{person['id']}", 'PATCH', {'name': renamed_name.upper()})
+    check(call('/api/workspace') == same_name, 'Repeating a rename leaves all workspace fields unchanged')
+    call('/api/people', 'POST', {'name': renamed_name.lower()}, 400)
+    call(f"/api/people/{uuid.uuid4()}", 'PATCH', {'name': renamed_name}, 404)
+    check(call('/api/workspace') == same_name, 'Duplicate creation and renaming a missing assignee leave data unchanged')
     unchanged_assignments = call('/api/workspace')
     for invalid in [[person['id'], person['id']], [person['id'], str(uuid.uuid4())]]:
         call(f"/api/items/{sibling['id']}", 'PATCH', fields(sibling) | {'assigneeIds': invalid}, 400)
@@ -155,6 +177,32 @@ try:
     call(f'/api/statuses/{first}?expectedRevision={revision()}', 'DELETE', expected=400)
     check(any(s['id'] == first for s in call('/api/workspace')['statuses']), 'Nonempty column cannot be deleted')
     state = call(f"/api/statuses/{review['id']}?expectedRevision={revision()}", 'DELETE')
+    # Exercise the maintenance tool through the same API, with test-only legacy names.
+    state = call(f'/api/projects/{pid}/statuses', 'POST', {'expectedRevision': revision(), 'name': 'Legacy queue', 'color': '#778899'})
+    legacy = next(s for s in state['statuses'] if s['projectId'] == pid and s['name'] == 'Legacy queue')
+    state = call(f'/api/projects/{pid}/statuses', 'POST', {'expectedRevision': revision(), 'name': 'Custom review', 'color': '#337788'})
+    custom = next(s for s in state['statuses'] if s['projectId'] == pid and s['name'] == 'Custom review')
+    state = call(f"/api/items/{child['id']}/move", 'POST', {'expectedRevision': revision(), 'parentId': parent['id'], 'statusId': legacy['id']})
+    before_workflow = call('/api/workspace')
+    tool_path = Path(__file__).resolve().parent / 'apply-workflow-defaults.py'
+    module_spec = importlib.util.spec_from_file_location('workflow_defaults', tool_path)
+    workflow_tool = importlib.util.module_from_spec(module_spec); module_spec.loader.exec_module(workflow_tool)
+    config_path = Path(__file__).resolve().parents[1] / 'server/Planner.Api/appsettings.json'
+    mapping = {legacy['name'].casefold(): defaults[0]['Name']}
+    with tempfile.TemporaryDirectory(prefix='canopy-workflow-regression-') as work:
+        workflow_tool.apply_defaults(BASE, config_path, mapping, [pid])
+        check(call('/api/workspace') == before_workflow, 'Workflow dry-run makes no changes')
+        report = workflow_tool.apply_defaults(BASE, config_path, mapping, [pid], Path(work) / 'before.json')
+        state = call('/api/workspace')
+        ordered_stages = sorted([s for s in state['statuses'] if s['projectId'] == pid], key=lambda s:s['position'])
+        check([s['name'] for s in ordered_stages] == [s['Name'] for s in defaults] + [custom['name']], 'Applying defaults restores configured order and preserves custom columns')
+        check(report['tasksMoved'] == 1 and next(i for i in state['items'] if i['id'] == child['id'])['statusId'] == first, 'Legacy column tasks move into the configured destination')
+        def stable_items(value):
+            return {i['id']: {k:v for k,v in i.items() if k not in ['statusId','position','updatedAt']} for i in value['items']}
+        check(stable_items(state) == stable_items(before_workflow) and state['dependencies'] == before_workflow['dependencies'] and state['people'] == before_workflow['people'], 'Workflow update preserves hierarchy, specs, dates, assignments, estimates, map layout and dependencies')
+        check(json.loads((Path(work) / 'before.json').read_text()) == before_workflow, 'Workflow update writes an exact recovery snapshot before mutations')
+        repeated = workflow_tool.apply_defaults(BASE, config_path, mapping, [pid], Path(work) / 'repeat.json')
+        check(repeated['tasksMoved'] == 0 and call('/api/workspace') == state, 'Reapplying workflow defaults is an exact no-op')
     race_revision = revision()
     def concurrent_move(status):
         try:

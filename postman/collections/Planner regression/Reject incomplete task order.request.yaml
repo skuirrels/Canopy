@@ -1,0 +1,16 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/projects/{{projectId}}/sibling-order'
+order: 9800
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"expectedRevision":{{revision}},"parentId":"{{parentId}}","itemIds":["{{childId}}"]}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Incomplete task order rejects without losing hidden siblings',()=>pm.response.to.have.status(400));

@@ -39,7 +39,7 @@ export function captureGantt(grid: HTMLElement, collapsed?: ReadonlySet<string>)
  const width = Math.ceil(grid.getBoundingClientRect().width), height = Math.ceil(grid.scrollHeight);
  const { clone, css } = freezeElement(grid);
  clone.style.width = `${width}px`; clone.style.minWidth = '0'; clone.style.height = `${height}px`;
- clone.querySelectorAll('.gantt-resize,.gantt-date-preview').forEach(element => element.remove());
+ clone.querySelectorAll('.gantt-resize,.gantt-date-preview,.gantt-add-task').forEach(element => element.remove());
  clone.querySelectorAll('.gantt-unscheduled').forEach(element => { element.textContent = 'Unscheduled'; });
  if (collapsed) {
   clone.querySelectorAll<HTMLElement>('.gantt-row').forEach(row => {

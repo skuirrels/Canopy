@@ -581,6 +581,66 @@
             }
           }
         }
+      },
+      "patch": {
+        "tags": [
+          "Planner.Api"
+        ],
+        "summary": "Rename an assignee",
+        "description": "Updates the existing assignee name, preserving its ID and all task assignments. Names are trimmed, must contain 1\u2013200 characters and must be unique ignoring case.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditPerson"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/people": {
@@ -766,9 +826,7 @@
               "null",
               "string"
             ],
-            "format": "uuid",
-            "deprecated": true,
-            "description": "Legacy single-assignee field. Responses expose the first assignee or null. For writes use assigneeIds instead; non-null conflicting fields reject."
+            "format": "uuid"
           },
           "startDate": {
             "type": [
@@ -799,9 +857,7 @@
             "items": {
               "type": "string",
               "format": "uuid"
-            },
-            "description": "Ordered planning assignee IDs. [] clears all assignments. IDs must exist in people and appear only once. Omit or null uses legacy assigneeId compatibility.",
-            "uniqueItems": true
+            }
           },
           "estimatedHours": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
@@ -810,9 +866,18 @@
               "number",
               "string"
             ],
-            "format": "double",
-            "minimum": 0,
-            "description": "Estimated effort in hours, independent of dates or assignee count. Fractions and zero are valid. Null clears it; omission from an update preserves the saved estimate."
+            "format": "double"
+          }
+        }
+      },
+      "EditPerson": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
           }
         }
       },
@@ -1007,6 +1072,44 @@
           }
         }
       },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "Project": {
         "type": "object",
         "properties": {
@@ -1129,18 +1232,14 @@
             "items": {
               "type": "string",
               "format": "uuid"
-            },
-            "description": "All assigned planning person IDs in selection order. Empty means unassigned.",
-            "uniqueItems": true
+            }
           },
           "assigneeId": {
             "type": [
               "null",
               "string"
             ],
-            "format": "uuid",
-            "deprecated": true,
-            "description": "Legacy single-assignee field. Responses expose the first assignee or null. For writes use assigneeIds instead; non-null conflicting fields reject."
+            "format": "uuid"
           },
           "estimatedHours": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
@@ -1149,9 +1248,7 @@
               "number",
               "string"
             ],
-            "format": "double",
-            "minimum": 0,
-            "description": "Estimated effort in hours, independent of dates or assignee count. Fractions and zero are valid. Null clears it; omission from an update preserves the saved estimate."
+            "format": "double"
           },
           "startDate": {
             "type": [

@@ -20,6 +20,7 @@ public sealed record OrderSiblings(long ExpectedRevision, Guid? ParentId, List<G
 public sealed record CreateStatus(long ExpectedRevision, string Name, string Color);
 public sealed record EditStatus(long ExpectedRevision, string Name, string Color, bool IsCompleted);
 public sealed record CreatePerson(string Name);
+public sealed record EditPerson(string Name);
 public sealed record WorkflowDefault(string Name, string Color, bool IsCompleted);
 public sealed class WorkspaceData
 {

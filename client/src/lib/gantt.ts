@@ -1,4 +1,4 @@
-import type { Item } from './types';
+import type { Dependency, Item } from './types';
 
 const DAY_MS = 86_400_000;
 export type Schedule = { start: number; end: number; kind: 'range' | 'start' | 'due' };
@@ -8,7 +8,7 @@ export type GanttRow = { item: Item; depth: number; childCount: number; context:
 // Calendar-day ordinals keep dragging independent of daylight saving and timezone offsets.
 export function dateDay(date: string): number { return Date.parse(`${date}T00:00:00Z`) / DAY_MS; }
 export function dayDate(day: number): string { return new Date(day * DAY_MS).toISOString().slice(0, 10); }
-export function todayDay(): number { const now = new Date(); return dateDay(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`); }
+export function todayDay(now = new Date()): number { return dateDay(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`); }
 export function calendarLabel(day: number, options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }): string { return new Intl.DateTimeFormat(undefined, { ...options, timeZone: 'UTC' }).format(new Date(day * DAY_MS)); }
 export function schedule(item: Pick<Item, 'startDate' | 'dueDate'>): Schedule | null {
  const start = item.startDate ? dateDay(item.startDate) : null;
@@ -63,4 +63,17 @@ export function calendarSegments(start: number, end: number, unit: 'month' | 'we
   segments.push({ start: cursor, days: next - cursor, label: calendarLabel(cursor, unit === 'month' ? { month: 'long', year: 'numeric' } : unit === 'day' ? { weekday: 'narrow', day: 'numeric' } : { month: 'short', day: 'numeric' }) }); cursor = next;
  }
  return segments;
+}
+
+// Only direct dependency edges belong to the current selection, not its hierarchy
+// or the rest of a dependency chain. Callers supply the currently drawable edges.
+export function dependencyHighlights(dependencies: Dependency[], selectedId: string | null) {
+ const links = new Set<string>(); const tasks = new Set<string>();
+ if (selectedId) for (const dependency of dependencies) {
+  if (dependency.itemId === selectedId || dependency.dependsOnId === selectedId) {
+   links.add(dependency.id);
+   tasks.add(dependency.itemId === selectedId ? dependency.dependsOnId : dependency.itemId);
+  }
+ }
+ return { links, tasks };
 }

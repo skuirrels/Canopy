@@ -83,3 +83,9 @@
  .epics-view:not(.component-detail-view) .epics-toolbar-actions{width:auto;gap:0;flex-wrap:nowrap}
  .epics-view:not(.component-detail-view) .epics-toolbar-actions .button{font-size:13px;padding:8px 10px}
 }
+
+/* Mouse panning is confined to blank surfaces; descendants keep normal cursors. */
+.epics-scroll [data-pan-surface],.epics-scroll[data-pan-surface]{cursor:grab}
+.epics-scroll [data-pan-surface]>:not([data-pan-surface]),.epics-scroll[data-pan-surface]>:not([data-pan-surface]){cursor:auto}
+.epics-scroll.is-horizontal-panning{scroll-behavior:auto;scroll-snap-type:none}
+.epics-scroll.is-horizontal-panning,.epics-scroll.is-horizontal-panning *{cursor:grabbing!important;user-select:none!important}

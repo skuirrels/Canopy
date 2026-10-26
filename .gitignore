@@ -19,3 +19,6 @@ docs/*.local.md
 *.log
 *.pdf
 *.duckdb.*
+
+__pycache__/
+*.pyc

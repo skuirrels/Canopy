@@ -1,4 +1,4 @@
-.gantt-view{--task-column-width:300px;--gantt-link:var(--secondary-text);display:flex;flex-direction:column;height:100%;min-height:0;color:var(--foreground);background:var(--surface)}
+.gantt-view{--task-column-width:390px;--gantt-link:var(--secondary-text);display:flex;flex-direction:column;height:100%;min-height:0;color:var(--foreground);background:var(--surface)}
 .gantt-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap;flex-shrink:0}
 .gantt-summary,.gantt-actions{display:flex;align-items:center;gap:10px;min-width:0}
 .gantt-summary{font-size:14px}.gantt-summary>svg{color:var(--accent)}.gantt-summary strong{font-weight:600}.gantt-summary>span{font-size:12px;color:var(--secondary-text)}
@@ -34,7 +34,27 @@
 [data-theme="react-flow"] .gantt-task:hover{background:var(--surface-hover)}
 [data-theme="react-flow"] .gantt-scale,[data-theme="react-flow"] .gantt-scale>button,[data-theme="react-flow"] .gantt-today{border-radius:999px}
 [data-theme="react-flow"] .gantt-scale>button[aria-pressed=true]{background:var(--accent-soft);color:var(--accent-soft-text)}
-@media(max-width:1100px){.gantt-view{--task-column-width:260px}.gantt-toolbar{padding:8px 12px}}
-@media(max-width:550px){.gantt-view{--task-column-width:210px}.gantt-summary>span{font-size:12px}.gantt-actions{margin-left:0;width:100%;justify-content:space-between}.gantt-help{max-height:70px;overflow:auto}.gantt-help>span:first-child{display:none}.gantt-help>span{font-size:12px}.gantt-task{padding-right:7px;gap:3px}.gantt-task-title>span{font-size:16px}.gantt-task .avatar{display:none}.gantt-list-heading{padding:0 10px}.gantt-list-heading>span:last-child{display:none}}
+@media(max-width:1100px){.gantt-view{--task-column-width:338px}.gantt-toolbar{padding:8px 12px}}
+@media(max-width:550px){.gantt-view{--task-column-width:273px}.gantt-summary>span{font-size:12px}.gantt-actions{margin-left:0;width:100%;justify-content:space-between}.gantt-help{max-height:70px;overflow:auto}.gantt-help>span:first-child{display:none}.gantt-help>span{font-size:12px}.gantt-task{padding-right:7px;gap:3px}.gantt-task-title>span{font-size:16px}.gantt-task .avatar{display:none}.gantt-list-heading{padding:0 10px}.gantt-list-heading>span:last-child{display:none}}
 @media(max-width:440px){.view-toolbar{display:flex}.toolbar-actions{display:flex;width:100%;justify-content:space-between}.view-toolbar .button kbd{display:none}}
 @media(hover:none){.gantt-resize{opacity:1}}
+
+.gantt-empty-actions{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.gantt-add-task{width:28px;height:32px;flex-shrink:0;color:var(--body-text)}.gantt-add-task:hover{color:var(--accent);background:var(--surface-hover)}
+@media(max-width:550px){.gantt-add-task{width:36px;height:44px}}
+
+.gantt-child-row .gantt-task-title>span{font-size:14px}
+
+/* Keep workflow colours while making both ends of the selected dependency clear. */
+.gantt-row-selected .gantt-task{background:var(--accent-soft);box-shadow:inset 3px 0 var(--accent)}
+.gantt-row-selected .gantt-task-title>span{color:var(--accent-soft-text)}
+.gantt-row-selected .gantt-bar{outline:2px solid var(--accent);outline-offset:2px}
+.gantt-row-connected .gantt-task{background:color-mix(in srgb,var(--accent) 7%,var(--surface));box-shadow:inset 2px 0 var(--accent-border)}
+.gantt-row-connected .gantt-bar{outline:1px solid var(--accent);outline-offset:1px}
+.gantt-dependencies>path.gantt-link-muted{opacity:.15}
+.gantt-dependencies>path.gantt-link-highlighted{stroke:var(--accent);stroke-width:3;opacity:1;stroke-linejoin:round;filter:drop-shadow(0 0 2px color-mix(in srgb,var(--accent) 30%,transparent))}
+
+.gantt-scroll[data-pan-surface],.gantt-track[data-pan-surface]{cursor:grab}
+.gantt-task,.gantt-axis{cursor:auto}
+.gantt-scroll.is-grab-panning{scroll-behavior:auto}
+.gantt-scroll.is-grab-panning,.gantt-scroll.is-grab-panning *{cursor:grabbing!important;user-select:none!important}

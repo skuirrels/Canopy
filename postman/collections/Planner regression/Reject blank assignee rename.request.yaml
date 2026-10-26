@@ -1,0 +1,16 @@
+$kind: http-request
+method: PATCH
+url: '{{baseUrl}}/api/people/{{person1}}'
+order: 6340
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"name":"   "}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Blank assignee rename rejected', () => pm.response.to.have.status(400));

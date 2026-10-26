@@ -84,10 +84,13 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
         foreach (var projectId in affected.Select(x => x.ProjectId).Distinct()) data.Graph(projectId).Project.Touch();
         data.People.Remove(person);
     }, ct);
+    public Task<WorkspaceData> UpdatePerson(Guid id, EditPerson input, CancellationToken ct) => store.WriteAsync(data =>
+    {
+        var person = data.People.SingleOrDefault(x => x.Id == id) ?? throw new RuleException("Assignee not found.", 404);
+        person.Rename(input.Name, data.People);
+    }, ct);
     public Task<WorkspaceData> AddPerson(CreatePerson input, CancellationToken ct) => store.WriteAsync(data =>
     {
-        var name = Rules.Name(input.Name);
-        if (data.People.Any(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase))) throw new RuleException("That person already exists.");
-        data.People.Add(Person.Create(name));
+        data.People.Add(Person.Create(input.Name, data.People));
     }, ct);
 }

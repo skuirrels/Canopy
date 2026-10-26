@@ -36,14 +36,19 @@ export function componentDetails(allItems: Item[], matchingItems: Item[], status
 }
 
 // Keep filtered-out siblings in their existing slots. The API requires the full
-// sibling set so a partial or stale order can never silently remove a component.
-export function resequenceComponents(items: Item[], parentId: string | null, visibleIds: string[], activeId: string, targetId: string): string[] | null {
+// sibling set so a partial or stale order can never silently remove an item.
+export function resequenceSiblings(items: Item[], parentId: string | null, visibleIds: string[], activeId: string, targetId: string): string[] | null {
+ const siblings = items.filter(item => item.parentId === parentId).sort(compareSiblings);
+ const siblingIds = new Set(siblings.map(item => item.id));
+ if (new Set(visibleIds).size !== visibleIds.length || visibleIds.some(id => !siblingIds.has(id))) return null;
  const from = visibleIds.indexOf(activeId), to = visibleIds.indexOf(targetId);
  if (from < 0 || to < 0 || from === to) return null;
  const visible = [...visibleIds]; visible.splice(to, 0, visible.splice(from, 1)[0]);
  const selected = new Set(visibleIds); let index = 0;
- return items.filter(item => item.parentId === parentId).sort(compareSiblings).map(item => selected.has(item.id) ? visible[index++] : item.id);
+ return siblings.map(item => selected.has(item.id) ? visible[index++] : item.id);
 }
+
+export const resequenceComponents = resequenceSiblings;
 
 export function specificationText(specJson: string): string {
  try {

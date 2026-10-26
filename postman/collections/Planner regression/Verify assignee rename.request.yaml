@@ -1,0 +1,16 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/workspace'
+order: 6350
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Renamed assignee persisted', () => {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().people.find(p => p.id === pm.collectionVariables.get('person1')).name).to.eql(pm.collectionVariables.get('renamedPersonName'));
+      });
+      pm.test('Rejected renames were atomic', () => {
+        const value=pm.response.json(), before=JSON.parse(pm.collectionVariables.get('beforeRename'));
+        for (const key of ['items','projects','statuses','dependencies']) pm.expect(value[key]).to.eql(before[key]);
+      });

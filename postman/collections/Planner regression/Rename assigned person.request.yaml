@@ -1,0 +1,21 @@
+$kind: http-request
+method: PATCH
+url: '{{baseUrl}}/api/people/{{person1}}'
+order: 6320
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"name":"  {{renamedPersonName}}  "}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Assignee renamed', () => pm.response.to.have.status(200));
+      const value = pm.response.json(), before = JSON.parse(pm.collectionVariables.get('beforeRename'));
+      pm.test('Same person ID and trimmed name', () => pm.expect(value.people.find(p => p.id === pm.collectionVariables.get('person1')).name).to.eql(pm.collectionVariables.get('renamedPersonName')));
+      pm.test('Tasks, co-assignees and revisions unchanged', () => {
+        for (const key of ['items','projects','statuses','dependencies']) pm.expect(value[key]).to.eql(before[key]);
+      });
