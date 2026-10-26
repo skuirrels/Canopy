@@ -1,0 +1,12 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/workspace'
+order: 6310
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Workspace loaded for rename', () => pm.response.to.have.status(200));
+      const state = pm.response.json();
+      pm.collectionVariables.set('beforeRename', JSON.stringify(state));
+      pm.collectionVariables.set('renamedPersonName', 'Renamed ' + pm.collectionVariables.get('personName1'));

@@ -14,3 +14,6 @@ scripts:
       pm.test('Spec survives reload',()=>pm.expect(value.items.find(i=>i.id===pm.collectionVariables.get('childId')).specJson).to.include('Stored specification'));
       pm.test('Child status stays independent',()=>pm.expect(value.items.find(i=>i.id===pm.collectionVariables.get('childId')).statusId).to.eql(pm.collectionVariables.get('statusId')));
       pm.test('Effort survives intervening edits and reload',()=>pm.expect(value.items.find(i=>i.id===pm.collectionVariables.get('childId')).estimatedHours).to.eql(2.5));
+
+      const children=value.items.filter(i=>i.parentId===pm.collectionVariables.get('parentId')).sort((a,b)=>a.siblingPosition-b.siblingPosition);
+      pm.test('Task order survives reload and rejected partial update',()=>pm.expect(children.map(i=>i.id)).to.eql([pm.collectionVariables.get('orderingPeerId'),pm.collectionVariables.get('childId')]));

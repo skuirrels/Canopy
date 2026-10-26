@@ -1,0 +1,22 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/projects/{{projectId}}/sibling-order'
+order: 9700
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"expectedRevision":{{revision}},"parentId":"{{parentId}}","itemIds":["{{orderingPeerId}}","{{childId}}"]}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Task sibling order saved',()=>pm.response.to.have.status(200));
+      const state=pm.response.json();
+      pm.collectionVariables.set('revision',String(state.projects.find(p=>p.id===pm.collectionVariables.get('projectId')).revision));
+      const children=state.items.filter(i=>i.parentId===pm.collectionVariables.get('parentId')).sort((a,b)=>a.siblingPosition-b.siblingPosition);
+      pm.test('Tasks in different statuses reorder within their component',()=>pm.expect(children.map(i=>i.id)).to.eql([pm.collectionVariables.get('orderingPeerId'),pm.collectionVariables.get('childId')]));
+      const after=state.items.map(({siblingPosition,...item})=>item).sort((a,b)=>a.id.localeCompare(b.id));
+      pm.test('Task order preserves all metadata, hierarchy and workflow positions',()=>pm.expect(after).to.eql(JSON.parse(pm.collectionVariables.get('beforeTaskOrder'))));

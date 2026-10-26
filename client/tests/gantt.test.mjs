@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calendarSegments, changeDates, dateDay, dayDate, ganttRows, schedule, timelineRange } from '../src/lib/gantt.ts';
+import { calendarSegments, changeDates, dateDay, dayDate, dependencyHighlights, ganttRows, schedule, timelineRange } from '../src/lib/gantt.ts';
 const task = (id, parentId = null, position = 0, dates = {}) => ({ id, parentId, position, title: id, createdAt: '2026-01-01T00:00:00Z', startDate: null, dueDate: null, ...dates });
 
 test('moving a task across the London DST boundary preserves inclusive calendar duration', () => {
@@ -76,4 +76,24 @@ test('today can be centered in a wide timeline with past, future or unscheduled 
    if (dates) assert.ok(range.start <= dates.start && range.end >= dates.end, 'all scheduled dates remain reachable');
   }
  }
+});
+
+test('task selection highlights direct incoming and outgoing dependencies, not a transitive chain or hierarchy', () => {
+ const links = [
+  { id: 'incoming', itemId: 'selected', dependsOnId: 'prerequisite' },
+  { id: 'outgoing', itemId: 'dependent', dependsOnId: 'selected' },
+  { id: 'transitive', itemId: 'later', dependsOnId: 'dependent' },
+  { id: 'unrelated', itemId: 'other', dependsOnId: 'third' },
+ ];
+ const before = structuredClone(links);
+ const highlight = dependencyHighlights(links, 'selected');
+ assert.deepEqual([...highlight.links], ['incoming', 'outgoing']);
+ assert.deepEqual([...highlight.tasks], ['prerequisite', 'dependent']);
+ assert.deepEqual(links, before);
+ for (const selected of [null, 'unconnected']) {
+  assert.equal(dependencyHighlights(links, selected).links.size, 0);
+  assert.equal(dependencyHighlights(links, selected).tasks.size, 0);
+ }
+ assert.deepEqual([...dependencyHighlights([links[1]], 'selected').tasks], ['dependent'], 'hidden or unscheduled edges are omitted by the visible-edge projection');
+ assert.deepEqual([...dependencyHighlights(links, 'prerequisite').links], ['incoming'], 'changing selection replaces the previous highlight');
 });

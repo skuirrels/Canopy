@@ -44,6 +44,10 @@ app.MapPost("/api/projects/{id:guid}/statuses", (Guid id, CreateStatus input, Pl
 app.MapPatch("/api/statuses/{id:guid}", (Guid id, EditStatus input, PlannerService service, CancellationToken ct) => service.UpdateStatus(id, input, ct));
 app.MapDelete("/api/statuses/{id:guid}", (Guid id, long expectedRevision, PlannerService service, CancellationToken ct) => service.DeleteStatus(id, expectedRevision, ct));
 app.MapDelete("/api/people/{id:guid}", (Guid id, PlannerService service, CancellationToken ct) => service.RemovePerson(id, ct));
+app.MapPatch("/api/people/{id:guid}", (Guid id, EditPerson input, PlannerService service, CancellationToken ct) => service.UpdatePerson(id, input, ct))
+    .WithSummary("Rename an assignee")
+    .WithDescription("Updates the existing assignee name, preserving its ID and all task assignments. Names are trimmed, must contain 1–200 characters and must be unique ignoring case.")
+    .ProducesProblem(400).ProducesProblem(404);
 app.MapPost("/api/people", (CreatePerson input, PlannerService service, CancellationToken ct) => service.AddPerson(input, ct));
 app.MapFallback(async context =>
 {

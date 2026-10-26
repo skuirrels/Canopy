@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { componentDetails, epicGroups, resequenceComponents, specificationText } from '../src/lib/epics.ts';
+import { componentDetails, epicGroups, resequenceComponents, resequenceSiblings, specificationText } from '../src/lib/epics.ts';
 
 const item = (id, parentId = null, statusId = 'todo', position = 0) => ({ id, title: id, parentId, statusId, position, siblingPosition: position, createdAt: '2026-01-01T00:00:00Z' });
 const statuses = [{ id: 'todo', isCompleted: false }, { id: 'finished', isCompleted: true }];
@@ -82,4 +82,18 @@ test('an expanded empty component and a filtered-out task list retain their comp
  assert.deepEqual(filtered.tasks, []); assert.equal(filtered.taskCount, 1); assert.equal(filtered.completedCount, 1);
  assert.equal(componentDetails(items, [], statuses, empty.id).taskCount, 0);
  assert.equal(componentDetails(items, items, statuses, 'missing'), undefined);
+});
+
+
+test('vertical task reordering preserves hidden sibling slots, nested branches and independent workflow positions', () => {
+ const tasks = [item('component'), item('a', 'component', 'todo', 9), item('hidden', 'component', 'finished', 2), item('b', 'component', 'finished', 4), item('nested', 'a', 'todo', 0), item('foreign', 'elsewhere')];
+ tasks[1].siblingPosition = 0; tasks[2].siblingPosition = 1; tasks[3].siblingPosition = 2;
+ const before = structuredClone(tasks);
+ assert.deepEqual(resequenceSiblings(tasks, 'component', ['a', 'b'], 'b', 'a'), ['b', 'hidden', 'a']);
+ assert.deepEqual(resequenceSiblings(tasks, 'component', ['a', 'hidden', 'b'], 'a', 'b'), ['hidden', 'b', 'a']);
+ assert.deepEqual(tasks, before);
+ assert.equal(resequenceSiblings(tasks, 'component', ['a', 'foreign'], 'a', 'foreign'), null);
+ assert.equal(resequenceSiblings(tasks, 'component', ['a', 'a'], 'a', 'a'), null);
+ assert.equal(resequenceSiblings(tasks, 'component', ['a', 'b'], 'a', 'nested'), null);
+ assert.equal(resequenceSiblings(tasks, 'component', ['a', 'b'], 'a', 'a'), null);
 });

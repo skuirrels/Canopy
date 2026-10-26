@@ -1,0 +1,20 @@
+$kind: http-request
+method: PATCH
+url: '{{baseUrl}}/api/people/:id'
+order: 3000
+pathVariables:
+  - key: id
+    value: '{{personId}}'
+    description: Existing assignee ID to preserve while renaming.
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {{renamePersonBody}}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      pm.variables.set('renamePersonBody', JSON.stringify({ name: pm.variables.get('assigneeName') }));

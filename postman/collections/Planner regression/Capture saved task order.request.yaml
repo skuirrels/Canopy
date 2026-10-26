@@ -1,0 +1,12 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/workspace'
+order: 9650
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Persisted task-order baseline loaded',()=>pm.response.to.have.status(200));
+      const state=pm.response.json();
+      pm.collectionVariables.set('revision',String(state.projects.find(p=>p.id===pm.collectionVariables.get('projectId')).revision));
+      pm.collectionVariables.set('beforeTaskOrder',JSON.stringify(state.items.map(({siblingPosition,...item})=>item).sort((a,b)=>a.id.localeCompare(b.id))));

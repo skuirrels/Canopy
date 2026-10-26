@@ -73,7 +73,19 @@ public sealed class Person
     private Person() { }
     public Guid Id { get; private set; }
     public string Name { get; private set; } = "";
-    public static Person Create(string name) => new() { Id = Guid.NewGuid(), Name = Rules.Name(name) };
+    public static Person Create(string name, IEnumerable<Person> people)
+    {
+        var person = new Person { Id = Guid.NewGuid() };
+        person.Rename(name, people);
+        return person;
+    }
+    public void Rename(string name, IEnumerable<Person> people)
+    {
+        var value = Rules.Name(name);
+        if (people.Any(person => person.Id != Id && string.Equals(person.Name, value, StringComparison.OrdinalIgnoreCase)))
+            throw new RuleException("That person already exists.");
+        Name = value;
+    }
 }
 
 public sealed class WorkItem

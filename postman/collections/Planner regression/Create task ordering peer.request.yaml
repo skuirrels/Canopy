@@ -1,0 +1,19 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/projects/{{projectId}}/items'
+order: 9600
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"expectedRevision":{{revision}},"title":"Task ordering peer","parentId":"{{parentId}}","statusId":"{{doneId}}"}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Ordering peer created under same parent',()=>pm.response.to.have.status(200));
+      const state=pm.response.json();
+      pm.collectionVariables.set('revision',String(state.projects.find(p=>p.id===pm.collectionVariables.get('projectId')).revision));
+      pm.collectionVariables.set('orderingPeerId',state.items.find(i=>i.projectId===pm.collectionVariables.get('projectId')&&i.title==='Task ordering peer').id);
