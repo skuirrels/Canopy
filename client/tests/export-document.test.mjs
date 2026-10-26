@@ -45,3 +45,15 @@ test('email attachment filenames retain Unicode and cannot introduce directories
  assert.equal(exportFilename('Plan / Phase: 2\nTeam','Mind map'),'Plan - Phase- 2-Team - Mind map.html');
  assert.equal(exportFilename('開発 計画','Gantt chart'),'開発 計画 - Gantt chart.html');
 });
+
+test('expandable Gantt exports allow only their own offline controller and retain escaped metadata', () => {
+ const html = buildExportDocument({ ...snapshot, interaction: 'gantt' }, { ...metadata, projectName: '</script><script>untrusted()</script>' }, '');
+ const nonce = html.match(/<script nonce="([a-f0-9]+)">/)[1];
+ assert.ok(html.includes(`script-src 'nonce-${nonce}'`));
+ assert.equal((html.match(/<script /g) ?? []).length, 1);
+ assert.ok(html.includes('&lt;/script&gt;&lt;script&gt;untrusted()&lt;/script&gt;'));
+ assert.ok(html.includes("connect-src 'none'"));
+ assert.ok(html.includes('class="export-controls" hidden'));
+ assert.ok(html.includes('.gantt-row[hidden]{display:none!important}'));
+ assert.ok(!html.includes("script-src 'unsafe-inline'"));
+});
