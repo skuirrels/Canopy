@@ -9,6 +9,8 @@ import { AgentConnectionDialog } from './AgentConnectionDialog';
 import { MarkdownImport } from './MarkdownImport';
 import { Button } from './ui/button';
 import { changeAgent, executionOverrides, inheritedSettings } from '../lib/agent-settings';
+import { BuildExperience } from './BuildExperience';
+import type { BuildExperienceHandle } from './BuildExperience';
 import './agents.css';
 
 export function TaskAgents({ item, beforeRun, onImport, draft, onDraftChange }: { item: Item; beforeRun: () => Promise<void>; onImport: (markdown: string, mode: 'append' | 'replace') => Promise<void>; draft: AgentDraft; onDraftChange: Dispatch<SetStateAction<AgentDraft>> }) {
@@ -22,6 +24,8 @@ export function TaskAgents({ item, beforeRun, onImport, draft, onDraftChange }: 
  const [connecting, setConnecting] = useState(false); const [importing, setImporting] = useState<string | null>(null);
  const [error, setError] = useState(''); const [busy, setBusy] = useState(false); const [loading, setLoading] = useState(true);
  const [pollEpoch, setPollEpoch] = useState(0);
+ const [pollError, setPollError] = useState('');
+ const buildExperience = useRef<BuildExperienceHandle>(null);
  const pendingRequest = useRef<{ id: string; fingerprint: string } | null>(null);
  const load = useCallback(async (signal?: AbortSignal) => {
   const [binding, available, history] = await Promise.all([
@@ -31,23 +35,24 @@ export function TaskAgents({ item, beforeRun, onImport, draft, onDraftChange }: 
   ]);
   if (signal?.aborted) return 0;
   if (available.providers.some(agent => !Array.isArray(agent.effortLevels))) throw new Error('Restart the Canopy backend to use model and effort settings.');
-  setConnection(binding); setProviders(available); setRuns(history); onDraftChange(current => current.provider || !binding ? current : { ...current, provider: binding.provider }); setLoading(false);
+  setConnection(binding); setProviders(available); setRuns(history); setPollError(''); onDraftChange(current => current.provider || !binding ? current : { ...current, provider: binding.provider }); setLoading(false);
   return available.pollIntervalMs;
  }, [item.id, item.projectId, onDraftChange]);
  useEffect(() => {
   const controller = new AbortController(); let timer: ReturnType<typeof setTimeout>;
   async function poll() {
    try { const interval = await load(controller.signal); if (!controller.signal.aborted && interval > 0) timer = setTimeout(() => { void poll(); }, interval); }
-   catch (e) { if (!controller.signal.aborted) { setError((e as Error).message); setLoading(false); } }
+   catch (e) { if (!controller.signal.aborted) { setPollError((e as Error).message); setLoading(false); } }
   }
   void poll(); return () => { controller.abort(); clearTimeout(timer); };
  }, [load, pollEpoch]);
  const active = runs.some(run => run.active); const selected = runs.find(run => run.id === selectedId) ?? runs[0];
+ const buildRun = runs.find(run => run.active && run.purpose === 'implementation') ?? (selected?.purpose === 'implementation' ? selected : undefined);
  const previous = runs.find(run => run.id === previousId);
  const defaults = connection ? inheritedSettings(connection, provider, previous) : { model: null, effort: null };
  const defaultLabel = previousId ? 'Previous run' : 'Project default';
  async function start(event: React.FormEvent) {
-  event.preventDefault(); setBusy(true); setError('');
+  event.preventDefault(); if (purpose === 'implementation') buildExperience.current?.prepare(); setBusy(true); setError('');
   try {
    await beforeRun(); const workspace = await request(); const expectedRevision = workspace.projects.find(p => p.id === item.projectId)!.revision;
    const overrides = executionOverrides(draft);
@@ -57,9 +62,14 @@ export function TaskAgents({ item, beforeRun, onImport, draft, onDraftChange }: 
    pendingRequest.current = null; setSelectedId(run.id); setPreviousId(null); setInstructions(''); await load();
   } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
  }
+ function stopBuild() {
+  if (!buildRun?.active) return;
+  setBusy(true); void agentRequest(`/runs/${buildRun.id}/cancel`, 'POST').then(() => load()).catch(e => setError((e as Error).message)).finally(() => setBusy(false));
+ }
  return <section className="task-agents" aria-label="Agent activity">
   <div className="agent-section-heading"><h3><Bot size={16}/>Agents</h3><button className="text-button" onClick={() => setConnecting(true)}>{connection ? 'Connection settings' : 'Connect project'}</button></div>
   <p className="agent-note">Draft specs and documentation, or explicitly run an implementation. Task status stays under your control.</p>
+  <BuildExperience ref={buildExperience} run={buildRun} disconnected={!!pollError} onStop={stopBuild} stopping={busy} controlError={error}/>
   {loading ? <p className="muted"><Loader2 size={14} className="spin"/> Loading agents…</p> : connection ? <form className="agent-run-form" onSubmit={event => { void start(event); }}>
    <div className="form-row"><label>Agent<select required value={provider} disabled={busy || active || !!previousId} onChange={e => setProvider(e.target.value as AgentId)}><option value="">Choose an agent</option>{providers?.providers.map(p => <option key={p.id} value={p.id} disabled={!p.available}>{p.name}{p.available ? '' : ' · unavailable'}</option>)}</select></label><label>Action<select value={purpose} disabled={busy || active || !!previousId} onChange={e => setPurpose(e.target.value as AgentPurpose)}>{Object.entries(purposeLabels).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label></div>
    {previousId && <p className="agent-note">Continuing the selected run’s session. <button type="button" className="text-button" onClick={() => setPreviousId(null)}>Start a new session instead</button></p>}
@@ -69,7 +79,7 @@ export function TaskAgents({ item, beforeRun, onImport, draft, onDraftChange }: 
    <p className="agent-note">{purpose === 'implementation' ? 'Runs against the configured Git ref in a separate worktree. Changes are retained for review.' : 'Reads project context and returns Markdown for review. Repository files stay unchanged.'}</p>
    <Button type="submit" disabled={busy || active || !provider || !providers?.providers.find(p => p.id === provider)?.available}>{busy ? <Loader2 size={14} className="spin"/> : <Play size={14}/>} {previousId ? 'Send follow-up' : purposeLabels[purpose]}</Button>
   </form> : <div className="agent-empty">Planning and importing specs work without a connection. Connect a repository when you want an agent to write or implement.</div>}
-  {error && <div role="alert" className="agent-error">{error} <button type="button" className="text-button" onClick={() => { setError(''); setPollEpoch(value => value + 1); }}>Refresh agent activity</button></div>}
+  {(error || pollError) && <div role="alert" className="agent-error">{error || pollError} <button type="button" className="text-button" onClick={() => { setError(''); setPollEpoch(value => value + 1); }}>Refresh agent activity</button></div>}
   {runs.length > 0 && <><label className="agent-history-label">Run history<select value={selected?.id ?? ''} onChange={e => { setSelectedId(e.target.value); setPreviousId(null); }}>{runs.map(run => <option key={run.id} value={run.id}>{new Date(run.createdAt).toLocaleString()} · {run.provider === 'codex' ? 'Codex' : 'Claude'} · {purposeLabels[run.purpose]} · {run.state}</option>)}</select></label>
    {selected && <article className="agent-run-detail"><div className="agent-run-heading"><span className={`agent-state agent-state-${selected.state}`} aria-live="polite">{selected.active && <Loader2 size={12} className="spin"/>}{selected.state}</span>{selected.active && <Button size="sm" variant="secondary" disabled={busy || selected.state === 'cancelling'} onClick={() => { setBusy(true); void agentRequest(`/runs/${selected.id}/cancel`, 'POST').then(() => load()).catch(e => setError((e as Error).message)).finally(() => setBusy(false)); }}><Square size={12}/>Stop run</Button>}</div>
     {selected.error && <p role="alert" className="agent-error">{selected.error}</p>}

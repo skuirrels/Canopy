@@ -42,6 +42,11 @@ implementation='Purpose: implementation' in prompt
 if codex:
  assert '--ignore-user-config' in args
  assert 'sandbox_mode="'+('workspace-write' if implementation else 'read-only')+'"' in args
+ if 'resume' in args:
+  resume=args.index('resume')
+  assert args.index('--ignore-user-config') > resume
+  assert args.index('approval_policy="never"') > resume
+  assert args.index('sandbox_mode="'+('workspace-write' if implementation else 'read-only')+'"') > resume
  if 'Refine this result' in prompt: assert 'resume' in args
 else:
  assert '--safe-mode' in args and '--restricted' in args and '--strict-mcp-config' in args
@@ -171,6 +176,9 @@ else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'r
         implementation, _ = start_run('implementation', instructions='')
         completed = wait_run(implementation['id'])
         check(completed['state'] == 'succeeded' and 'implemented.md' in completed['diff'] and not (repo / 'implemented.md').exists(), 'Implementation retains a real diff in an isolated worktree')
+        resumed, _ = start_run('implementation', instructions='Refine this implementation', previous=completed['id'])
+        resumed = wait_run(resumed['id'])
+        check(resumed['state'] == 'succeeded' and resumed['sessionId'] == completed['sessionId'] and resumed['workspacePath'] == completed['workspacePath'] and 'implemented.md' in resumed['diff'], 'Implementation continuation receives resume-scoped write permissions and retains its session/worktree')
         workspace = call(f'/api/projects/{pid}/items', 'POST', dict(expectedRevision=revision(), title='Prerequisite fixture', parentId=tid, statusId=None))
         prerequisite = next(i for i in workspace['items'] if i['title'] == 'Prerequisite fixture')
         call(f'/api/items/{tid}', 'PATCH', fields | {'expectedRevision': revision(), 'dependencyIds': [prerequisite['id']]})
