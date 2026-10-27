@@ -140,7 +140,7 @@ svg{flex-shrink:0}
 .project-heading{padding:14px 34px 12px;display:flex;gap:16px;align-items:center;justify-content:space-between;min-width:0;flex-shrink:0}
 .project-title-row{display:flex;align-items:center;gap:10px;min-width:0}
 .project-heading-icon{display:grid;place-items:center;width:30px;height:30px;flex-shrink:0;border-radius:7px}
-.project-heading>.icon-button{align-self:flex-start}
+.project-heading>.icon-button{align-self:center}
 .project-heading-main{min-width:0;flex:1}
 .project-heading h1{font-size:26px;letter-spacing:-.8px;font-weight:600;line-height:1.3;margin-top:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--heading)}
 .project-heading p{font-size:14px;color:var(--body-text);margin-top:4px;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:none}
