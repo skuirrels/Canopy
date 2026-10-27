@@ -58,3 +58,5 @@
 .gantt-task,.gantt-axis{cursor:auto}
 .gantt-scroll.is-grab-panning{scroll-behavior:auto}
 .gantt-scroll.is-grab-panning,.gantt-scroll.is-grab-panning *{cursor:grabbing!important;user-select:none!important}
+
+.gantt-task-title>span.task-title-complete,.gantt-bar-body>span.task-title-complete{color:var(--secondary-text)}

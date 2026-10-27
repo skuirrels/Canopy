@@ -3,6 +3,7 @@ import { Loader2, Unplug, Bot } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkspace } from '../lib/workspace';
 import { agentRequest } from '../lib/agents';
+import { useBuildPreferences } from '../lib/build-preferences';
 import type { AgentConnection, AgentExecutionSettings, AgentId, AgentProviders } from '../lib/agents';
 import { Dialog } from './ui/dialog';
 import { Button } from './ui/button';
@@ -10,6 +11,7 @@ import './agents.css';
 
 export function AgentConnectionDialog({ projectId, onClose }: { projectId: string; onClose: () => void }) {
  const { data, refresh } = useWorkspace();
+ const { enabled, soundWanted, setEnabled, setSoundWanted } = useBuildPreferences();
  const [connection, setConnection] = useState<AgentConnection | null>(null);
  const [providers, setProviders] = useState<AgentProviders | null>(null);
  const [path, setPath] = useState(''); const [baseRef, setBaseRef] = useState(''); const [provider, setProvider] = useState<AgentId | ''>('');
@@ -33,6 +35,13 @@ export function AgentConnectionDialog({ projectId, onClose }: { projectId: strin
  return <Dialog open onOpenChange={open => { if (!open && !busy) onClose(); }} title="Agent connection" description="Optional. Connect this project to a local repository for writing and implementation." className="agent-connection-dialog">
   {loading ? <p className="muted"><Loader2 size={15} className="spin"/> Loading connection…</p> : <form onSubmit={event => { void save(event); }}>
    <p className="agent-note">Your project remains a planner. Work starts only when you explicitly run an agent from a task.</p>
+   <fieldset className="agent-build-effects"><legend>Build effects</legend>
+    <div className="agent-build-effects-controls">
+     <label><input type="checkbox" role="switch" aria-label="Build graphics" checked={enabled} onChange={event => setEnabled(event.target.checked)}/><span>Build graphics</span><small aria-hidden="true">{enabled ? 'On' : 'Off'}</small></label>
+     <label><input type="checkbox" role="switch" aria-label="Build sound" checked={enabled && soundWanted} disabled={!enabled} onChange={event => setSoundWanted(event.target.checked)}/><span>Build sound</span><small aria-hidden="true">{enabled && soundWanted ? 'On' : 'Off'}</small></label>
+    </div>
+    <p className="agent-note">Graphics and sound during Codex and Claude builds. Saves immediately for all projects in this browser. Turning effects off keeps builds running.</p>
+   </fieldset>
    <div className="agent-connection-workspace">
    <label>Repository folder<input required value={path} onChange={e => setPath(e.target.value)} placeholder="Absolute path to the repository" autoComplete="off"/></label>
    <div className="form-row"><label>Base Git ref<input required value={baseRef} onChange={e => setBaseRef(e.target.value)} placeholder="Branch, tag or commit"/></label><label>Preferred agent<select required value={provider} onChange={e => setProvider(e.target.value as AgentId)}><option value="">Choose an agent</option>{providers?.providers.map(p => <option key={p.id} value={p.id}>{p.name}{p.available ? '' : ' · not installed'}</option>)}</select></label></div>

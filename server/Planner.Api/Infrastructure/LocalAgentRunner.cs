@@ -208,8 +208,10 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
         var args = new List<string>();
         if (run.Provider == "codex")
         {
-            args.AddRange(["exec", "--ignore-user-config", "--json", "--color", "never", "-c", "approval_policy=\"never\"", "-c", "sandbox_mode=\"" + (implementation ? "workspace-write" : "read-only") + "\""]);
+            args.AddRange(["exec", "--color", "never"]);
             if (run.PreviousRunId.HasValue) args.AddRange(["resume", run.SessionId!]);
+            // Resume parses its own configuration; exec-level overrides do not carry through.
+            args.AddRange(["--ignore-user-config", "--json", "-c", "approval_policy=\"never\"", "-c", "sandbox_mode=\"" + (implementation ? "workspace-write" : "read-only") + "\""]);
             if (run.Model is not null) args.AddRange(["--model", run.Model]);
             if (run.Effort is not null) args.AddRange(["-c", "model_reasoning_effort=" + JsonSerializer.Serialize(run.Effort)]);
             args.Add("-");

@@ -2,6 +2,12 @@
 
 Canopy remains a planner. Project connections, imported specifications and agent runs are optional. Saving a connection, changing a workflow status or editing a specification never dispatches work.
 
+## Live build experience
+
+Open **Project options (⋯) → Agent connection → Build effects** for **Build graphics** and **Build sound**. Both default off and save immediately for all projects in this browser, independently of saving the repository connection. The settings share one browser-local preference provider with the build window, including synchronization between browser tabs. Implementation dispatch and active implementation history use the same reactor for Codex and Claude. The experience consumes the existing run resource (`state`, `output`, session/workspace presence and result); no agent HTTP contract, execution policy, database schema or task status changes are involved. Decorative motion indicates an active worker; pulses indicate changed retained output. There are no timed planning/build/testing phases, synthetic commands, success assumptions or progress percentages.
+
+The view opens for an active implementation and can be reopened with **View build**. Sound is unlocked from an explicit UI gesture, has an independent remembered mute setting, stops with the view, and never replays historical completion cues. Closing or disabling the experience does not cancel work. The view retains **Stop run**, reports failed/cancelled/interrupted states, and pauses motion and sound when polling fails. Refreshing agent activity reconciles the saved run after reconnecting. Canvas/audio resources are released when the view/task closes; background and reduced-motion presentations avoid continuous animation.
+
 ## Local execution contract
 
 - A project connection records its repository directory, base Git ref, preferred provider, optional model and instructions. These are explicit user inputs. It is a local code workspace binding; it does not claim to create or synchronize vendor app project containers.
@@ -38,3 +44,5 @@ Project connections optionally accept `settings`, a map keyed by provider (`code
 Explicit dispatch accepts optional `model` and `effort` overrides. Omission/null inherits that provider's project defaults; an empty string explicitly uses the agent default. For a follow-up, omission/null inherits the previous run's captured settings, even if project defaults changed. Users can explicitly override settings on a follow-up. Every run stores both the requested overrides and the resolved model/effort, so changing a request ID's settings returns 409 while identical retries keep the original snapshot.
 
 The CLI receives `--model` only for an explicit resolved model. Codex receives effort as `-c model_reasoning_effort="…"`; Claude receives `--effort …`. Unset settings omit those arguments. Run history labels these as requested settings, because provider defaults, aliases and managed policy can change the model/effort actually applied. No inference run is started by saving defaults or editing selection fields.
+
+Codex continuation places configuration overrides on `exec resume` itself. The installed CLI parses resume configuration separately from its parent command; passing sandbox settings only to `exec` can reopen an implementation as read-only. Both initial and resumed writing runs remain read-only, while implementation runs use workspace-write without bypassing sandbox or approval protections.

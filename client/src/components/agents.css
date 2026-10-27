@@ -11,10 +11,20 @@
 .agent-connection-dialog .agent-project-defaults{margin:0;min-width:0}
 .agent-connection-dialog .agent-project-defaults .agent-note{margin-bottom:0}
 .agent-connection-dialog .dialog-footer{margin-top:6px}
+.agent-build-effects{grid-column:1/-1;min-width:0;border:1px solid var(--border);border-radius:8px;padding:12px;margin:0 0 20px}
+.agent-build-effects legend{padding:0 6px;font-size:13px;font-weight:600}
+.agent-build-effects-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 24px}
+.agent-connection-dialog .agent-build-effects-controls label{display:flex;align-items:center;gap:9px;margin:0;min-height:44px;font-size:13px;cursor:pointer}
+.agent-build-effects-controls input{width:18px;height:18px;margin:0;accent-color:var(--accent);flex-shrink:0}
+.agent-build-effects-controls small{margin-left:auto;color:var(--muted);font-size:12px}
+.agent-build-effects-controls label:has(input:disabled){opacity:.5;cursor:default}
+.agent-connection-dialog .agent-build-effects .agent-note{margin:6px 0 0}
 @media(max-width:600px){
  .dialog-content.agent-connection-dialog{width:calc(100vw - 24px);max-width:calc(100vw - 24px)}
  .agent-connection-dialog form{grid-template-columns:minmax(0,1fr);row-gap:12px}
  .agent-connection-dialog .form-row{grid-template-columns:minmax(0,1fr);gap:0}
  .agent-connection-dialog form>.agent-note:first-child{margin-bottom:4px}
  .agent-connection-dialog .dialog-footer{flex-wrap:wrap}
+ .agent-build-effects-controls{grid-template-columns:minmax(0,1fr);gap:0}
+ .agent-build-effects{margin-bottom:4px}
 }
