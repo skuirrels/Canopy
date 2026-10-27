@@ -145,10 +145,10 @@ svg{flex-shrink:0}
 .project-heading h1{font-size:26px;letter-spacing:-.8px;font-weight:600;line-height:1.3;margin-top:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--heading)}
 .project-heading p{font-size:14px;color:var(--body-text);margin-top:4px;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:none}
 .project-summary{display:flex;align-items:center;gap:9px;border-left:1px solid var(--line);padding:0 0 0 18px;margin-top:0;flex-shrink:0;font-size:14px;white-space:nowrap}
-.summary-ring{height:34px;width:34px;border-radius:50%;background:conic-gradient(var(--project-color) var(--progress),var(--line) 0);position:relative;display:grid;place-items:center}
+.summary-ring{height:44px;width:44px;flex-shrink:0;border-radius:50%;background:conic-gradient(var(--project-color) var(--progress),var(--line) 0);position:relative;display:grid;place-items:center}
 .summary-ring:before{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--surface)}
-.summary-ring>span{position:relative;font-size:12px;font-weight:550;color:var(--body-text)}
-.summary-ring small{font-size:12px;margin-left:1px;color:var(--body-text)}
+.summary-ring>span{position:relative;font-size:12px;font-weight:550;line-height:1;font-variant-numeric:tabular-nums;color:var(--body-text)}
+.summary-ring small{font-size:10px;color:var(--body-text)}
 .view-toolbar{margin:0 34px;padding:8px 0;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);border-bottom:1px solid var(--line);gap:8px;flex-wrap:wrap}
 .view-tabs{display:flex;gap:2px;background:var(--surface-hover);border:1px solid var(--line);border-radius:6px;padding:3px;flex-shrink:0}
 .view-tabs>button{display:flex;align-items:center;gap:7px;font-size:14px;padding:6px 12px;color:var(--body-text);border-radius:4px;min-height:38px}
