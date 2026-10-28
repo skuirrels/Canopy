@@ -61,17 +61,6 @@
 }
 
 .topbar-right { flex-shrink: 0; }
-.appearance-trigger[data-state="open"] { background: var(--surface-hover); color: var(--accent); }
-.appearance-menu { min-width: 240px; padding: 8px; }
-.appearance-label { display: block; padding: 8px 10px; color: var(--secondary-text); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
-.appearance-menu [role="menuitemradio"] { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; font-size: 14px; cursor: pointer; outline: none; }
-.appearance-menu [role="menuitemradio"][data-highlighted] { background: var(--surface-hover); }
-.appearance-menu [role="menuitemradio"][data-state="checked"] { color: var(--heading); background: var(--surface-hover); }
-.appearance-menu small { display: block; color: var(--secondary-text); font-size: 12px; margin-top: 2px; }
-.theme-indicator { margin-left: auto; color: var(--accent); }
-.theme-swatch { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid; border-radius: 10px; }
-.theme-swatch-flow { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-border); }
-.theme-swatch-navy { background: #f8fafc; color: #142d4e; border-color: #cbd5e1; }
 
 /* React Flow Pro inspired charcoal panels, pink highlights and rounded controls. */
 [data-theme="react-flow"] .main-shell { background: var(--surface-subtle); }
