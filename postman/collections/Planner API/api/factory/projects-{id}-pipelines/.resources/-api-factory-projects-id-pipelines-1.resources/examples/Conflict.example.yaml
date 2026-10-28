@@ -1,0 +1,38 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/projects/:id/pipelines"
+  method: POST
+  headers:
+    Accept: application/problem+json
+  pathVariables:
+    - key: id
+      value: bdd42d42-d249-e242-eca9-fadd1296098d
+      disabled: false
+      description: "(Required) "
+  body:
+    type: json
+    content: |-
+      {
+        "expectedRevision": -582,
+        "name": "string",
+        "description": "string",
+        "templateId": null,
+        "definition": null,
+        "source": null
+      }
+response:
+  statusCode: 409
+  statusText: Conflict
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": null,
+        "title": null,
+        "status": "-8346",
+        "detail": null,
+        "instance": null
+      }
+order: 5000

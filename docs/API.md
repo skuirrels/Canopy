@@ -1,5 +1,7 @@
 # Canopy API contract
 
+The optional [Software Factory configuration API](SOFTWARE-FACTORY.md) adds versioned pipelines and task attachments. Its configuration endpoints never dispatch work or change task workflow status.
+
 Phase 1 is a local, single-user workspace. Authentication is deliberately deferred. Bind to loopback; do not expose it publicly.
 
 GET /api/workspace returns all projects, work items, workflow statuses and assignee records, sourced from DuckDB. No demonstration data is inserted on startup.

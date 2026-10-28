@@ -1,0 +1,47 @@
+$kind: http-request
+name: /api/factory/tasks/:id/configuration
+description: ""
+url: "{{baseUrl}}/api/factory/tasks/:id/configuration"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: bdd42d42-d249-e242-eca9-fadd1296098d
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "expectedRevision": -887719,
+      "pipelineVersionId": "ad58b0b0-9ce1-a3dd-fe3b-8d55573c2dc8",
+      "overrides": {
+        "steps": [
+          {
+            "stageId": "string",
+            "stepId": "string",
+            "instructions": null,
+            "provider": null,
+            "model": null,
+            "effort": null,
+            "skills": null,
+            "command": null
+          },
+          {
+            "stageId": "string",
+            "stepId": "string",
+            "instructions": null,
+            "provider": null,
+            "model": null,
+            "effort": null,
+            "skills": null,
+            "command": null
+          }
+        ]
+      }
+    }
+settings: {}
+examples: ./.resources/-api-factory-tasks-id-configuration-1.resources/examples
+order: 2000

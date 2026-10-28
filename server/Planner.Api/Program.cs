@@ -16,6 +16,10 @@ builder.Services.AddSingleton<IReadOnlyList<WorkflowDefault>>(builder.Configurat
 builder.Services.AddScoped<PlannerService>();
 builder.Services.AddSingleton<IMarkdownFiles, LocalMarkdownFiles>();
 builder.Services.AddScoped<SpecFileService>();
+var factoryTemplatePath = builder.Configuration["Factory:TemplatesPath"] ?? throw new InvalidOperationException("Configure Factory:TemplatesPath.");
+var factoryTemplates = FactoryTemplateLoader.Load(Path.GetFullPath(factoryTemplatePath, builder.Environment.ContentRootPath));
+builder.Services.AddSingleton<IReadOnlyList<FactoryTemplate>>(factoryTemplates);
+builder.Services.AddScoped<FactoryService>();
 var agentOptions = builder.Configuration.GetSection("Agents").Get<AgentOptions>() ?? throw new InvalidOperationException("Configure Agents.");
 agentOptions.WorkspaceRoot = Path.GetFullPath(agentOptions.WorkspaceRoot, builder.Environment.ContentRootPath);
 agentOptions.Validate();
@@ -40,6 +44,7 @@ await using (var scope = app.Services.CreateAsyncScope())
 app.MapOpenApi();
 app.MapAgentEndpoints();
 app.MapSpecFileEndpoints();
+app.MapFactoryEndpoints();
 app.UseDefaultFiles(); app.UseStaticFiles();
 app.MapGet("/api/health", () => Results.Ok(new { status = "ready", database = "DuckDB", authentication = "phase-2" }));
 app.MapGet("/api/workspace", (PlannerService service, CancellationToken ct) => service.Read(ct));

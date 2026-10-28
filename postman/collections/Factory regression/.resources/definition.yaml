@@ -1,0 +1,6 @@
+$kind: collection
+name: Factory regression
+description: Real HTTP factory configuration lifecycle; creates and removes its own project. No agents or commands are executed.
+variables:
+  - key: baseUrl
+    value: 'http://127.0.0.1:5274'

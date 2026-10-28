@@ -1,0 +1,41 @@
+using System.Net;
+using Planner.Api.Application;
+using Planner.Api.Domain;
+
+namespace Planner.Api;
+
+public static class FactoryEndpoints
+{
+    public static void MapFactoryEndpoints(this WebApplication app)
+    {
+        var group = app.MapGroup("/api/factory").WithTags("Software Factory configuration").AddEndpointFilter(async (context, next) =>
+        {
+            var http = context.HttpContext; var origin = http.Request.Headers.Origin.ToString(); var host = http.Request.Host.Host;
+            if (http.Connection.RemoteIpAddress is not { } address || !IPAddress.IsLoopback(address) ||
+                !(host == "localhost" || (IPAddress.TryParse(host.Trim('[', ']'), out var hostAddress) && IPAddress.IsLoopback(hostAddress))) ||
+                http.Request.Headers["Sec-Fetch-Site"] == "cross-site" || (origin.Length > 0 &&
+                (!Uri.TryCreate(origin, UriKind.Absolute, out var uri) || uri.Authority != http.Request.Host.Value || uri.Scheme != http.Request.Scheme)))
+                return Results.Problem(title: "Open factory controls from the local Canopy application.", statusCode: 403);
+            http.Response.Headers.CacheControl = "no-store";
+            return await next(context);
+        });
+        group.MapGet("/templates", (FactoryService service) => service.Templates()).ProducesProblem(403);
+        group.MapPost("/validate", (FactoryDefinition input, FactoryService service) => service.Validate(input))
+            .WithDescription("Read-only structural validation. Valid does not certify skill availability, provider access, command execution or execution readiness.")
+            .ProducesProblem(400).ProducesProblem(403);
+        group.MapGet("/projects/{id:guid}/pipelines", (Guid id, FactoryService service, CancellationToken ct) => service.List(id, ct)).ProducesProblem(403).ProducesProblem(404);
+        group.MapPost("/projects/{id:guid}/pipelines", async (Guid id, CreateFactoryPipeline input, FactoryService service, CancellationToken ct) =>
+        {
+            var detail = await service.Create(id, input, ct);
+            return Results.Created($"/api/factory/pipelines/{detail.Pipeline.Id}", detail);
+        }).Produces<FactoryPipelineDetail>(201).ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapGet("/pipelines/{id:guid}", (Guid id, FactoryService service, CancellationToken ct) => service.Read(id, ct)).ProducesProblem(403).ProducesProblem(404);
+        group.MapPut("/pipelines/{id:guid}/draft", (Guid id, EditFactoryDraft input, FactoryService service, CancellationToken ct) => service.Edit(id, input, ct)).ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapPost("/pipelines/{id:guid}/publish", (Guid id, ChangeFactoryPipeline input, FactoryService service, CancellationToken ct) => service.Publish(id, input, ct)).ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapPost("/pipelines/{id:guid}/archive", (Guid id, ChangeFactoryPipeline input, FactoryService service, CancellationToken ct) => service.Archive(id, input, ct)).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapGet("/versions/{id:guid}", (Guid id, FactoryService service, CancellationToken ct) => service.Version(id, ct)).ProducesProblem(403).ProducesProblem(404);
+        group.MapGet("/tasks/{id:guid}/configuration", (Guid id, FactoryService service, CancellationToken ct) => service.TaskConfiguration(id, ct)).ProducesProblem(403).ProducesProblem(404);
+        group.MapPut("/tasks/{id:guid}/configuration", (Guid id, AttachFactoryPipeline input, FactoryService service, CancellationToken ct) => service.Attach(id, input, ct)).ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapDelete("/tasks/{id:guid}/configuration", (Guid id, long expectedRevision, FactoryService service, CancellationToken ct) => service.Detach(id, expectedRevision, ct)).ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+    }
+}

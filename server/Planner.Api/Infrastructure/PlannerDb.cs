@@ -13,6 +13,9 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<ProjectAgentConnection> AgentConnections => Set<ProjectAgentConnection>();
     public DbSet<AgentRun> AgentRuns => Set<AgentRun>();
     public DbSet<SpecFileLink> SpecFiles => Set<SpecFileLink>();
+    public DbSet<FactoryPipeline> FactoryPipelines => Set<FactoryPipeline>();
+    public DbSet<PipelineVersion> PipelineVersions => Set<PipelineVersion>();
+    public DbSet<TaskFactoryConfiguration> TaskFactoryConfigurations => Set<TaskFactoryConfiguration>();
     protected override void OnModelCreating(ModelBuilder model)
     {
         model.Entity<Project>().HasKey(x => x.Id);
@@ -25,6 +28,17 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
         model.Entity<ProjectAgentConnection>().HasIndex(x => x.ProjectId).IsUnique();
         model.Entity<AgentRun>().HasKey(x => x.Id);
         model.Entity<SpecFileLink>().HasKey(x => x.Id);
+        model.Entity<FactoryPipeline>().HasKey(x => x.Id);
+        model.Entity<FactoryPipeline>().Ignore(x => x.Definition);
+        model.Entity<FactoryPipeline>().Property(x => x.CreatedAt).HasConversion(value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));
+        model.Entity<FactoryPipeline>().HasIndex(x => x.ProjectId);
+        model.Entity<PipelineVersion>().HasKey(x => x.Id);
+        model.Entity<PipelineVersion>().Ignore(x => x.Definition);
+        model.Entity<PipelineVersion>().Property(x => x.PublishedAt).HasConversion(value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));
+        model.Entity<PipelineVersion>().HasIndex(x => new { x.PipelineId, x.Number }).IsUnique();
+        model.Entity<TaskFactoryConfiguration>().HasKey(x => x.Id);
+        model.Entity<TaskFactoryConfiguration>().Ignore(x => x.Overrides);
+        model.Entity<TaskFactoryConfiguration>().HasIndex(x => x.ProjectId);
         model.Entity<AgentRun>().Ignore(x => x.Active);
         model.Entity<AgentRun>().HasIndex(x => x.RequestId).IsUnique();
         model.Entity<AgentRun>().HasIndex(x => x.ItemId);

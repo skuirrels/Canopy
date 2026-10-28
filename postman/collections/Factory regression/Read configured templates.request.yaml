@@ -1,0 +1,14 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/factory/templates'
+order: 2000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Templates available',()=>pm.response.to.have.status(200));
+      const t=pm.response.json().find(t=>t.id==='specification');
+      pm.test('Template has provenance',()=>pm.expect(t.source).to.be.a('string').and.not.empty);
+      pm.collectionVariables.set('templateId',t.id); pm.collectionVariables.set('definition',JSON.stringify(t.definition));
+      const invalid=JSON.parse(JSON.stringify(t.definition)); invalid.stages[0].dependsOn=[invalid.stages[0].id];
+      pm.collectionVariables.set('invalidDefinition',JSON.stringify(invalid));

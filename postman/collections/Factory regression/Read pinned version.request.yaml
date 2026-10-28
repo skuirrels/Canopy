@@ -1,0 +1,10 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/factory/versions/{{versionId}}'
+order: 9000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Version readable',()=>pm.response.to.have.status(200));
+      pm.test('Version unchanged',()=>pm.expect(pm.response.json()).to.eql(JSON.parse(pm.collectionVariables.get('version'))));

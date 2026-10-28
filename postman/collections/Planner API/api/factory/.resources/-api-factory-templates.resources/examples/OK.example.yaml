@@ -1,0 +1,110 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/templates"
+  method: GET
+  headers:
+    Accept: application/json
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      [
+        {
+          "id": "string",
+          "name": "string",
+          "description": "string",
+          "source": "string",
+          "definition": {
+            "stages": [
+              {
+                "id": "string",
+                "name": "string",
+                "group": "string",
+                "dependsOn": [
+                  "string",
+                  "string"
+                ],
+                "steps": [
+                  {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  }
+                ]
+              },
+              {
+                "id": "string",
+                "name": "string",
+                "group": "string",
+                "dependsOn": [
+                  "string",
+                  "string"
+                ],
+                "steps": [
+                  {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  }
+                ]
+              }
+            ],
+            "schemaVersion": 1
+          }
+        },
+        {
+          "id": "string",
+          "name": "string",
+          "description": "string",
+          "source": "string",
+          "definition": {
+            "stages": [
+              {
+                "id": "string",
+                "name": "string",
+                "group": "string",
+                "dependsOn": [
+                  "string",
+                  "string"
+                ],
+                "steps": [
+                  {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  }
+                ]
+              },
+              {
+                "id": "string",
+                "name": "string",
+                "group": "string",
+                "dependsOn": [
+                  "string",
+                  "string"
+                ],
+                "steps": [
+                  {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  }
+                ]
+              }
+            ],
+            "schemaVersion": 1
+          }
+        }
+      ]
+order: 1000

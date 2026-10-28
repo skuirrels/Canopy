@@ -22,10 +22,12 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             var projects = data.Projects.ToList(); var items = data.Items.ToList(); var statuses = data.Statuses.ToList(); var dependencies = data.Dependencies.ToList(); var people = data.People.ToList();
             var connections = data.AgentConnections.ToList(); var runs = data.AgentRuns.ToList();
             var specFiles = data.SpecFiles.ToList();
+            var pipelines = data.FactoryPipelines.ToList(); var versions = data.PipelineVersions.ToList(); var taskFactory = data.TaskFactoryConfigurations.ToList();
             change(data);
             Sync(db, projects, data.Projects); Sync(db, items, data.Items); Sync(db, statuses, data.Statuses); Sync(db, dependencies, data.Dependencies); Sync(db, people, data.People);
             Sync(db, connections, data.AgentConnections); Sync(db, runs, data.AgentRuns);
             Sync(db, specFiles, data.SpecFiles);
+            Sync(db, pipelines, data.FactoryPipelines); Sync(db, versions, data.PipelineVersions); Sync(db, taskFactory, data.TaskFactoryConfigurations);
             await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct); return data;
         }
         finally { writer.Release(); }
@@ -36,6 +38,9 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
     {
         Projects = await db.Projects.OrderBy(x => x.CreatedAt).ToListAsync(ct),
         SpecFiles = await db.SpecFiles.ToListAsync(ct),
+        FactoryPipelines = await db.FactoryPipelines.OrderBy(x => x.CreatedAt).ToListAsync(ct),
+        PipelineVersions = await db.PipelineVersions.OrderBy(x => x.Number).ToListAsync(ct),
+        TaskFactoryConfigurations = await db.TaskFactoryConfigurations.ToListAsync(ct),
         AgentConnections = await db.AgentConnections.ToListAsync(ct), AgentRuns = await db.AgentRuns.OrderBy(x => x.CreatedAt).ToListAsync(ct),
         Items = await db.Items.Include(x => x.Assignments).AsSplitQuery().OrderBy(x => x.Position).ThenBy(x => x.CreatedAt).ToListAsync(ct),
         Statuses = await db.Statuses.OrderBy(x => x.Position).ToListAsync(ct),

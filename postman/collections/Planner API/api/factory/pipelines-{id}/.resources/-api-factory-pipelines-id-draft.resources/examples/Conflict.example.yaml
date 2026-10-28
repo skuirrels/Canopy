@@ -1,0 +1,131 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/pipelines/:id/draft"
+  method: PUT
+  headers:
+    Accept: application/problem+json
+  pathVariables:
+    - key: id
+      value: bdd42d42-d249-e242-eca9-fadd1296098d
+      disabled: false
+      description: "(Required) "
+  body:
+    type: json
+    content: |-
+      {
+        "expectedRevision": 0,
+        "expectedDraftRevision": -2531042,
+        "name": "string",
+        "description": "string",
+        "definition": {
+          "stages": [
+            {
+              "id": "string",
+              "name": "string",
+              "group": "string",
+              "dependsOn": [
+                "string",
+                "string"
+              ],
+              "steps": [
+                {
+                  "id": "string",
+                  "name": "string",
+                  "kind": "string",
+                  "instructions": null,
+                  "role": null,
+                  "permission": null,
+                  "provider": null,
+                  "model": null,
+                  "effort": null,
+                  "skills": null,
+                  "command": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "consumes": null,
+                  "produces": null
+                },
+                {
+                  "id": "string",
+                  "name": "string",
+                  "kind": "string",
+                  "instructions": null,
+                  "role": null,
+                  "permission": null,
+                  "provider": null,
+                  "model": null,
+                  "effort": null,
+                  "skills": null,
+                  "command": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "consumes": null,
+                  "produces": null
+                }
+              ]
+            },
+            {
+              "id": "string",
+              "name": "string",
+              "group": "string",
+              "dependsOn": [
+                "string",
+                "string"
+              ],
+              "steps": [
+                {
+                  "id": "string",
+                  "name": "string",
+                  "kind": "string",
+                  "instructions": null,
+                  "role": null,
+                  "permission": null,
+                  "provider": null,
+                  "model": null,
+                  "effort": null,
+                  "skills": null,
+                  "command": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "consumes": null,
+                  "produces": null
+                },
+                {
+                  "id": "string",
+                  "name": "string",
+                  "kind": "string",
+                  "instructions": null,
+                  "role": null,
+                  "permission": null,
+                  "provider": null,
+                  "model": null,
+                  "effort": null,
+                  "skills": null,
+                  "command": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "consumes": null,
+                  "produces": null
+                }
+              ]
+            }
+          ],
+          "schemaVersion": 1
+        }
+      }
+response:
+  statusCode: 409
+  statusText: Conflict
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": null,
+        "title": null,
+        "status": "-8346",
+        "detail": null,
+        "instance": null
+      }
+order: 5000

@@ -1,0 +1,15 @@
+$kind: http-request
+name: /api/factory/projects/:id/pipelines
+description: ""
+url: "{{baseUrl}}/api/factory/projects/:id/pipelines"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: bdd42d42-d249-e242-eca9-fadd1296098d
+    disabled: false
+    description: "(Required) "
+settings: {}
+examples: ./.resources/-api-factory-projects-id-pipelines.resources/examples
+order: 1000

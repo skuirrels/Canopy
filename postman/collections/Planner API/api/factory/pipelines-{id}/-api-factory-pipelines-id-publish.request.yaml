@@ -1,0 +1,23 @@
+$kind: http-request
+name: /api/factory/pipelines/:id/publish
+description: ""
+url: "{{baseUrl}}/api/factory/pipelines/:id/publish"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: bdd42d42-d249-e242-eca9-fadd1296098d
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "expectedRevision": -648592,
+      "expectedDraftRevision": 0
+    }
+settings: {}
+examples: ./.resources/-api-factory-pipelines-id-publish.resources/examples
+order: 3000

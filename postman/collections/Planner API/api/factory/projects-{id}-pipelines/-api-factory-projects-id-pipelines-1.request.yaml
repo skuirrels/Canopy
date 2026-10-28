@@ -1,0 +1,27 @@
+$kind: http-request
+name: /api/factory/projects/:id/pipelines
+description: ""
+url: "{{baseUrl}}/api/factory/projects/:id/pipelines"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: bdd42d42-d249-e242-eca9-fadd1296098d
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "expectedRevision": -582,
+      "name": "string",
+      "description": "string",
+      "templateId": null,
+      "definition": null,
+      "source": null
+    }
+settings: {}
+examples: ./.resources/-api-factory-projects-id-pipelines-1.resources/examples
+order: 2000

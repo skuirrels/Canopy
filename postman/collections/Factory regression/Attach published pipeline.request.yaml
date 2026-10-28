@@ -1,0 +1,18 @@
+$kind: http-request
+method: PUT
+url: '{{baseUrl}}/api/factory/tasks/{{taskId}}/configuration'
+order: 6000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"expectedRevision":{{revision}},"pipelineVersionId":"{{versionId}}","overrides":{"steps":[]}}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Attached',()=>pm.response.to.have.status(200)); const d=pm.response.json(); pm.collectionVariables.set('revision',d.projectRevision);
+      pm.test('Attachment pins exact version',()=>pm.expect(d.version).to.eql(JSON.parse(pm.collectionVariables.get('version'))));
+      pm.test('No implicit upgrade',()=>pm.expect(d.updateAvailable).to.eql(false));

@@ -1,0 +1,30 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/pipelines/:id"
+  method: GET
+  headers:
+    Accept: application/problem+json
+  pathVariables:
+    - key: id
+      value: bdd42d42-d249-e242-eca9-fadd1296098d
+      disabled: false
+      description: "(Required) "
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 403
+  statusText: Forbidden
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": null,
+        "title": null,
+        "status": "-8346",
+        "detail": null,
+        "instance": null
+      }
+order: 2000
