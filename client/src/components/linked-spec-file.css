@@ -1,0 +1,9 @@
+.linked-spec-file { padding: 10px 0; border-bottom: 1px solid var(--line); margin-bottom: 8px; min-width: 0; }
+.linked-spec-heading, .linked-spec-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.linked-spec-heading { color: var(--body-text); font-size: 12px; }
+.linked-spec-heading .icon-button { margin-left: auto; }
+.linked-spec-path { display: block; overflow-wrap: anywhere; white-space: pre-wrap; user-select: text; font-size: 11px; margin: 7px 0; }
+.linked-spec-file p { font-size: 11px; color: var(--body-text); line-height: 1.5; margin: 6px 0; }
+.linked-spec-actions { gap: 8px 14px; }
+.linked-spec-preview { font-family: ui-monospace, monospace; }
+.linked-spec-file .linked-spec-error, .linked-spec-error { color: var(--danger, #b83e50); font-size: 12px; }

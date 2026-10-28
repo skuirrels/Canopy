@@ -125,6 +125,7 @@ public sealed class WorkItem
         if (hours.HasValue && (!double.IsFinite(hours.Value) || hours.Value < 0)) throw new RuleException("Estimated hours must be a finite number of zero or more.");
         EstimatedHours = hours; UpdatedAt = DateTime.UtcNow;
     }
+    public void Specify(string specJson) { SpecJson = Rules.Spec(specJson); UpdatedAt = DateTime.UtcNow; }
     public void Move(Guid? parent, Guid status, int position) { if (ParentId != parent) { X = null; Y = null; } ParentId = parent; StatusId = status; Position = position; UpdatedAt = DateTime.UtcNow; }
     public void Order(int position) => Position = position;
     public void OrderSibling(int position) => SiblingPosition = position;

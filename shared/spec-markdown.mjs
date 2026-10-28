@@ -1,5 +1,15 @@
 // One codec for browser imports and MCP. Consumers supply their Tiptap runtime.
 export const MAX_SPEC_BYTES = 2_000_000;
+export function createSpecStarterKit(starterKit) {
+ return starterKit.extend({
+  addExtensions() {
+   return this.parent().map(extension => extension.name === 'code'
+    // Markdown permits emphasis and links around code spans. Keep code innermost
+    // when serializing, so emphasis delimiters do not become literal code text.
+    ? extension.extend({ excludes: '', priority: 50 }) : extension);
+  },
+ });
+}
 export function createSpecCodec(manager, schema) {
  const checkBytes = value => { if (new TextEncoder().encode(value).byteLength > MAX_SPEC_BYTES) throw new Error('The specification is too large (maximum 2 MB, including rich-text JSON).'); };
  function parseMarkdown(markdown) {

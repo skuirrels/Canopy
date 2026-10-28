@@ -7,6 +7,15 @@ import { parseMarkdown, toMarkdown, specJson, readMarkdownFile, MAX_SPEC_BYTES }
 import { loadConfig } from '../src/config.mjs';
 
 const sample='# Acceptance specification\n\n**Bold** and *italic* with [reference](https://example.com).\n\n- [x] Complete\n  - [ ] Nested check\n\n> Keep the evidence.\n\n```js\nconst ready = true;\n```\n\n| Requirement | Result |\n| --- | --- |\n| API | Ready |';
+test('MCP uploads preserve styled and linked inline code without treating Markdown delimiters as code text', () => {
+ const markdown = '**`bold_code`** and *`italic_code`* and ~~`struck_code`~~ and ***`both_styles`*** and [`linked_code`](index.html).';
+ const doc = parseMarkdown(markdown);
+ assert.equal(toMarkdown(doc).trim(), markdown);
+ assert.deepEqual(parseMarkdown(toMarkdown(doc)), doc);
+ const previous = JSON.stringify(parseMarkdown('Existing specification.'));
+ assert.ok(toMarkdown(JSON.parse(specJson(markdown, previous, 'append'))).includes(markdown));
+ assert.equal(toMarkdown(JSON.parse(specJson(markdown, previous, 'replace'))).trim(), markdown);
+});
 test('Markdown specs retain headings, formatting, nested checks, quotes, code and tables through a native document roundtrip',()=>{
  const doc=parseMarkdown(sample);const serialized=toMarkdown(doc);const roundtrip=parseMarkdown(serialized);
  for(const type of ['heading','taskList','taskItem','blockquote','codeBlock','table','link','bold','italic'])assert.ok(JSON.stringify(roundtrip).includes(`"${type}"`),type);

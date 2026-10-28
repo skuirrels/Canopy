@@ -14,12 +14,12 @@
   --decoration: #94a3b8;
   --border-hover: #cbd5e1;
   --line: #e2e8f0;
-  --theme-accent-source: #142d4e;
-  --accent: #142d4e;
-  --accent-fill: #142d4e;
-  --accent-hover: #203e63;
-  --accent-border: #294565;
-  --on-accent-muted: #d4deeb;
+  --theme-accent-source: #2f7258;
+  --accent: #2f7258;
+  --accent-fill: #2f7258;
+  --accent-hover: #29644d;
+  --accent-border: #97b9ac;
+  --on-accent-muted: #ffffff;
   --map-grid: #cbd5e1;
   --map-tree: #94a3b8;
   --map-dependency: #c29141;
@@ -44,13 +44,12 @@
   --decoration: #777784;
   --border-hover: #51515e;
   --line: #303036;
-  --theme-accent-source: #ff0073;
-  --accent: #ff4f9c;
-  /* The deeper fill keeps white button labels readable at 14px. */
-  --accent-fill: #df0065;
-  --accent-hover: #c50059;
-  --accent-border: #883555;
-  --on-accent-muted: #f4c6db;
+  --theme-accent-source: #2f7258;
+  --accent: #558c76;
+  --accent-fill: #2f7258;
+  --accent-hover: #29644d;
+  --accent-border: #24463b;
+  --on-accent-muted: #ffffff;
   --map-grid: #37373f;
   --map-tree: #777784;
   --map-dependency: #e4b16c;

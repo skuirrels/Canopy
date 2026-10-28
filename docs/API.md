@@ -27,3 +27,5 @@ GET /openapi/v1.json: generated OpenAPI from these implemented endpoint contract
 Work items expose position for Kanban ordering within a parent/status, and siblingPosition for Components ordering within a parent across statuses. Both are persisted independently of map layout. Completion is explicitly configured on a column. Parent progress is calculated from descendant completion, never from fixed example values. IDs are client-opaque UUIDs.
 
 The database uses logical relationships validated in the domain aggregate and committed transactionally. Scalar UUID references deliberately avoid DuckDB's restrictions on updating referenced principal rows; no alternate runtime persistence path exists.
+
+Linked local Markdown files use `/api/spec-files` endpoints and add `specFiles` to workspace snapshots. See [linked specification contract](LINKED-SPECIFICATIONS.md) for preview/load/write/unlink payloads, local access rules and filesystem conflict semantics.

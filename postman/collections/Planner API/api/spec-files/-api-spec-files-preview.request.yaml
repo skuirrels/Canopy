@@ -1,0 +1,17 @@
+$kind: http-request
+name: /api/spec-files/preview
+description: ""
+url: "{{baseUrl}}/api/spec-files/preview"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "path": "string"
+    }
+settings: {}
+examples: ./.resources/-api-spec-files-preview.resources/examples
+order: 1000

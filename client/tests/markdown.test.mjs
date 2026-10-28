@@ -23,3 +23,19 @@ test('unsupported imports fail before replacing a specification', () => {
  for (const markdown of ['<script>alert(1)</script>', '![image](image.png)', '[unsafe](javascript:alert%281%29)'])
   assert.throws(() => parseMarkdown(markdown));
 });
+
+test('styled inline code retains emphasis and links through import, export, append and replace', () => {
+ const markdown = '**`bold_code`** and *`italic_code`* and ~~`struck_code`~~ and ***`both_styles`*** and [`linked_code`](index.html).';
+ const document = parseMarkdown(markdown);
+ const text = document.content[0].content.filter(node => node.marks?.some(mark => mark.type === 'code'));
+ assert.deepEqual(text.map(node => node.marks.map(mark => mark.type).sort()), [
+  ['bold', 'code'], ['code', 'italic'], ['code', 'strike'], ['bold', 'code', 'italic'], ['code', 'link'],
+ ]);
+ assert.equal(toMarkdown(document).trim(), markdown);
+ assert.deepEqual(parseMarkdown(toMarkdown(document)), document);
+ const previous = JSON.stringify(parseMarkdown('Keep existing wording.'));
+ const appended = toMarkdown(JSON.parse(specJson(markdown, previous, 'append')));
+ assert.ok(appended.includes('Keep existing wording.'));
+ assert.ok(appended.includes(markdown));
+ assert.equal(toMarkdown(JSON.parse(specJson(markdown, previous, 'replace'))).trim(), markdown);
+});

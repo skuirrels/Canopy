@@ -12,6 +12,7 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<WorkItemAssignee> Assignments => Set<WorkItemAssignee>();
     public DbSet<ProjectAgentConnection> AgentConnections => Set<ProjectAgentConnection>();
     public DbSet<AgentRun> AgentRuns => Set<AgentRun>();
+    public DbSet<SpecFileLink> SpecFiles => Set<SpecFileLink>();
     protected override void OnModelCreating(ModelBuilder model)
     {
         model.Entity<Project>().HasKey(x => x.Id);
@@ -23,6 +24,7 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
         model.Entity<ProjectAgentConnection>().Ignore(x => x.Model).Ignore(x => x.Settings);
         model.Entity<ProjectAgentConnection>().HasIndex(x => x.ProjectId).IsUnique();
         model.Entity<AgentRun>().HasKey(x => x.Id);
+        model.Entity<SpecFileLink>().HasKey(x => x.Id);
         model.Entity<AgentRun>().Ignore(x => x.Active);
         model.Entity<AgentRun>().HasIndex(x => x.RequestId).IsUnique();
         model.Entity<AgentRun>().HasIndex(x => x.ItemId);

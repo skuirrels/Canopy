@@ -14,6 +14,8 @@ builder.Services.AddDbContextFactory<PlannerDb>(options => options.UseDuckDB($"D
 builder.Services.AddSingleton<IWorkspaceStore, DuckDbWorkspaceStore>();
 builder.Services.AddSingleton<IReadOnlyList<WorkflowDefault>>(builder.Configuration.GetSection("WorkflowDefaults").Get<List<WorkflowDefault>>() ?? []);
 builder.Services.AddScoped<PlannerService>();
+builder.Services.AddSingleton<IMarkdownFiles, LocalMarkdownFiles>();
+builder.Services.AddScoped<SpecFileService>();
 var agentOptions = builder.Configuration.GetSection("Agents").Get<AgentOptions>() ?? throw new InvalidOperationException("Configure Agents.");
 agentOptions.WorkspaceRoot = Path.GetFullPath(agentOptions.WorkspaceRoot, builder.Environment.ContentRootPath);
 agentOptions.Validate();
@@ -37,6 +39,7 @@ await using (var scope = app.Services.CreateAsyncScope())
 }
 app.MapOpenApi();
 app.MapAgentEndpoints();
+app.MapSpecFileEndpoints();
 app.UseDefaultFiles(); app.UseStaticFiles();
 app.MapGet("/api/health", () => Results.Ok(new { status = "ready", database = "DuckDB", authentication = "phase-2" }));
 app.MapGet("/api/workspace", (PlannerService service, CancellationToken ct) => service.Read(ct));

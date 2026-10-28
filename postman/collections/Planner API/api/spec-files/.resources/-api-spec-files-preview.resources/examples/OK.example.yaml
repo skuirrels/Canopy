@@ -1,0 +1,26 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/spec-files/preview"
+  method: POST
+  headers:
+    Accept: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "path": "string"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "path": "string",
+        "markdown": "string",
+        "hash": "string"
+      }
+order: 1000
