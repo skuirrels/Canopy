@@ -1,0 +1,18 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/pipelines'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"expectedRevision":{{revision}},"name":"Contract pipeline","description":"Test only","templateId":"{{templateId}}"}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Draft created',()=>pm.response.to.have.status(201));
+      const d=pm.response.json(); pm.collectionVariables.set('pipelineId',d.pipeline.id); pm.collectionVariables.set('draftRevision',d.pipeline.draftRevision); pm.collectionVariables.set('revision',d.projectRevision);
+      pm.test('Draft is not published',()=>pm.expect(d.versions).to.have.lengthOf(0));

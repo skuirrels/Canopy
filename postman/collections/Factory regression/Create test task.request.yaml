@@ -1,0 +1,18 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/projects/{{projectId}}/items'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"expectedRevision":{{revision}},"title":"Factory contract task"}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Task created',()=>pm.response.to.have.status(200));
+      const d=pm.response.json(); const p=d.projects.find(p=>p.id===pm.collectionVariables.get('projectId')); const t=d.items.find(t=>t.projectId===p.id);
+      pm.collectionVariables.set('taskId',t.id); pm.collectionVariables.set('revision',p.revision); pm.collectionVariables.set('statusId',t.statusId);

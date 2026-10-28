@@ -1,0 +1,128 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/versions/:id"
+  method: GET
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: id
+      value: bdd42d42-d249-e242-eca9-fadd1296098d
+      disabled: false
+      description: "(Required) "
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "id": "7f1c23ad-553e-0186-7d7b-ec8f9b10918f",
+        "pipelineId": "9124ec19-2c9e-8f6b-22b9-038a999df1d7",
+        "projectId": "7828da2b-533c-4ebd-e2fd-9f44a8398036",
+        "number": 51354840,
+        "name": "string",
+        "description": "string",
+        "source": "string",
+        "definition": {
+          "stages": [
+            {
+              "id": "string",
+              "name": "string",
+              "group": "string",
+              "dependsOn": [
+                "string",
+                "string"
+              ],
+              "steps": [
+                {
+                  "id": "string",
+                  "name": "string",
+                  "kind": "string",
+                  "instructions": null,
+                  "role": null,
+                  "permission": null,
+                  "provider": null,
+                  "model": null,
+                  "effort": null,
+                  "skills": null,
+                  "command": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "consumes": null,
+                  "produces": null
+                },
+                {
+                  "id": "string",
+                  "name": "string",
+                  "kind": "string",
+                  "instructions": null,
+                  "role": null,
+                  "permission": null,
+                  "provider": null,
+                  "model": null,
+                  "effort": null,
+                  "skills": null,
+                  "command": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "consumes": null,
+                  "produces": null
+                }
+              ]
+            },
+            {
+              "id": "string",
+              "name": "string",
+              "group": "string",
+              "dependsOn": [
+                "string",
+                "string"
+              ],
+              "steps": [
+                {
+                  "id": "string",
+                  "name": "string",
+                  "kind": "string",
+                  "instructions": null,
+                  "role": null,
+                  "permission": null,
+                  "provider": null,
+                  "model": null,
+                  "effort": null,
+                  "skills": null,
+                  "command": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "consumes": null,
+                  "produces": null
+                },
+                {
+                  "id": "string",
+                  "name": "string",
+                  "kind": "string",
+                  "instructions": null,
+                  "role": null,
+                  "permission": null,
+                  "provider": null,
+                  "model": null,
+                  "effort": null,
+                  "skills": null,
+                  "command": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "consumes": null,
+                  "produces": null
+                }
+              ]
+            }
+          ],
+          "schemaVersion": 1
+        },
+        "publishedAt": "1979-05-07T04:15:30.148Z"
+      }
+order: 1000

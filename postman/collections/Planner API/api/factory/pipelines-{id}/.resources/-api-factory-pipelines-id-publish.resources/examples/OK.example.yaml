@@ -1,0 +1,196 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/pipelines/:id/publish"
+  method: POST
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: id
+      value: bdd42d42-d249-e242-eca9-fadd1296098d
+      disabled: false
+      description: "(Required) "
+  body:
+    type: json
+    content: |-
+      {
+        "expectedRevision": -648592,
+        "expectedDraftRevision": 0
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "projectRevision": 7623,
+        "pipeline": {
+          "id": "3ea60fdd-d63c-38cd-8181-6975ed2383f5",
+          "projectId": "fdae3a44-63c7-c14c-71c4-b73f76a77052",
+          "name": "string",
+          "description": "string",
+          "source": "string",
+          "definition": {
+            "stages": [
+              {
+                "id": "string",
+                "name": "string",
+                "group": "string",
+                "dependsOn": [
+                  "string",
+                  "string"
+                ],
+                "steps": [
+                  {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  }
+                ]
+              },
+              {
+                "id": "string",
+                "name": "string",
+                "group": "string",
+                "dependsOn": [
+                  "string",
+                  "string"
+                ],
+                "steps": [
+                  {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  }
+                ]
+              }
+            ],
+            "schemaVersion": 1
+          },
+          "draftRevision": -611500,
+          "publishedDraftRevision": 0,
+          "archived": false,
+          "createdAt": "2020-08-25T16:58:09.854Z"
+        },
+        "versions": [
+          {
+            "id": "c0a4fb68-b30d-260a-274b-2033e7822c42",
+            "pipelineId": "542116f8-ec5d-539e-d559-c2eedda7d990",
+            "projectId": "58fb01f7-23bd-7e43-b555-e602d1daf759",
+            "number": 0,
+            "name": "string",
+            "description": "string",
+            "source": "string",
+            "definition": {
+              "stages": [
+                {
+                  "id": "string",
+                  "name": "string",
+                  "group": "string",
+                  "dependsOn": [
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    },
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    }
+                  ],
+                  "steps": [
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    },
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    }
+                  ]
+                },
+                {
+                  "id": "string",
+                  "name": "string",
+                  "group": "string",
+                  "dependsOn": [
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    },
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    }
+                  ],
+                  "steps": [
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    },
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    }
+                  ]
+                }
+              ],
+              "schemaVersion": 1
+            },
+            "publishedAt": "2004-11-23T15:49:19.824Z"
+          },
+          {
+            "id": "5905cf18-e90a-fb86-066d-58afaf6506b8",
+            "pipelineId": "b82d93e9-38b4-08ec-966f-a0a8eb5e9f9a",
+            "projectId": "d59d87de-b7a5-ce68-23ec-35f46ca008ed",
+            "number": 0,
+            "name": "string",
+            "description": "string",
+            "source": "string",
+            "definition": {
+              "stages": [
+                {
+                  "id": "string",
+                  "name": "string",
+                  "group": "string",
+                  "dependsOn": [
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    },
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    }
+                  ],
+                  "steps": [
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    },
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    }
+                  ]
+                },
+                {
+                  "id": "string",
+                  "name": "string",
+                  "group": "string",
+                  "dependsOn": [
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    },
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    }
+                  ],
+                  "steps": [
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    },
+                    {
+                      "value": "<Error: Too many levels of nesting to fake this schema>"
+                    }
+                  ]
+                }
+              ],
+              "schemaVersion": 1
+            },
+            "publishedAt": "2025-04-26T05:49:20.650Z"
+          }
+        ]
+      }
+order: 1000

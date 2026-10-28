@@ -1,0 +1,20 @@
+$kind: http-request
+name: /api/factory/tasks/:id/configuration
+description: ""
+url: "{{baseUrl}}/api/factory/tasks/:id/configuration?expectedRevision=-9449192"
+method: DELETE
+headers:
+  Accept: application/json
+queryParams:
+  - key: expectedRevision
+    value: "-9449192"
+    disabled: false
+    description: "(Required) "
+pathVariables:
+  - key: id
+    value: bdd42d42-d249-e242-eca9-fadd1296098d
+    disabled: false
+    description: "(Required) "
+settings: {}
+examples: ./.resources/-api-factory-tasks-id-configuration-2.resources/examples
+order: 3000

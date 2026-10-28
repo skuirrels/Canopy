@@ -1,0 +1,33 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/tasks/:id/configuration?expectedRevision=-9449192"
+  method: DELETE
+  headers:
+    Accept: application/json
+  queryParams:
+    expectedRevision: "-9449192"
+  pathVariables:
+    - key: id
+      value: bdd42d42-d249-e242-eca9-fadd1296098d
+      disabled: false
+      description: "(Required) "
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "projectRevision": 0,
+        "configuration": null,
+        "version": null,
+        "resolvedDefinition": null,
+        "updateAvailable": true,
+        "archived": false
+      }
+order: 1000

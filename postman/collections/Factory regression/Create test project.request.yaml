@@ -1,0 +1,22 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/projects'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"name":"{{runName}}","description":"Temporary factory contract checks","color":"#376881"}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      pm.collectionVariables.set('runName','Factory regression '+pm.variables.replaceIn('{{$guid}}'));
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Project created',()=>pm.response.to.have.status(200));
+      const p=pm.response.json().projects.find(p=>p.name===pm.collectionVariables.get('runName'));
+      pm.collectionVariables.set('projectId',p.id); pm.collectionVariables.set('revision',p.revision);

@@ -1,0 +1,365 @@
+{
+  "FactoryTemplates": [
+    {
+      "id": "standard-implementation",
+      "name": "Standard implementation",
+      "description": "Prepare, implement, verify, review and accept. Configure the actual verification command before publishing.",
+      "source": "Canopy factory-templates.json / standard-implementation / version 1",
+      "definition": {
+        "stages": [
+          {
+            "id": "prepare",
+            "name": "Prepare work order",
+            "group": "Prepare",
+            "dependsOn": [],
+            "steps": [
+              {
+                "id": "confirm",
+                "name": "Confirm specification and acceptance criteria",
+                "kind": "manual",
+                "instructions": "Review the saved specification, acceptance criteria and configured inputs before execution."
+              }
+            ]
+          },
+          {
+            "id": "build",
+            "name": "Implement",
+            "group": "Build",
+            "dependsOn": [
+              "prepare"
+            ],
+            "steps": [
+              {
+                "id": "implement",
+                "name": "Implement the task",
+                "kind": "agent",
+                "role": "implementation",
+                "permission": "workspace-write",
+                "instructions": "Implement the task using the saved task specification and acceptance criteria.",
+                "produces": [
+                  "changes"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "verify",
+            "name": "Verify",
+            "group": "Check",
+            "dependsOn": [
+              "build"
+            ],
+            "steps": [
+              {
+                "id": "checks",
+                "name": "Run project verification",
+                "kind": "command",
+                "consumes": [
+                  "changes"
+                ],
+                "produces": [
+                  "verification"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "review",
+            "name": "Review evidence",
+            "group": "Check",
+            "dependsOn": [
+              "verify"
+            ],
+            "steps": [
+              {
+                "id": "review",
+                "name": "Review changes and verification evidence",
+                "kind": "agent",
+                "role": "review",
+                "permission": "read-only",
+                "instructions": "Review changes and verification evidence using the saved task specification and acceptance criteria.",
+                "produces": [
+                  "review-report"
+                ],
+                "consumes": [
+                  "changes",
+                  "verification"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "handoff",
+            "name": "Accept result",
+            "group": "Hand off",
+            "dependsOn": [
+              "review"
+            ],
+            "steps": [
+              {
+                "id": "accept",
+                "name": "Accept reviewed result",
+                "kind": "manual",
+                "instructions": "Inspect the diff, verification evidence and review report before accepting. Task status remains an explicit separate action.",
+                "consumes": [
+                  "review-report"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "bug-fix",
+      "name": "Bug fix",
+      "description": "Reproduce the reported issue, implement a fix, verify and review. Add relevant skills explicitly.",
+      "source": "Canopy factory-templates.json / bug-fix / version 1",
+      "definition": {
+        "stages": [
+          {
+            "id": "prepare",
+            "name": "Prepare work order",
+            "group": "Prepare",
+            "dependsOn": [],
+            "steps": [
+              {
+                "id": "confirm",
+                "name": "Confirm specification and acceptance criteria",
+                "kind": "manual",
+                "instructions": "Review the saved specification, acceptance criteria and configured inputs before execution."
+              }
+            ]
+          },
+          {
+            "id": "build",
+            "name": "Reproduce and fix",
+            "group": "Build",
+            "dependsOn": [
+              "prepare"
+            ],
+            "steps": [
+              {
+                "id": "implement",
+                "name": "Implement the task",
+                "kind": "agent",
+                "role": "implementation",
+                "permission": "workspace-write",
+                "instructions": "Implement the task using the saved task specification and acceptance criteria.",
+                "produces": [
+                  "changes"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "verify",
+            "name": "Verify",
+            "group": "Check",
+            "dependsOn": [
+              "build"
+            ],
+            "steps": [
+              {
+                "id": "checks",
+                "name": "Run project verification",
+                "kind": "command",
+                "consumes": [
+                  "changes"
+                ],
+                "produces": [
+                  "verification"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "review",
+            "name": "Review evidence",
+            "group": "Check",
+            "dependsOn": [
+              "verify"
+            ],
+            "steps": [
+              {
+                "id": "review",
+                "name": "Review changes and verification evidence",
+                "kind": "agent",
+                "role": "review",
+                "permission": "read-only",
+                "instructions": "Review changes and verification evidence using the saved task specification and acceptance criteria.",
+                "produces": [
+                  "review-report"
+                ],
+                "consumes": [
+                  "changes",
+                  "verification"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "handoff",
+            "name": "Accept result",
+            "group": "Hand off",
+            "dependsOn": [
+              "review"
+            ],
+            "steps": [
+              {
+                "id": "accept",
+                "name": "Accept reviewed result",
+                "kind": "manual",
+                "instructions": "Inspect the diff, verification evidence and review report before accepting. Task status remains an explicit separate action.",
+                "consumes": [
+                  "review-report"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "specification",
+      "name": "Specification only",
+      "description": "Read-only agent writing with explicit human acceptance.",
+      "source": "Canopy factory-templates.json / specification / version 1",
+      "definition": {
+        "stages": [
+          {
+            "id": "write",
+            "name": "Specification only",
+            "group": "Prepare",
+            "dependsOn": [],
+            "steps": [
+              {
+                "id": "write",
+                "name": "Specification only",
+                "kind": "agent",
+                "role": "specification",
+                "permission": "read-only",
+                "instructions": "Specification only using the saved task specification and acceptance criteria.",
+                "produces": [
+                  "document"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "accept",
+            "name": "Accept document",
+            "group": "Hand off",
+            "dependsOn": [
+              "write"
+            ],
+            "steps": [
+              {
+                "id": "accept",
+                "name": "Review and accept document",
+                "kind": "manual",
+                "instructions": "Review the generated Markdown before importing it.",
+                "consumes": [
+                  "document"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "documentation",
+      "name": "Documentation",
+      "description": "Read-only agent writing with explicit human acceptance.",
+      "source": "Canopy factory-templates.json / documentation / version 1",
+      "definition": {
+        "stages": [
+          {
+            "id": "write",
+            "name": "Documentation",
+            "group": "Prepare",
+            "dependsOn": [],
+            "steps": [
+              {
+                "id": "write",
+                "name": "Documentation",
+                "kind": "agent",
+                "role": "documentation",
+                "permission": "read-only",
+                "instructions": "Documentation using the saved task specification and acceptance criteria.",
+                "produces": [
+                  "document"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "accept",
+            "name": "Accept document",
+            "group": "Hand off",
+            "dependsOn": [
+              "write"
+            ],
+            "steps": [
+              {
+                "id": "accept",
+                "name": "Review and accept document",
+                "kind": "manual",
+                "instructions": "Review the generated Markdown before importing it.",
+                "consumes": [
+                  "document"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "verification",
+      "name": "Verification only",
+      "description": "Configure checks for an existing revision, then review their evidence.",
+      "source": "Canopy factory-templates.json / verification / version 1",
+      "definition": {
+        "stages": [
+          {
+            "id": "verify",
+            "name": "Verify existing work",
+            "group": "Check",
+            "dependsOn": [],
+            "steps": [
+              {
+                "id": "checks",
+                "name": "Run project verification",
+                "kind": "command",
+                "produces": [
+                  "verification"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "accept",
+            "name": "Accept verification",
+            "group": "Hand off",
+            "dependsOn": [
+              "verify"
+            ],
+            "steps": [
+              {
+                "id": "accept",
+                "name": "Review verification",
+                "kind": "manual",
+                "instructions": "Review the actual verification results.",
+                "consumes": [
+                  "verification"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

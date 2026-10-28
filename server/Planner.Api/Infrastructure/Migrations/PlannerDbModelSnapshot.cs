@@ -149,6 +149,49 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("Dependencies");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.FactoryPipeline", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<bool>("Archived")
+                        .HasColumnType("BOOLEAN");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("DefinitionJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<long>("DraftRevision")
+                        .HasColumnType("BIGINT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<long>("PublishedDraftRevision")
+                        .HasColumnType("BIGINT");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("FactoryPipelines");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.Person", b =>
                 {
                     b.Property<Guid>("Id")
@@ -161,6 +204,47 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("People");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.PipelineVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("DefinitionJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("PipelineId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<DateTime>("PublishedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PipelineId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("PipelineVersions");
                 });
 
             modelBuilder.Entity("Planner.Api.Domain.Project", b =>
@@ -254,6 +338,28 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SpecFiles");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.TaskFactoryConfiguration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("OverridesJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("PipelineVersionId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("TaskFactoryConfigurations");
                 });
 
             modelBuilder.Entity("Planner.Api.Domain.WorkItem", b =>

@@ -1,0 +1,17 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/factory/pipelines/{{pipelineId}}/publish'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"expectedRevision":{{revision}},"expectedDraftRevision":{{draftRevision}}}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Published',()=>pm.response.to.have.status(200));
+      const d=pm.response.json(); pm.collectionVariables.set('versionId',d.versions[0].id); pm.collectionVariables.set('version',JSON.stringify(d.versions[0])); pm.collectionVariables.set('revision',d.projectRevision);

@@ -1,0 +1,10 @@
+$kind: http-request
+name: /api/factory/templates
+description: ""
+url: "{{baseUrl}}/api/factory/templates"
+method: GET
+headers:
+  Accept: application/json
+settings: {}
+examples: ./.resources/-api-factory-templates.resources/examples
+order: 1000

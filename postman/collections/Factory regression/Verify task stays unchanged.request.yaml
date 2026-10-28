@@ -1,0 +1,10 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/workspace'
+order: 10000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const d=pm.response.json(); const t=d.items.find(t=>t.id===pm.collectionVariables.get('taskId'));
+      pm.test('Configuration leaves task state alone',()=>{pm.expect(t.statusId).to.eql(pm.collectionVariables.get('statusId'));pm.expect(t.parentId).to.eql(null);});

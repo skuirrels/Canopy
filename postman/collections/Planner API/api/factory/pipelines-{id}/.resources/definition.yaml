@@ -1,0 +1,3 @@
+$kind: collection
+name: pipelines/{id}
+order: 4000

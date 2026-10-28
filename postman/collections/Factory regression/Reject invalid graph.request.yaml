@@ -1,0 +1,19 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/factory/validate'
+order: 7000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {{invalidDefinition}}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Validation returns diagnostics',()=>pm.response.to.have.status(200)); const d=pm.response.json();
+      pm.test('Self dependency invalid',()=>pm.expect(d.valid).to.eql(false));
+      pm.test('Diagnostic identifies dependency',()=>pm.expect(d.diagnostics.some(x=>x.code==='dependency.invalid'&&x.stageId)).to.eql(true));
+      pm.test('Execution remains unevaluated',()=>pm.expect(d.executionReadiness).to.eql('notEvaluated'));
