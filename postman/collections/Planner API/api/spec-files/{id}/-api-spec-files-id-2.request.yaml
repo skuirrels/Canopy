@@ -1,0 +1,20 @@
+$kind: http-request
+name: /api/spec-files/:id
+description: ""
+url: "{{baseUrl}}/api/spec-files/:id?expectedRevision=-98213"
+method: DELETE
+headers:
+  Accept: application/json
+queryParams:
+  - key: expectedRevision
+    value: "-98213"
+    disabled: false
+    description: "(Required) "
+pathVariables:
+  - key: id
+    value: ba73cbbb-0c75-1b11-e2c1-09de775daa67
+    disabled: false
+    description: "(Required) "
+settings: {}
+examples: ./.resources/-api-spec-files-id-2.resources/examples
+order: 3000

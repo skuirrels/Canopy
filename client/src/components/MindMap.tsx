@@ -10,7 +10,8 @@ import { descendants, fields, dateLabel, assignedPeople } from '../lib/types';
 import type { Item, Project, Status, Person } from '../lib/types';
 import { displayMapPoint, storedMapPoint, MAP_NODE_WIDTH as NODE_WIDTH, MAP_NODE_HEIGHT as NODE_HEIGHT } from '../lib/map-layout';
 import type { MapDirection } from '../lib/map-layout';
-import { initialMapDirection, mapDirectionKey, mapFitPadding, MAP_MIN_ZOOM } from '../lib/map-view';
+import { initialMapDirection, mapDirectionKey, mapFitPadding, MAP_MIN_ZOOM, MAP_MAX_ZOOM, MAP_START_ZOOM, initialMapViewport, mapViewportKey, savedMapViewport } from '../lib/map-view';
+import type { MapViewport } from '../lib/map-view';
 import { AssigneeAvatars, PriorityIcon } from './TaskCard';
 import { Button } from './ui/button';
 import '@xyflow/react/dist/style.css';
@@ -35,41 +36,61 @@ function MapCard({ id, data }: NodeProps<MapNode>) {
 }
 const nodeTypes = { task: MapCard };
 const elk = new ELK({ workerUrl: elkWorker, algorithms: ['layered'] });
+function mapOverlayInsets(root: HTMLElement, toolbar: HTMLElement | null) {
+ const box = root.getBoundingClientRect();
+ const top = toolbar ? toolbar.getBoundingClientRect().bottom - box.top : 0;
+ const overlays = root.querySelectorAll<HTMLElement>('.react-flow__controls,.react-flow__minimap,.map-hint');
+ const bottom = Math.max(0, ...[...overlays].filter(element => element.getClientRects().length).map(element => box.bottom - element.getBoundingClientRect().top));
+ return { top, bottom };
+}
 function MapCanvas({ project, items, focusId, onOpen, onFocus, onAdd }: { project: Project; items: Item[]; focusId: string | null; onOpen: (id: string) => void; onFocus: (id: string) => void; onAdd: (parent?: string | null) => void }) {
- const { data, pending, mutate } = useWorkspace(); const { fitView, getIntersectingNodes, getNodesBounds, viewportInitialized } = useReactFlow();
+ const { data, pending, mutate } = useWorkspace(); const { fitView, setViewport, getNodes, getIntersectingNodes, getNodesBounds, viewportInitialized } = useReactFlow();
  const nodesInitialized = useNodesInitialized();
  const [fitRevision, setFitRevision] = useState(0);
- const dropTarget = useRef<string | null>(null); const preserveViewport = useRef(false);
+ const dropTarget = useRef<string | null>(null); const pendingFit = useRef(false);
  const [direction, setDirection] = useState<MapDirection>(() => initialMapDirection(localStorage.getItem(mapDirectionKey(project.id))));
+ const viewportKey = mapViewportKey(project.id, focusId, direction);
+ const savedViewport = useMemo(() => { try { return savedMapViewport(localStorage.getItem(viewportKey)); } catch { return null; } }, [viewportKey]);
+ const camera = useRef({ key: viewportKey, initialized: false });
+ if (camera.current.key !== viewportKey) camera.current = { key: viewportKey, initialized: false };
+ const rememberViewport = useCallback((viewport: MapViewport) => {
+  try { localStorage.setItem(viewportKey, JSON.stringify(viewport)); } catch { /* A full or unavailable preference store must not break panning. */ }
+ }, [viewportKey]);
  const [nodes, setNodes] = useState<MapNode[]>([]); const [edges, setEdges] = useState<Edge[]>([]); const [collapsed, setCollapsed] = useState<Set<string>>(new Set()); const [layoutVersion, setLayoutVersion] = useState(0); const [links, setLinks] = useState(true); const [arranging, setArranging] = useState(true);
  const container = useRef<HTMLDivElement>(null); const toolbar = useRef<HTMLDivElement>(null);
  const previousStructure = useRef(''); const forceLayout = useRef(false); const rootId = focusId || `project:${project.id}`;
- // Fit only after ELK and React Flow agree on the measured, visible nodes.
- // Both Fit buttons use the same overlay-aware camera framing as initial entry.
+ // Both explicit Fit buttons show the whole tree. Opening/restoring a camera is
+ // separate, and waits for ELK and React Flow to agree on measured nodes.
  const fitMapToScreen = useCallback((duration = 300) => {
   const root = container.current; if (!root || !root.clientWidth || !root.clientHeight) return Promise.resolve(false);
-  const box = root.getBoundingClientRect();
-  const top = toolbar.current ? toolbar.current.getBoundingClientRect().bottom - box.top : 0;
-  const overlays = root.querySelectorAll<HTMLElement>('.react-flow__controls,.react-flow__minimap,.map-hint');
-  const bottom = Math.max(0, ...[...overlays].filter(element => element.getClientRects().length).map(element => box.bottom - element.getBoundingClientRect().top));
+  const { top, bottom } = mapOverlayInsets(root, toolbar.current);
+  camera.current.initialized = true;
   return fitView({ padding: mapFitPadding(root.clientWidth, top, bottom), duration, minZoom: MAP_MIN_ZOOM, maxZoom: 1 });
  }, [fitView]);
- const showOverview = useCallback(() => {
-  if (!preserveViewport.current) void fitMapToScreen(0);
- }, [fitMapToScreen]);
+ const restoreOrStartViewport = useCallback(() => {
+  if (arranging || !nodesInitialized || !viewportInitialized) return;
+  if (pendingFit.current) { pendingFit.current = false; void fitMapToScreen(0); return; }
+  if (camera.current.initialized) return;
+  const root = container.current, currentNodes = getNodes();
+  if (!root?.clientWidth || !root.clientHeight || !currentNodes.length) return;
+  const { top, bottom } = mapOverlayInsets(root, toolbar.current);
+  const viewport = savedViewport ?? initialMapViewport(getNodesBounds(currentNodes), root.clientWidth, root.clientHeight, top, bottom);
+  camera.current.initialized = true;
+  void setViewport(viewport); rememberViewport(viewport);
+ }, [arranging, nodesInitialized, viewportInitialized, fitMapToScreen, getNodes, getNodesBounds, savedViewport, setViewport, rememberViewport]);
  useEffect(() => {
   if (!fitRevision || arranging || !nodesInitialized || !viewportInitialized) return;
   let second = 0;
-  const first = requestAnimationFrame(() => { second = requestAnimationFrame(showOverview); });
+  const first = requestAnimationFrame(() => { second = requestAnimationFrame(restoreOrStartViewport); });
   return () => { cancelAnimationFrame(first); cancelAnimationFrame(second); };
- }, [fitRevision, arranging, nodesInitialized, viewportInitialized, showOverview]);
+ }, [fitRevision, arranging, nodesInitialized, viewportInitialized, restoreOrStartViewport]);
  useEffect(() => {
   let timer: ReturnType<typeof setTimeout>;
-  const observer = new ResizeObserver(() => { clearTimeout(timer); timer = setTimeout(showOverview, 100); });
+  const observer = new ResizeObserver(() => { clearTimeout(timer); timer = setTimeout(restoreOrStartViewport, 100); });
   if (container.current) observer.observe(container.current);
   if (toolbar.current) observer.observe(toolbar.current);
   return () => { clearTimeout(timer); observer.disconnect(); };
- }, [showOverview]);
+ }, [restoreOrStartViewport]);
  const allItems = useMemo(() => data.items.filter(i => i.projectId === project.id), [data.items, project.id]);
  const scope = useMemo(() => focusId ? descendants(allItems, focusId) : new Set(allItems.map(i => i.id)), [allItems, focusId]);
  const visible = useMemo(() => {
@@ -97,19 +118,19 @@ function MapCanvas({ project, items, focusId, onOpen, onFocus, onAdd }: { projec
    const ids = new Set(arranged.map(n => n.id));
    const depEdges: Edge[] = links ? data.dependencies.filter(d => ids.has(d.itemId) && ids.has(d.dependsOnId)).map(d => ({ id: d.id, source: d.dependsOnId, target: d.itemId, sourceHandle: 'dependency-out', targetHandle: 'dependency-in', type: 'default', style: { stroke: 'var(--map-dependency)', strokeDasharray: '5 5', strokeWidth: 1.5 }, markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--map-dependency)' }, label: 'blocks', labelStyle: { fill: 'var(--map-dependency-text)', fontSize: 14 }, labelBgStyle: { fill: 'var(--map-dependency-bg)' } })) : [];
    setNodes(arranged); setEdges([...treeEdges, ...depEdges]); previousStructure.current = visibleKey; forceLayout.current = false; setArranging(false);
-   if (structureChanged || forced) { preserveViewport.current = false; setFitRevision(version => version + 1); }
+   if (structureChanged || forced) setFitRevision(version => version + 1);
    if (forced) { try { await mutate(`/api/projects/${project.id}/layout`, 'PUT', { positions: arranged.filter(n => !n.data.root).map(n => ({ id: n.id, ...storedMapPoint(n.position, direction) })) }, project.id); toast.success('Map arranged'); } catch { /* reported */ } }
   }
   void arrange().catch(() => { if (!cancelled) { setArranging(false); toast.error('The map could not be arranged. Try Auto arrange again.'); } }); return () => { cancelled = true; };
- }, [visibleKey, visible, allItems, focusId, rootId, project.name, project.color, project.id, data.statuses, data.people, data.dependencies, collapsed, layoutVersion, links, showOverview, mutate, direction]);
- function chooseDirection(next: MapDirection) { localStorage.setItem(mapDirectionKey(project.id), next); if (next !== direction) { preserveViewport.current = false; setArranging(true); setDirection(next); } }
+ }, [visibleKey, visible, allItems, focusId, rootId, project.name, project.color, project.id, data.statuses, data.people, data.dependencies, collapsed, layoutVersion, links, mutate, direction]);
+ function chooseDirection(next: MapDirection) { localStorage.setItem(mapDirectionKey(project.id), next); if (next !== direction) { setArranging(true); setDirection(next); } }
  const onNodesChange = useCallback((changes: NodeChange<MapNode>[]) => setNodes(current => applyNodeChanges(changes, current)), []);
  async function connect(connection: Connection) {
   const target = allItems.find(i => i.id === connection.target); const source = allItems.find(i => i.id === connection.source); if (!source || !target) return;
   const current = fields(target, data.dependencies); if (current.dependencyIds.includes(source.id)) return;
   try { await mutate(`/api/items/${target.id}`, 'PATCH', { ...current, dependencyIds: [...current.dependencyIds, source.id] }, project.id); toast.success(`“${target.title}” now depends on “${source.title}”`); } catch { /* reported */ }
  }
- return <div className="mindmap-container" ref={container} style={{ '--map-node-width': `${NODE_WIDTH}px`, '--map-node-height': `${NODE_HEIGHT}px` } as React.CSSProperties}><ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} onMoveStart={event => { if (event) preserveViewport.current = true; }} onNodesChange={onNodesChange} onConnect={c => { void connect(c); }} onNodeDrag={(event, node) => {
+ return <div className="mindmap-container" ref={container} style={{ '--map-node-width': `${NODE_WIDTH}px`, '--map-node-height': `${NODE_HEIGHT}px` } as React.CSSProperties}><ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} defaultViewport={savedViewport ?? { x: 0, y: 0, zoom: MAP_START_ZOOM }} onMoveStart={event => { if (event) camera.current.initialized = true; }} onMoveEnd={(_, viewport) => { if (camera.current.initialized) rememberViewport(viewport); }} onNodesChange={onNodesChange} onConnect={c => { void connect(c); }} onNodeDrag={(event, node) => {
    const invalid = descendants(allItems, node.id); invalid.add(node.id);
    const candidate = event.shiftKey ? getIntersectingNodes(node).find(n => !invalid.has(n.id))?.id ?? null : null;
    if (dropTarget.current !== candidate) { dropTarget.current = candidate; setNodes(current => current.map(n => ({ ...n, className: n.id === candidate ? 'map-drop-target' : '' }))); }
@@ -119,8 +140,8 @@ function MapCanvas({ project, items, focusId, onOpen, onFocus, onAdd }: { projec
     const original = node.data.item;
     void mutate(`/api/items/${node.id}/move`, 'POST', { parentId: target === `project:${project.id}` ? null : target, statusId: original.statusId, beforeId: null }, project.id).then(() => toast.success('Branch moved', { action: { label: 'Undo', onClick: () => { void mutate(`/api/items/${node.id}/move`, 'POST', { parentId: original.parentId, statusId: original.statusId, beforeId: null }, project.id).catch(() => {}); } } })).catch(() => {});
    } else { void mutate(`/api/projects/${project.id}/layout`, 'PUT', { positions: [{ id: node.id, ...storedMapPoint(node.position, direction) }] }, project.id).catch(() => {}); }
-  }} onNodeDoubleClick={(_, node) => { if (node.data.item) onFocus(node.id); }} minZoom={MAP_MIN_ZOOM} maxZoom={1.8} deleteKeyCode={null} selectionKeyCode={null} multiSelectionKeyCode={null} proOptions={{ hideAttribution: false }}><Background color="var(--map-grid)" gap={24} size={1} variant={BackgroundVariant.Dots}/><Controls showInteractive={false} showFitView={false} onZoomIn={() => { preserveViewport.current = true; }} onZoomOut={() => { preserveViewport.current = true; }}><ControlButton aria-label="Fit view" data-tooltip="Fit view" onClick={() => { preserveViewport.current = false; void fitMapToScreen(); }}><Expand size={16}/></ControlButton></Controls><MiniMap nodeColor={n => n.id === rootId ? 'var(--accent-fill)' : 'var(--map-mini-node)'} maskColor="var(--map-mini-mask)" pannable zoomable/></ReactFlow>
- <div className="map-topbar" ref={toolbar}><div className="map-toolbar"><div className="map-direction" role="group" aria-label="Mind map orientation"><button aria-pressed={direction === 'vertical'} onClick={() => chooseDirection('vertical')} disabled={arranging} data-tooltip="Arrange branches from top to bottom"><ArrowDown size={15}/>Vertical</button><button aria-pressed={direction === 'horizontal'} onClick={() => chooseDirection('horizontal')} disabled={arranging} data-tooltip="Arrange branches from left to right"><ArrowRight size={15}/>Horizontal</button></div><Button variant="secondary" size="sm" onClick={() => { preserveViewport.current = false; forceLayout.current = true; setArranging(true); setLayoutVersion(v => v + 1); }} disabled={arranging}><WandSparkles size={14}/>{arranging ? 'Arranging…' : 'Auto arrange'}</Button><button className={`map-tool ${links ? 'active' : ''}`} onClick={() => setLinks(v => !v)} data-tooltip="Show dependency connections" aria-pressed={links}><Link2 size={14}/>Dependencies</button><button className="icon-button" onClick={() => { preserveViewport.current = false; void fitMapToScreen(); }} aria-label="Fit map to screen" disabled={arranging}><Expand size={15}/></button></div><div className="map-export"><ChartExport projectName={project.name} view="Mind map" detail={`${direction === 'vertical' ? 'Vertical' : 'Horizontal'} · ${visible.length} shown tasks · ${focusId ? allItems.find(item => item.id === focusId)?.title : 'Project root'} · Dependency arrows ${links ? 'on' : 'off'}`} disabled={arranging || pending > 0 || nodes.some(node => node.dragging)} capture={() => { const root = container.current?.querySelector<HTMLElement>('.react-flow'); if (!root || !nodes.length) throw new Error('The mind map is still loading.'); return captureMindMap(root, getNodesBounds(nodes)); }}/></div></div>
+  }} onNodeDoubleClick={(_, node) => { if (node.data.item) onFocus(node.id); }} minZoom={MAP_MIN_ZOOM} maxZoom={MAP_MAX_ZOOM} deleteKeyCode={null} selectionKeyCode={null} multiSelectionKeyCode={null} proOptions={{ hideAttribution: false }}><Background color="var(--map-grid)" gap={24} size={1} variant={BackgroundVariant.Dots}/><Controls showInteractive={false} showFitView={false} onZoomIn={() => { camera.current.initialized = true; }} onZoomOut={() => { camera.current.initialized = true; }}><ControlButton aria-label="Fit view" data-tooltip="Fit view" onClick={() => { void fitMapToScreen(); }}><Expand size={16}/></ControlButton></Controls><MiniMap nodeColor={n => n.id === rootId ? 'var(--accent-fill)' : 'var(--map-mini-node)'} maskColor="var(--map-mini-mask)" pannable zoomable/></ReactFlow>
+ <div className="map-topbar" ref={toolbar}><div className="map-toolbar"><div className="map-direction" role="group" aria-label="Mind map orientation"><button aria-pressed={direction === 'vertical'} onClick={() => chooseDirection('vertical')} disabled={arranging} data-tooltip="Arrange branches from top to bottom"><ArrowDown size={15}/>Vertical</button><button aria-pressed={direction === 'horizontal'} onClick={() => chooseDirection('horizontal')} disabled={arranging} data-tooltip="Arrange branches from left to right"><ArrowRight size={15}/>Horizontal</button></div><Button variant="secondary" size="sm" onClick={() => { pendingFit.current = true; forceLayout.current = true; setArranging(true); setLayoutVersion(v => v + 1); }} disabled={arranging}><WandSparkles size={14}/>{arranging ? 'Arranging…' : 'Auto arrange'}</Button><button className={`map-tool ${links ? 'active' : ''}`} onClick={() => setLinks(v => !v)} data-tooltip="Show dependency connections" aria-pressed={links}><Link2 size={14}/>Dependencies</button><button className="icon-button" onClick={() => { void fitMapToScreen(); }} aria-label="Fit map to screen" disabled={arranging}><Expand size={15}/></button></div><div className="map-export"><ChartExport projectName={project.name} view="Mind map" detail={`${direction === 'vertical' ? 'Vertical' : 'Horizontal'} · ${visible.length} shown tasks · ${focusId ? allItems.find(item => item.id === focusId)?.title : 'Project root'} · Dependency arrows ${links ? 'on' : 'off'}`} disabled={arranging || pending > 0 || nodes.some(node => node.dragging)} capture={() => { const root = container.current?.querySelector<HTMLElement>('.react-flow'); if (!root || !nodes.length) throw new Error('The mind map is still loading.'); return captureMindMap(root, getNodesBounds(nodes)); }}/></div></div>
  <div className="map-hint"><span className="hint-dot"/>Drag to arrange · Shift + drop to change parent · Double-click to focus</div>
  {visible.length === 0 && <div className="map-empty"><p>Every great plan starts with a little idea.</p><Button variant="secondary" size="sm" onClick={() => onAdd(focusId)}><Plus size={14}/>Add your first branch</Button></div>}
  </div>;

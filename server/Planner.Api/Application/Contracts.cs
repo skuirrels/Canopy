@@ -24,6 +24,7 @@ public sealed record EditPerson(string Name);
 public sealed record WorkflowDefault(string Name, string Color, bool IsCompleted);
 public sealed class WorkspaceData
 {
+    public List<SpecFileLink> SpecFiles { get; init; } = [];
     [JsonIgnore] public List<ProjectAgentConnection> AgentConnections { get; init; } = [];
     [JsonIgnore] public List<AgentRun> AgentRuns { get; init; } = [];
     public List<Project> Projects { get; init; } = [];

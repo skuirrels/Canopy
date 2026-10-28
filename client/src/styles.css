@@ -17,6 +17,9 @@ h1,h2,h3,p{margin:0}
 a{color:var(--accent)}
 kbd{font-family:inherit;font-size:14px;letter-spacing:.03em}
 svg{flex-shrink:0}
+.workspace-error-details{max-width:min(680px,calc(100vw - 40px));text-align:left;font-size:12px;color:var(--body-text)}
+.workspace-error-details summary{cursor:pointer}
+.workspace-error-details pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;border:1px solid var(--line);border-radius:6px;margin-top:8px}
 ::selection{background:var(--line)}
 .app-shell{display:grid;grid-template-columns:260px minmax(0,1fr);height:100dvh;overflow:hidden}
 

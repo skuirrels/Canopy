@@ -21,6 +21,7 @@ response:
     type: json
     content: |-
       {
+        "specFiles": [],
         "projects": [
           {
             "id": "0ac90a08-61ab-2b61-5950-7f8616402b74",

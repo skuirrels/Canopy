@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { getViewportForBounds } from '@xyflow/react';
-import { initialMapDirection, mapDirectionKey, mapFitPadding, MAP_MIN_ZOOM } from '../src/lib/map-view.ts';
+import { initialMapDirection, mapDirectionKey, mapFitPadding, MAP_MIN_ZOOM, MAP_START_ZOOM, initialMapViewport, mapViewportKey, savedMapViewport } from '../src/lib/map-view.ts';
 
 // React Flow rounds the fitted camera to whole screen pixels.
 const pixelTolerance = 1.01;
@@ -33,4 +33,31 @@ test('phone framing reserves the wrapped toolbar without wasting desktop side ma
  assert.ok((bounds.x + bounds.width) * view.zoom + view.x <= 359 + pixelTolerance);
  assert.ok(bounds.y * view.zoom + view.y >= 136 - pixelTolerance);
  assert.ok((bounds.y + bounds.height) * view.zoom + view.y <= 308 + pixelTolerance);
+});
+
+test('opening a wide tree keeps a readable scale at the left and permits overflow to the right', () => {
+ const bounds = { x: -1200, y: -200, width: 12000, height: 600 };
+ const view = initialMapViewport(bounds, 1800, 800, 60, 100);
+ assert.equal(view.zoom, MAP_START_ZOOM);
+ assert.equal(bounds.x * view.zoom + view.x, 96);
+ assert.ok((bounds.x + bounds.width) * view.zoom + view.x > 1800);
+ assert.ok(bounds.y * view.zoom + view.y >= 76);
+ assert.ok((bounds.y + bounds.height) * view.zoom + view.y <= 688);
+ const phone = initialMapViewport(bounds, 390, 620, 120, 100);
+ assert.equal(phone.zoom, .62);
+ assert.equal(bounds.x * phone.zoom + phone.x, 16);
+ const tall = initialMapViewport({ ...bounds, height: 2000 }, 1800, 800, 60, 100);
+ assert.ok(tall.zoom < MAP_START_ZOOM);
+ assert.ok(bounds.y * tall.zoom + tall.y >= 76);
+ assert.ok((bounds.y + 2000) * tall.zoom + tall.y <= 688 + pixelTolerance);
+});
+
+test('last pan and zoom are validated and kept separate for each project, branch and orientation', () => {
+ const saved = { x: -890.25, y: 124.75, zoom: 1.15 };
+ assert.deepEqual(savedMapViewport(JSON.stringify(saved)), saved);
+ for (const invalid of [null, '', 'invalid', '{}', 'null', '[]', JSON.stringify({ ...saved, zoom: 0 }), JSON.stringify({ ...saved, zoom: 2 }), JSON.stringify({ ...saved, x: '42' }), JSON.stringify({ ...saved, y: null })]) assert.equal(savedMapViewport(invalid), null);
+ assert.equal(new Set([
+  mapViewportKey('one', null, 'vertical'), mapViewportKey('two', null, 'vertical'),
+  mapViewportKey('one', 'branch', 'vertical'), mapViewportKey('one', null, 'horizontal'),
+ ]).size, 4);
 });

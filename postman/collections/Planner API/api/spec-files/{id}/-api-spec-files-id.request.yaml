@@ -1,0 +1,15 @@
+$kind: http-request
+name: /api/spec-files/:id
+description: ""
+url: "{{baseUrl}}/api/spec-files/:id"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: ba73cbbb-0c75-1b11-e2c1-09de775daa67
+    disabled: false
+    description: "(Required) "
+settings: {}
+examples: ./.resources/-api-spec-files-id.resources/examples
+order: 1000

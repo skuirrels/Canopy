@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://127.0.0.1:5284/"
+      "url": "http://127.0.0.1:5274/"
     }
   ],
   "paths": {
@@ -587,7 +587,7 @@
           "Planner.Api"
         ],
         "summary": "Rename an assignee",
-        "description": "Updates the existing assignee name, preserving its ID and all task assignments. Names are trimmed, must contain 1–200 characters and must be unique ignoring case.",
+        "description": "Updates the existing assignee name, preserving its ID and all task assignments. Names are trimmed, must contain 1\u2013200 characters and must be unique ignoring case.",
         "parameters": [
           {
             "name": "id",
@@ -910,6 +910,184 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AgentRun"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spec-files/preview": {
+      "post": {
+        "tags": [
+          "Planner.Api"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewSpecFile"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpecFileContent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spec-files/{id}": {
+      "get": {
+        "tags": [
+          "Planner.Api"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpecFileContent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Planner.Api"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkSpecFile"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceData"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Planner.Api"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "expectedRevision",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceData"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spec-files/{id}/write": {
+      "post": {
+        "tags": [
+          "Planner.Api"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WriteSpecFile"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceData"
                 }
               }
             }
@@ -1374,6 +1552,34 @@
           }
         }
       },
+      "LinkSpecFile": {
+        "required": [
+          "expectedRevision",
+          "path",
+          "expectedHash",
+          "specJson"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "path": {
+            "type": "string"
+          },
+          "expectedHash": {
+            "type": "string"
+          },
+          "specJson": {
+            "type": "string"
+          }
+        }
+      },
       "MoveItem": {
         "required": [
           "expectedRevision",
@@ -1475,6 +1681,17 @@
             "format": "uuid"
           },
           "name": {
+            "type": "string"
+          }
+        }
+      },
+      "PreviewSpecFile": {
+        "required": [
+          "path"
+        ],
+        "type": "object",
+        "properties": {
+          "path": {
             "type": "string"
           }
         }
@@ -1655,6 +1872,44 @@
             "items": {
               "$ref": "#/components/schemas/LayoutPosition"
             }
+          }
+        }
+      },
+      "SpecFileContent": {
+        "required": [
+          "path",
+          "markdown",
+          "hash"
+        ],
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "markdown": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string"
+          }
+        }
+      },
+      "SpecFileLink": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "path": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string"
           }
         }
       },
@@ -1859,6 +2114,12 @@
       "WorkspaceData": {
         "type": "object",
         "properties": {
+          "specFiles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpecFileLink"
+            }
+          },
           "projects": {
             "type": "array",
             "items": {
@@ -1888,6 +2149,30 @@
             "items": {
               "$ref": "#/components/schemas/Person"
             }
+          }
+        }
+      },
+      "WriteSpecFile": {
+        "required": [
+          "expectedRevision",
+          "expectedHash",
+          "markdown"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "expectedHash": {
+            "type": "string"
+          },
+          "markdown": {
+            "type": "string"
           }
         }
       }

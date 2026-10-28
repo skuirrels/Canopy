@@ -1,0 +1,25 @@
+$kind: http-request
+name: /api/spec-files/:id
+description: ""
+url: "{{baseUrl}}/api/spec-files/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: ba73cbbb-0c75-1b11-e2c1-09de775daa67
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "expectedRevision": 0,
+      "path": "string",
+      "expectedHash": "string",
+      "specJson": "string"
+    }
+settings: {}
+examples: ./.resources/-api-spec-files-id-1.resources/examples
+order: 2000

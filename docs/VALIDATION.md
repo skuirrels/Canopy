@@ -221,3 +221,26 @@ Component progress bars now choose the configured completed-status colour only w
 ### Final integration checks — 27 October 2026
 
 Completed-task markers use the configured completed status colour for the tick, border and tinted circle. The tick is 14px with a 2.5px stroke inside a 17px circle; unfinished markers retain their size. Running-browser verification confirmed the colour and dimensions. Before integration, the frontend production build, all 78 client tests, the backend build (zero warnings/errors), all 29 isolated agent lifecycle checks and diff whitespace checks passed. The lifecycle regression covers resume-scoped Codex permissions, retained session/worktree identity and native DuckDB persistence across restart; provider replies in that regression are fixtures, not live model calls.
+
+## Linked Markdown specifications
+
+- `dotnet build Planner.sln --no-restore`: passed after restoring cached packages with `NuGetAudit=false` because the sandbox could not fetch NuGet vulnerability data.
+- Client production build and all 81 client tests: passed.
+- `python3 scripts/spec-file-regression.py`: 18 real HTTP/filesystem/DuckDB checks passed against a temporary database, including conflict protection, preview races, restart persistence, invalid hierarchy edits, validation, cross-site rejection, unlink and deletion.
+- Postman OpenAPI syntax lint and generated collection lint: passed. Existing Postman regression against the isolated loopback service: 32 requests and 47 assertions passed.
+- Browser interaction: linked an existing spaced-path Markdown file; loaded its heading/checklist; rejected saving over an external edit; previewed/refreshed external content; edited in Canopy and verified the actual disk content after Save to file; reloaded and confirmed the link and specification persisted; unlinked through the UI while retaining the specification and disk file. Desktop and 390 px layouts were inspected without horizontal overflow.
+- Test projects and files are isolated from the user database. Filesystem replacement and database commit are separate durability boundaries; see the linked specification contract.
+
+The running local backend at `127.0.0.1:5274` was restarted with the new migration after checking for active agent runs and backing up the stopped native database. Projects, tasks, workflow statuses, dependencies and people matched the pre-restart snapshot exactly.
+
+## Styled inline-code Markdown import
+
+The shared spec StarterKit now permits emphasis and links on inline code, with code serialized inside outer marks. The importer, preview, task editor and MCP codec use the same schema. All 82 client tests, 6 MCP tests and the frontend production build passed, including new append/replace and formatting roundtrip regressions. The actual `shipment-matcher.md` document was imported through the browser into an isolated test project: preview and append retained bold code and existing notes; replacement removed those notes; reload retained the document, bold code and relative docs link. The user task and source Markdown file were left unchanged.
+
+## Open tabs during frontend rebuilds
+
+Reproduced the generic error screen by aborting a lazy Mind map module request in a test browser tab. Earlier builds removed prior hashed files (`emptyOutDir: true`); an old Inspector module URL returned 404. Builds now retain hashed assets. All 24 pre-build assets were confirmed byte-for-byte unchanged after a new build. A tab kept its previous entry script across that build and then loaded Gantt, Mind map, Components and task details with no page errors. A separate tab with a deliberately blocked module showed the specific load-failure message and underlying error details; removing the block and selecting Reopen workspace recovered normally. All 82 client tests and the production frontend build passed. No task data was changed by these checks. This reproduces a rebuild-related cause; it does not establish that every historical error screenshot had that cause.
+
+## Mind map opening view and saved camera
+
+Initial entry now uses a left-aligned camera capped at 65% zoom and fits height only; width may overflow to the right. Pan/zoom preferences are validated and saved per project, focused branch and orientation in browser storage. Explicit Fit controls retain whole-tree framing. All 84 client tests and the production build passed. Browser verification covered the opening screenshot (96 px left inset with right overflow), manual pan and zoom, view switching, reload, project switching, orientation roundtrip, branch focus/exit and sidebar resize. Each returned the recorded camera. Explicit Fit still showed the whole tree and its camera survived reload. No task structure, node coordinates or backend records were changed.

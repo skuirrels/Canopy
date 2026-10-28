@@ -6,9 +6,9 @@ import { TableKit } from '@tiptap/extension-table';
 import { getSchema } from '@tiptap/core';
 import { open, realpath } from 'node:fs/promises';
 import { relative, resolve, extname, isAbsolute } from 'node:path';
-import { createSpecCodec, MAX_SPEC_BYTES } from '../../shared/spec-markdown.mjs';
+import { createSpecCodec, createSpecStarterKit, MAX_SPEC_BYTES } from '../../shared/spec-markdown.mjs';
 
-const extensions = [StarterKit,TaskList,TaskItem.configure({nested:true}),TableKit];
+const extensions = [createSpecStarterKit(StarterKit),TaskList,TaskItem.configure({nested:true}),TableKit];
 const manager = new MarkdownManager({extensions});
 const schema = getSchema(extensions);
 export { MAX_SPEC_BYTES };

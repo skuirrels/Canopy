@@ -1,11 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { TableKit } from '@tiptap/extension-table';
-import TaskList from '@tiptap/extension-task-list';
-import TaskItem from '@tiptap/extension-task-item';
 import { Loader2 } from 'lucide-react';
-import { parseMarkdown } from '../lib/markdown';
+import { parseMarkdown, specificationExtensions } from '../lib/markdown';
 import { Dialog } from './ui/dialog';
 import { Button } from './ui/button';
 import './agents.css';
@@ -13,7 +9,7 @@ import './agents.css';
 export function MarkdownImport({ initialMarkdown = '', onApply, onClose }: { initialMarkdown?: string; onApply: (markdown: string, mode: 'append' | 'replace') => Promise<void>; onClose: () => void }) {
  const [markdown, setMarkdown] = useState(initialMarkdown); const [mode, setMode] = useState<'append' | 'replace'>('append'); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
  const parsed = useMemo(() => { try { return { document: parseMarkdown(markdown), error: '' }; } catch (e) { return { document: null, error: (e as Error).message }; } }, [markdown]);
- const editor = useEditor({ editable: false, extensions: [StarterKit, TableKit, TaskList, TaskItem.configure({ nested: true })], content: { type: 'doc', content: [] }, editorProps: { attributes: { class: 'spec-editor', 'aria-label': 'Specification import preview' } } });
+ const editor = useEditor({ editable: false, extensions: specificationExtensions, content: { type: 'doc', content: [] }, editorProps: { attributes: { class: 'spec-editor', 'aria-label': 'Specification import preview' } } });
  useEffect(() => { if (editor && !editor.isDestroyed && parsed.document) editor.commands.setContent(parsed.document, { emitUpdate: false }); }, [editor, parsed.document]);
  return <Dialog open wide onOpenChange={open => { if (!open && !busy) onClose(); }} title="Import specification" description="Preview Markdown, then append it or replace the existing specification." className="markdown-import-dialog">
   <label>Markdown<textarea rows={7} value={markdown} onChange={e => setMarkdown(e.target.value)} placeholder="Paste a specification or documentation…"/></label>

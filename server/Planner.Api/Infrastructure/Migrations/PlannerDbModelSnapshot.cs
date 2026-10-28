@@ -235,6 +235,27 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("AgentConnections");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.SpecFileLink", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Hash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SpecFiles");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.WorkItem", b =>
                 {
                     b.Property<Guid>("Id")

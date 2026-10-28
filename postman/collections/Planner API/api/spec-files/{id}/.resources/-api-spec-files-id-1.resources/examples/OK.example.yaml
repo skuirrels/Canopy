@@ -1,0 +1,147 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/spec-files/:id"
+  method: PUT
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: id
+      value: ba73cbbb-0c75-1b11-e2c1-09de775daa67
+      disabled: false
+      description: "(Required) "
+  body:
+    type: json
+    content: |-
+      {
+        "expectedRevision": 0,
+        "path": "string",
+        "expectedHash": "string",
+        "specJson": "string"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "specFiles": [
+          {
+            "id": "ca603be3-5349-522f-71f6-5a802fac3ee7",
+            "projectId": "e5de6730-e228-d6c1-f927-1fb956700674",
+            "path": "string",
+            "hash": "string"
+          },
+          {
+            "id": "24df9211-9cca-9b14-43d5-ecf9de41a3e1",
+            "projectId": "efd44685-8c01-28f2-36c8-394609717bb7",
+            "path": "string",
+            "hash": "string"
+          }
+        ],
+        "projects": [
+          {
+            "id": "f4ef2e58-69df-132d-c910-b925720e4c09",
+            "name": "string",
+            "description": "string",
+            "color": "string",
+            "revision": -641,
+            "createdAt": "1991-05-13T22:11:45.260Z"
+          },
+          {
+            "id": "1c71254c-d39e-bb80-419b-c2a70e5ff944",
+            "name": "string",
+            "description": "string",
+            "color": "string",
+            "revision": -7295,
+            "createdAt": "2003-02-23T20:10:09.540Z"
+          }
+        ],
+        "items": [
+          {
+            "id": "08d073d7-e7fa-03f0-9dc5-665890c837f9",
+            "projectId": "fccb02d3-271e-1d78-3d1d-1197c9f6f3c4",
+            "parentId": null,
+            "statusId": "10cacf20-522a-a898-fff3-ceb1bb271f4b",
+            "title": "string",
+            "specJson": "string",
+            "priority": "string",
+            "assigneeIds": null,
+            "assigneeId": null,
+            "estimatedHours": "0.48607208245",
+            "startDate": null,
+            "dueDate": null,
+            "position": 0,
+            "x": "-0.71",
+            "siblingPosition": 0,
+            "y": "0.3318",
+            "createdAt": "2022-02-20T13:13:18.112Z",
+            "updatedAt": "2026-08-21T09:49:41.575Z"
+          },
+          {
+            "id": "28c97790-d878-3405-55b4-57ed9e9b5025",
+            "projectId": "5d0d74d3-15cb-8f57-3719-9f4ef9f8badc",
+            "parentId": null,
+            "statusId": "728c150d-4979-80d3-7c5b-dc5cbb13d0bd",
+            "title": "string",
+            "specJson": "string",
+            "priority": "string",
+            "assigneeIds": null,
+            "assigneeId": null,
+            "estimatedHours": "4899033.31565050935e-3911",
+            "startDate": null,
+            "dueDate": null,
+            "position": 0,
+            "x": "729608290e665980779",
+            "siblingPosition": 0,
+            "y": "-0.62101408E+8654",
+            "createdAt": "1991-11-24T16:00:53.435Z",
+            "updatedAt": "1967-01-21T13:34:38.934Z"
+          }
+        ],
+        "statuses": [
+          {
+            "id": "95a073b2-1574-cf60-6a01-387bfceee75d",
+            "projectId": "754e3a2d-7984-33a9-7ef9-82c528f05c35",
+            "name": "string",
+            "color": "string",
+            "position": 60151,
+            "isCompleted": true
+          },
+          {
+            "id": "29838e0e-caff-d604-8ef7-a903600518df",
+            "projectId": "667e906d-75d8-309c-3516-5428f8aaf156",
+            "name": "string",
+            "color": "string",
+            "position": 0,
+            "isCompleted": true
+          }
+        ],
+        "dependencies": [
+          {
+            "id": "c191d27a-f175-1be3-d522-f87900f74a70",
+            "itemId": "a46899d6-21f0-b34b-ac00-96349e5cb198",
+            "dependsOnId": "9c693cd0-cdd5-6de7-9e33-cf89f4373efc",
+            "projectId": "cd36aea6-ff8e-a3a4-ee1c-7ac20af17635"
+          },
+          {
+            "id": "73464f7c-ebc0-8087-bb64-0459661cc2c5",
+            "itemId": "3c15ef89-d885-385e-7086-614e1f24c6f6",
+            "dependsOnId": "4f93a1c7-a000-f2d0-efb0-b73218d7009a",
+            "projectId": "1ed6895a-6e5e-c856-1b92-8594582a8b18"
+          }
+        ],
+        "people": [
+          {
+            "id": "3fedf174-ec17-0af9-2bd7-0c19d51b6c99",
+            "name": "string"
+          },
+          {
+            "id": "dc638109-ab22-a32a-9791-55ce4cb6d01d",
+            "name": "string"
+          }
+        ]
+      }
+order: 1000
