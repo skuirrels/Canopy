@@ -279,7 +279,7 @@ public sealed class FactoryRepairService(IWorkspaceStore store, IFactoryEnvironm
         if (data.Dependencies.Where(x => x.ItemId == source.ItemId).Any(d => !data.Statuses.Single(s => s.Id == data.Items.Single(i => i.Id == d.DependsOnId).StatusId).IsCompleted)) throw new RuleException("Complete prerequisite tasks before repair.", 409);
     }
     private static void Idle(WorkspaceData data, Guid itemId)
-    { if (data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active) || data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.ReviewRounds.Any(x => x.ItemId == itemId && x.Open)) throw new RuleException("Finish task execution and open independent review first.", 409); }
+    { if (data.Deliveries.Any(x => x.ItemId == itemId && x.Open) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active) || data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.ReviewRounds.Any(x => x.ItemId == itemId && x.Open)) throw new RuleException("Finish task execution/review and close the open delivery first.", 409); }
     private static FactoryRepairAttempt? Latest(WorkspaceData data, FactoryRepairLoop loop) => data.RepairAttempts.Where(x => x.LoopId == loop.Id).OrderByDescending(x => x.Number).FirstOrDefault();
     private static FactoryRun Candidate(WorkspaceData data, FactoryRepairLoop loop) => FactoryDispatchService.Find(data, Latest(data, loop)?.RunId ?? loop.RootRunId);
     private static FactoryRepairLoop Find(WorkspaceData data, Guid id) => data.RepairLoops.SingleOrDefault(x => x.Id == id) ?? throw new RuleException("Repair loop not found.", 404);

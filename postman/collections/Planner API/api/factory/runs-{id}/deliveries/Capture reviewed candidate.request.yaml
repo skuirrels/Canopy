@@ -1,0 +1,12 @@
+$kind: http-request
+name: Capture reviewed candidate
+url: '{{baseUrl}}/api/factory/runs/{{runId}}/deliveries'
+method: POST
+order: 4000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {{prepareDeliveryJson}}
+examples: ./.resources/Capture reviewed candidate.resources/examples

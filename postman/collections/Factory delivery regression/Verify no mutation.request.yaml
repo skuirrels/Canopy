@@ -1,0 +1,14 @@
+$kind: http-request
+name: Verify no mutation
+method: GET
+url: '{{baseUrl}}/api/factory/deliveries/{{deliveryId}}'
+order: 8000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')||!pm.variables.get('runId')||!pm.variables.get('deliveryId')) throw new Error('Supply isolated fixtureMode, projectId, runId and deliveryId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Candidate still readable',()=>pm.response.to.have.status(200));pm.test('Rejected actions changed nothing',()=>pm.expect(pm.response.json().delivery.revision).to.equal(Number(pm.collectionVariables.get('deliveryRevision'))));pm.test('No cached authority',()=>pm.expect(pm.response.headers.get('Cache-Control')).to.equal('no-store'));

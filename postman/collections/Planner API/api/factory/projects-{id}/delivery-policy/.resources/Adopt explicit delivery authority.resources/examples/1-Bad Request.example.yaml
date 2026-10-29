@@ -1,0 +1,40 @@
+$kind: http-example
+name: 'Isolated native delivery fixture - Bad Request'
+request:
+  method: PUT
+  url: '{{baseUrl}}/api/factory/projects/{{projectId}}/delivery-policy'
+  body:
+    type: json
+    content: |-
+      {
+        "expectedRevision": 19,
+        "policy": {
+          "enabled": true,
+          "repository": "regression/candidate",
+          "remoteName": "origin",
+          "targetBranch": "main",
+          "branchPrefix": "feature/",
+          "allowDraftPr": true,
+          "allowMerge": true,
+          "requiredChecks": [],
+          "postMergeHookId": null,
+          "environment": "Isolated fixture",
+          "sensitivePaths": [
+            "counter.py"
+          ],
+          "migrationPaths": []
+        }
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+        "title": "Merge authority requires explicitly configured GitHub checks.",
+        "status": 400
+      }

@@ -15,13 +15,13 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
     public Task<WorkspaceData> DeleteProject(Guid id, long revision, CancellationToken ct) => store.WriteAsync(data =>
     {
         var graph = data.Graph(id, revision);
-        if ((data.RepairLoops.Any(x => x.ProjectId == id && x.Open) || data.AgentRuns.Any(x => x.ProjectId == id && x.Active) || data.FactoryRuns.Any(x => x.ProjectId == id && x.Active))) throw new RuleException("Stop active runs and open repair loops before deleting this project.", 409);
+        if (((data.Deliveries.Any(x => x.ProjectId == id && x.Open) || data.RepairLoops.Any(x => x.ProjectId == id && x.Open)) || data.AgentRuns.Any(x => x.ProjectId == id && x.Active) || data.FactoryRuns.Any(x => x.ProjectId == id && x.Active))) throw new RuleException("Stop active runs and repair loops, and close open deliveries before deleting this project.", 409);
         data.RemoveFactoryRuns(data.FactoryRuns.Where(x => x.ProjectId == id).Select(x => x.Id));
         data.AgentConnections.RemoveAll(x => x.ProjectId == id); data.AgentRuns.RemoveAll(x => x.ProjectId == id);
         data.SpecFiles.RemoveAll(x => x.ProjectId == id);
         data.TaskFactoryConfigurations.RemoveAll(x => x.ProjectId == id);
         data.PipelineVersions.RemoveAll(x => x.ProjectId == id); data.FactoryPipelines.RemoveAll(x => x.ProjectId == id);
-        data.RepairPolicies.RemoveAll(x => x.Id == id);
+        data.RepairPolicies.RemoveAll(x => x.Id == id); data.DeliveryPolicies.RemoveAll(x => x.Id == id);
         data.AcceptanceCriteria.RemoveAll(x => x.ProjectId == id);
         data.Dependencies.RemoveAll(x => x.ProjectId == id); data.Items.RemoveAll(x => x.ProjectId == id);
         data.Statuses.RemoveAll(x => x.ProjectId == id); data.Projects.Remove(graph.Project);
@@ -50,7 +50,7 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
     public Task<WorkspaceData> DeleteItem(Guid id, long revision, CancellationToken ct) => store.WriteAsync(data =>
     {
         var graph = data.ForItem(id, revision); var deleted = graph.Subtree(id);
-        if ((data.RepairLoops.Any(x => deleted.Contains(x.ItemId) && x.Open) || data.AgentRuns.Any(x => deleted.Contains(x.ItemId) && x.Active) || data.FactoryRuns.Any(x => deleted.Contains(x.ItemId) && x.Active))) throw new RuleException("Stop active runs and open repair loops before deleting these tasks.", 409);
+        if (((data.Deliveries.Any(x => deleted.Contains(x.ItemId) && x.Open) || data.RepairLoops.Any(x => deleted.Contains(x.ItemId) && x.Open)) || data.AgentRuns.Any(x => deleted.Contains(x.ItemId) && x.Active) || data.FactoryRuns.Any(x => deleted.Contains(x.ItemId) && x.Active))) throw new RuleException("Stop active runs and repair loops, and close open deliveries before deleting these tasks.", 409);
         data.RemoveFactoryRuns(data.FactoryRuns.Where(x => deleted.Contains(x.ItemId)).Select(x => x.Id));
         data.AgentRuns.RemoveAll(x => deleted.Contains(x.ItemId));
         data.SpecFiles.RemoveAll(x => deleted.Contains(x.Id));

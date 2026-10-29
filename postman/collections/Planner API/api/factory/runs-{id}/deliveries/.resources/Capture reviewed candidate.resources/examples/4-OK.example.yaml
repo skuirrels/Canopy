@@ -1,0 +1,105 @@
+$kind: http-example
+name: 'Isolated native delivery fixture - OK'
+request:
+  method: POST
+  url: '{{baseUrl}}/api/factory/runs/{{runId}}/deliveries'
+  body:
+    type: json
+    content: |-
+      {
+        "requestId": "b209a6a8-02d8-4403-aa64-43d2838f095c",
+        "expectedRevision": 19,
+        "branchName": "feature/contract-0e5df207781b455398eae14c752ad534"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json; charset=utf-8
+  body:
+    type: json
+    content: |-
+      {
+        "delivery": {
+          "id": "fd3874fb-433d-4588-ab2b-98ad23254f10",
+          "projectId": "c2b8fb83-0152-4cbe-a535-7cb4a2aa1830",
+          "itemId": "b02b4480-d962-4f11-96d0-2e8de798e21d",
+          "runId": "471b119b-e583-465a-864a-42d0f8af5d5e",
+          "requestId": "b209a6a8-02d8-4403-aa64-43d2838f095c",
+          "requestHash": "06CE3C263056AB34B715AB38B6DF5DCB76107D13A4098E553ACC70CB8F35B935",
+          "revision": 1,
+          "state": "captured",
+          "reason": "Captured only; publication requires an explicit action.",
+          "currentOperationId": null,
+          "open": true,
+          "createdAt": "2026-10-29T21:51:01.368824Z",
+          "policy": {
+            "enabled": true,
+            "repository": "regression/candidate",
+            "remoteName": "origin",
+            "targetBranch": "main",
+            "branchPrefix": "feature/",
+            "allowDraftPr": true,
+            "allowMerge": true,
+            "requiredChecks": [
+              {
+                "name": "fixture-verify",
+                "appId": 9001
+              }
+            ],
+            "postMergeHookId": null,
+            "environment": "Isolated fixture",
+            "sensitivePaths": [
+              "counter.py"
+            ],
+            "migrationPaths": []
+          },
+          "capture": {
+            "context": {
+              "headCommit": "479e263fc91c3fd822b6445a30642620e20e67df",
+              "codeHash": "BDF98A079BF6D305ABAD1D154ED6324E76C43544CF0CB2BE7B9460AB87C47A7A",
+              "configurationHash": "840EB126E42479292F8176362C3B3AF576AEB59E61FEB7CAA2F0A4F2E2D63447",
+              "fingerprint": "38E20AFFF8588F1CFCC77CCC68969993E5531B5F0818BC40F1160E2A69DAB1A9"
+            },
+            "sourceHash": "E5D729768687FEED60EC1E746D56C0B1C41B8B2AA12B15BEE8FFC45E71AA89F5",
+            "reviewId": "6e19856a-9d19-4fb7-9733-197d4816d308",
+            "reviewHash": "8CBD2BAC4473493B5D9F0138C4EBF7FD4AE20E50794F0AEB729DD5EA77B9844B",
+            "qaHash": "6337F67D253A113CD5C3A225B4D452BFE6CB11C39BDB34A3131CC648014BCBD8",
+            "headSha": "479e263fc91c3fd822b6445a30642620e20e67df",
+            "treeSha": "f602424eb81e854bad28d157575d5741ecfe921c",
+            "baseSha": "4d203e745970a3b88d4f77ef346af683febda3b0",
+            "branchName": "feature/contract-0e5df207781b455398eae14c752ad534",
+            "providerBinding": "108178CC871623FB011273BD964B621559DC8DAB34FC645FA64AA4196FE4255E",
+            "hookHash": null,
+            "sensitiveFiles": [
+              "counter.py"
+            ],
+            "migrationFiles": []
+          },
+          "remote": null,
+          "approvals": [],
+          "observation": null,
+          "hook": null,
+          "binding": "A6EDFEF2594A20AB50A35393FC4A30A42A9F2B8911DBA5CE9AE4A847896ED964",
+          "marker": "<!-- canopy-delivery:fd3874fb-433d-4588-ab2b-98ad23254f10 -->"
+        },
+        "operations": [],
+        "local": {
+          "ready": true,
+          "runRevision": 19,
+          "context": {
+            "headCommit": "479e263fc91c3fd822b6445a30642620e20e67df",
+            "codeHash": "BDF98A079BF6D305ABAD1D154ED6324E76C43544CF0CB2BE7B9460AB87C47A7A",
+            "configurationHash": "840EB126E42479292F8176362C3B3AF576AEB59E61FEB7CAA2F0A4F2E2D63447",
+            "fingerprint": "38E20AFFF8588F1CFCC77CCC68969993E5531B5F0818BC40F1160E2A69DAB1A9"
+          },
+          "reviewId": "6e19856a-9d19-4fb7-9733-197d4816d308",
+          "reviewHash": "8CBD2BAC4473493B5D9F0138C4EBF7FD4AE20E50794F0AEB729DD5EA77B9844B",
+          "qaHash": "6337F67D253A113CD5C3A225B4D452BFE6CB11C39BDB34A3131CC648014BCBD8",
+          "errors": []
+        },
+        "mergeErrors": [
+          "Fresh provider observation is required; reconcile first."
+        ],
+        "pollIntervalMs": 250
+      }

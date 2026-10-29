@@ -1,0 +1,25 @@
+$kind: http-request
+name: Reject unknown action
+method: POST
+url: '{{baseUrl}}/api/factory/deliveries/{{deliveryId}}/actions'
+order: 6000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "requestId": "{{$guid}}",
+      "expectedRevision": "{{deliveryRevision}}",
+      "action": "inventedAction",
+      "approvalNote": ""
+    }
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')||!pm.variables.get('runId')||!pm.variables.get('deliveryId')) throw new Error('Supply isolated fixtureMode, projectId, runId and deliveryId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Unknown action rejected',()=>pm.response.to.have.status(400));

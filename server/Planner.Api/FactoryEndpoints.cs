@@ -19,6 +19,24 @@ public static class FactoryEndpoints
             http.Response.Headers.CacheControl = "no-store";
             return await next(context);
         });
+        group.MapGet("/projects/{id:guid}/delivery-policy", (Guid id, FactoryDeliveryService service, CancellationToken ct) => service.Policy(id, ct))
+            .WithSummary("Read project delivery policy").WithDescription("Commit-bound delivery authority and persistent operation receipts. Capturing executes nothing. Mutations are asynchronous; exact retries never repeat side effects. Unknown outcomes require reconciliation.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
+        group.MapPut("/projects/{id:guid}/delivery-policy", (Guid id, EditDeliveryPolicy input, FactoryDeliveryService service, CancellationToken ct) => service.EditPolicy(id, input, ct))
+            .WithSummary("Adopt explicit delivery authority").WithDescription("Commit-bound delivery authority and persistent operation receipts. Capturing executes nothing. Mutations are asynchronous; exact retries never repeat side effects. Unknown outcomes require reconciliation.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
+        group.MapGet("/runs/{id:guid}/delivery", (Guid id, FactoryDeliveryService service, CancellationToken ct) => service.List(id, ct))
+            .WithSummary("Read delivery readiness and history").WithDescription("Commit-bound delivery authority and persistent operation receipts. Capturing executes nothing. Mutations are asynchronous; exact retries never repeat side effects. Unknown outcomes require reconciliation.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
+        group.MapPost("/runs/{id:guid}/deliveries", (Guid id, PrepareDelivery input, FactoryDeliveryService service, CancellationToken ct) => service.Prepare(id, input, ct))
+            .WithSummary("Capture a reviewed committed candidate").WithDescription("Commit-bound delivery authority and persistent operation receipts. Capturing executes nothing. Mutations are asynchronous; exact retries never repeat side effects. Unknown outcomes require reconciliation.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
+        group.MapGet("/deliveries/{id:guid}", (Guid id, FactoryDeliveryService service, CancellationToken ct) => service.Read(id, ct))
+            .WithSummary("Read delivery evidence and operations").WithDescription("Commit-bound delivery authority and persistent operation receipts. Capturing executes nothing. Mutations are asynchronous; exact retries never repeat side effects. Unknown outcomes require reconciliation.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
+        group.MapPost("/deliveries/{id:guid}/actions", (Guid id, ActOnDelivery input, FactoryDeliveryService service, CancellationToken ct) => service.Act(id, input, ct))
+            .WithSummary("Request an explicit delivery action").WithDescription("Commit-bound delivery authority and persistent operation receipts. Capturing executes nothing. Mutations are asynchronous; exact retries never repeat side effects. Unknown outcomes require reconciliation.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
         group.MapGet("/projects/{id:guid}/repair-policy", (Guid id, FactoryRepairService service, CancellationToken ct) => service.Policy(id, ct))
             .WithDescription("Bounded repair policy, immutable scope and attempt lineage. Execution requires explicit advance; fresh QA and independent review remain required. Money usage is unavailable.")
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);

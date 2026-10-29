@@ -4,6 +4,9 @@ namespace Planner.Api.Infrastructure;
 
 public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(options)
 {
+    public DbSet<ProjectDeliveryPolicy> DeliveryPolicies => Set<ProjectDeliveryPolicy>();
+    public DbSet<FactoryDelivery> Deliveries => Set<FactoryDelivery>();
+    public DbSet<FactoryDeliveryOperation> DeliveryOperations => Set<FactoryDeliveryOperation>();
     public DbSet<ProjectRepairPolicy> RepairPolicies => Set<ProjectRepairPolicy>();
     public DbSet<FactoryRepairLoop> RepairLoops => Set<FactoryRepairLoop>();
     public DbSet<FactoryRepairAttempt> RepairAttempts => Set<FactoryRepairAttempt>();
@@ -30,6 +33,16 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<TaskFactoryConfiguration> TaskFactoryConfigurations => Set<TaskFactoryConfiguration>();
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.Ignore<DeliveryPolicy>(); model.Ignore<DeliveryCapture>(); model.Ignore<DeliveryApproval>(); model.Ignore<DeliveryRemote>();
+        model.Ignore<DeliveryProbe>(); model.Ignore<DeliveryHookReceipt>(); model.Ignore<DeliveryCheck>(); model.Ignore<DeliveryObservation>(); model.Ignore<DeliveryCheckResult>();
+        model.Entity<ProjectDeliveryPolicy>().HasKey(x => x.Id); model.Entity<ProjectDeliveryPolicy>().Ignore(x => x.Policy);
+        model.Entity<FactoryDelivery>().HasKey(x => x.Id); model.Entity<FactoryDelivery>().HasIndex(x => x.RequestId).IsUnique(); model.Entity<FactoryDelivery>().HasIndex(x => x.ItemId);
+        model.Entity<FactoryDelivery>().Ignore(x => x.Open).Ignore(x => x.Policy).Ignore(x => x.Capture).Ignore(x => x.Remote).Ignore(x => x.Approvals).Ignore(x => x.Hook).Ignore(x => x.Observation).Ignore(x => x.Binding).Ignore(x => x.Marker);
+        model.Entity<FactoryDeliveryOperation>().HasKey(x => x.Id); model.Entity<FactoryDeliveryOperation>().HasIndex(x => x.RequestId).IsUnique(); model.Entity<FactoryDeliveryOperation>().HasIndex(x => x.DeliveryId);
+        model.Entity<FactoryDeliveryOperation>().Ignore(x => x.Pending).Ignore(x => x.Result);
+        model.Entity<FactoryDelivery>().Property(x => x.CreatedAt).HasConversion(value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));
+        model.Entity<FactoryDeliveryOperation>().Property(x => x.CreatedAt).HasConversion(value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));
+        model.Entity<FactoryDeliveryOperation>().Property(x => x.FinishedAt).HasConversion(value => value, value => value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : (DateTime?)null);
         model.Ignore<RepairPolicy>(); model.Ignore<RepairScope>(); model.Ignore<RepairPlan>(); model.Ignore<RepairIssue>();
         model.Ignore<RepairFeedback>(); model.Ignore<RepairOperation>(); model.Ignore<FactoryRepairLineage>();
         model.Entity<ProjectRepairPolicy>().HasKey(x => x.Id); model.Entity<ProjectRepairPolicy>().Ignore(x => x.Policy);

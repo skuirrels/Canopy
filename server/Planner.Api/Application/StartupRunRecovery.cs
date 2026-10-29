@@ -6,6 +6,12 @@ public sealed class StartupRunRecovery(IWorkspaceStore store)
 {
     public Task Recover(CancellationToken ct) => store.WriteAsync(data =>
     {
+        foreach (var operation in data.DeliveryOperations.Where(x => x.Pending))
+        {
+            operation.End("uncertain", "Backend restarted. External outcomes must be reconciled; no action was replayed.");
+            var delivery = data.Deliveries.Single(x => x.Id == operation.DeliveryId);
+            delivery.Change("needsAttention", "Interrupted delivery. Reconcile actual provider/hook results before another action."); delivery.Release(operation.Id);
+        }
         foreach (var loop in data.RepairLoops.Where(x => x.Open)) loop.End(false, "Canopy restarted. Unfinished repair loops are stopped without replay; inspect retained attempts before explicitly preparing new work.");
         foreach (var child in data.AgentRuns.Where(x => x.Active)) child.Finish("interrupted", child.Result, child.Diff, "Canopy restarted before this run finished. Review its workspace before continuing.");
         foreach (var run in data.FactoryRuns.Where(x => x.Active)) FactoryDispatchService.End(data, run, "interrupted", "Canopy restarted. Review the retained worktree and evidence before preparing new work.");

@@ -1,0 +1,14 @@
+$kind: http-request
+name: Read local evidence
+method: GET
+url: '{{baseUrl}}/api/factory/runs/{{runId}}/delivery'
+order: 2000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')||!pm.variables.get('runId')||!pm.variables.get('deliveryId')) throw new Error('Supply isolated fixtureMode, projectId, runId and deliveryId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Evidence readable',()=>pm.response.to.have.status(200));pm.test('Fresh QA and review available',()=>pm.expect(pm.response.json().local.ready).to.equal(true));pm.test('Current context captured',()=>pm.expect(pm.response.json().local.context.fingerprint).to.be.a('string'));

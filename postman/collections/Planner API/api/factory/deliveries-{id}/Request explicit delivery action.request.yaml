@@ -1,0 +1,12 @@
+$kind: http-request
+name: Request explicit delivery action
+url: '{{baseUrl}}/api/factory/deliveries/{{deliveryId}}/actions'
+method: POST
+order: 6000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {{deliveryActionJson}}
+examples: ./.resources/Request explicit delivery action.resources/examples

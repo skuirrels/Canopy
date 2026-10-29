@@ -1,0 +1,14 @@
+$kind: http-request
+name: Read candidate and journal
+method: GET
+url: '{{baseUrl}}/api/factory/deliveries/{{deliveryId}}'
+order: 3000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')||!pm.variables.get('runId')||!pm.variables.get('deliveryId')) throw new Error('Supply isolated fixtureMode, projectId, runId and deliveryId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Candidate readable',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('Head and base bound',()=>{pm.expect(d.delivery.capture.headSha).to.match(/^[a-f0-9]{40}$/);pm.expect(d.delivery.capture.baseSha).to.match(/^[a-f0-9]{40}$/)});pm.test('Operation receipts explicit',()=>pm.expect(d.operations).to.be.an('array'));pm.collectionVariables.set('deliveryRevision',d.delivery.revision);

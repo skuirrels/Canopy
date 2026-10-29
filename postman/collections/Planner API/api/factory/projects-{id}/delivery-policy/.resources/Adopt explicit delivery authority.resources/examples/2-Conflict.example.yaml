@@ -1,0 +1,45 @@
+$kind: http-example
+name: 'Isolated native delivery fixture - Conflict'
+request:
+  method: PUT
+  url: '{{baseUrl}}/api/factory/projects/{{projectId}}/delivery-policy'
+  body:
+    type: json
+    content: |-
+      {
+        "expectedRevision": -1,
+        "policy": {
+          "enabled": true,
+          "repository": "regression/candidate",
+          "remoteName": "origin",
+          "targetBranch": "main",
+          "branchPrefix": "feature/",
+          "allowDraftPr": true,
+          "allowMerge": true,
+          "requiredChecks": [
+            {
+              "name": "fixture-verify",
+              "appId": 9001
+            }
+          ],
+          "postMergeHookId": null,
+          "environment": "Isolated fixture",
+          "sensitivePaths": [
+            "counter.py"
+          ],
+          "migrationPaths": []
+        }
+      }
+response:
+  statusCode: 409
+  statusText: Conflict
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+        "title": "This project changed since you loaded it. Your latest changes have not been saved. Refresh and try again.",
+        "status": 409
+      }
