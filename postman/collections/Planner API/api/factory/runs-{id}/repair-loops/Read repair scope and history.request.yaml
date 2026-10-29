@@ -1,0 +1,6 @@
+$kind: http-request
+name: Read repair scope and history
+method: GET
+url: '{{baseUrl}}/api/factory/runs/{{runId}}/repair-loops'
+order: 3000
+examples: ./.resources/Read repair scope and history.resources/examples

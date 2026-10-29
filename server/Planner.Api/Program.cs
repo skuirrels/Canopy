@@ -27,6 +27,8 @@ builder.Services.AddSingleton<IVerificationEnvironment>(services => services.Get
 builder.Services.AddSingleton<IReviewChanges>(services => services.GetRequiredService<LocalVerificationEnvironment>());
 builder.Services.AddSingleton<FactoryQualityService>();
 builder.Services.AddSingleton<FactoryReviewService>();
+builder.Services.AddSingleton<IRepairWorkspace, LocalRepairWorkspace>();
+builder.Services.AddSingleton<FactoryRepairService>();
 builder.Services.AddScoped<FactoryDispatchService>();
 builder.Services.AddSingleton<StartupRunRecovery>();
 var agentOptions = builder.Configuration.GetSection("Agents").Get<AgentOptions>() ?? throw new InvalidOperationException("Configure Agents.");
@@ -38,6 +40,7 @@ builder.Services.AddSingleton<IAgentEnvironment>(services => services.GetRequire
 builder.Services.AddScoped<AgentService>();
 builder.Services.AddHostedService<LocalAgentRunner>();
 builder.Services.AddHostedService<LocalFactoryRunner>();
+builder.Services.AddHostedService<LocalRepairCoordinator>();
 var app = builder.Build();
 app.Use(async (context, next) =>
 {

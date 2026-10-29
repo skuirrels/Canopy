@@ -1,0 +1,38 @@
+$kind: http-example
+name: 'Isolated native repair fixture - Bad Request'
+request:
+  method: PUT
+  url: '{{baseUrl}}/api/factory/projects/{{projectId}}/repair-policy'
+  body:
+    type: json
+    content: |-
+      {
+        "expectedRevision": 15,
+        "policy": {
+          "enabled": true,
+          "implementationPlanVersionId": "0a5d7e8e-19af-42f7-b768-847fd9ae693c",
+          "verificationPlanVersionId": null,
+          "maxAttempts": 0,
+          "maxElapsedMinutes": 5,
+          "maxNoProgressRounds": 2,
+          "maxAgentInvocations": 6,
+          "autoContinue": false,
+          "commandsSafeToRepeat": true,
+          "allowUnmeteredCost": true,
+          "maxCost": null,
+          "currency": null
+        }
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+        "title": "Set positive attempt, elapsed-time and no-progress limits, and a nonnegative agent-invocation limit.",
+        "status": 400
+      }

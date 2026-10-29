@@ -24,6 +24,9 @@ public sealed record EditPerson(string Name);
 public sealed record WorkflowDefault(string Name, string Color, bool IsCompleted);
 public sealed class WorkspaceData
 {
+    [JsonIgnore] public List<ProjectRepairPolicy> RepairPolicies { get; init; } = [];
+    [JsonIgnore] public List<FactoryRepairLoop> RepairLoops { get; init; } = [];
+    [JsonIgnore] public List<FactoryRepairAttempt> RepairAttempts { get; init; } = [];
     [JsonIgnore] public List<FactoryReviewRound> ReviewRounds { get; init; } = [];
     [JsonIgnore] public List<FactoryReviewFinding> ReviewFindings { get; init; } = [];
     [JsonIgnore] public List<TaskAcceptanceCriteria> AcceptanceCriteria { get; init; } = [];
@@ -47,6 +50,8 @@ public sealed class WorkspaceData
     public void RemoveFactoryRuns(IEnumerable<Guid> runIds)
     {
         var ids = runIds.ToHashSet();
+        var loopIds = RepairLoops.Where(x => ids.Contains(x.RootRunId)).Select(x => x.Id).ToHashSet();
+        RepairAttempts.RemoveAll(x => loopIds.Contains(x.LoopId)); RepairLoops.RemoveAll(x => loopIds.Contains(x.Id));
         var roundIds = ReviewRounds.Where(x => ids.Contains(x.RunId)).Select(x => x.Id).ToHashSet();
         ReviewFindings.RemoveAll(x => roundIds.Contains(x.RoundId)); ReviewRounds.RemoveAll(x => roundIds.Contains(x.Id));
         VerificationReceipts.RemoveAll(x => ids.Contains(x.RunId)); CriterionVerdicts.RemoveAll(x => ids.Contains(x.RunId));

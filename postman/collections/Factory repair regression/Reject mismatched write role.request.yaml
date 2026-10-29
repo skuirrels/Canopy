@@ -1,0 +1,22 @@
+$kind: http-request
+name: Reject mismatched write role
+method: PUT
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/repair-policy'
+order: 3200
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {{invalidRepairPolicyJson}}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated' || !pm.variables.get('runId') || !pm.variables.get('projectId') || !pm.variables.get('loopId')) throw new Error('Supply the isolated fixtureMode, runId, projectId and loopId.');
+      const policy=JSON.parse(pm.collectionVariables.get('policyJson'));policy.verificationPlanVersionId=policy.implementationPlanVersionId;
+      pm.collectionVariables.set('invalidRepairPolicyJson',JSON.stringify({expectedRevision:Number(pm.collectionVariables.get('projectRevision')),policy}));
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Invalid repair policy blocked',()=>pm.response.to.have.status(400));

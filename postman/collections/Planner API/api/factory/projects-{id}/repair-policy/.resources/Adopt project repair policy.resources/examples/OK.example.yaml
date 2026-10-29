@@ -1,0 +1,50 @@
+$kind: http-example
+name: 'Isolated native repair fixture - OK'
+request:
+  method: PUT
+  url: '{{baseUrl}}/api/factory/projects/{{projectId}}/repair-policy'
+  body:
+    type: json
+    content: |-
+      {
+        "expectedRevision": 15,
+        "policy": {
+          "enabled": true,
+          "implementationPlanVersionId": "0a5d7e8e-19af-42f7-b768-847fd9ae693c",
+          "verificationPlanVersionId": null,
+          "maxAttempts": 4,
+          "maxElapsedMinutes": 5,
+          "maxNoProgressRounds": 2,
+          "maxAgentInvocations": 6,
+          "autoContinue": false,
+          "commandsSafeToRepeat": true,
+          "allowUnmeteredCost": true,
+          "maxCost": null,
+          "currency": null
+        }
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json; charset=utf-8
+  body:
+    type: json
+    content: |-
+      {
+        "projectRevision": 16,
+        "policy": {
+          "enabled": true,
+          "implementationPlanVersionId": "0a5d7e8e-19af-42f7-b768-847fd9ae693c",
+          "verificationPlanVersionId": null,
+          "maxAttempts": 4,
+          "maxElapsedMinutes": 5,
+          "maxNoProgressRounds": 2,
+          "maxAgentInvocations": 6,
+          "autoContinue": false,
+          "commandsSafeToRepeat": true,
+          "allowUnmeteredCost": true,
+          "maxCost": null,
+          "currency": null
+        }
+      }

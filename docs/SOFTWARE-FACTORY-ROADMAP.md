@@ -19,15 +19,15 @@ Next comes bounded repair, controlled PR delivery and verified problem intake.
 
 ## Planned priorities
 
-Items 1 and 2 are delivered with explicit operator decisions and optional
-read-only reviewer assessments. Items 3–5 remain pending. Order
+Items 1–3 are delivered with explicit operator decisions, independent review
+and bounded repair. Items 4–5 remain pending. Order
 expresses priority and dependencies, with no delivery dates or estimates assigned.
 
 | Order | Item | Depends on | Completion outcome |
 | --- | --- | --- | --- |
 | 1 | [Delivered: acceptance criteria and evidence based QA](FACTORY-QUALITY.md) | Delivered foundation | Captured criteria, explicit operator verdicts, test/command references and stale-evidence detection |
 | 2 | [Delivered: independent review with persistent findings](FACTORY-REVIEW.md) | Item 1 | Stable finding IDs, assessment before builder comparison, verified rechecks and revision-bound approval |
-| 3 | Bounded repair and verification loop | Items 1 and 2 | Findings return to the responsible stage and are verified after repair |
+| 3 | [Delivered: bounded repair and verification loop](FACTORY-REPAIR.md) | Items 1 and 2 | Findings return to the responsible stage and are verified after repair |
 | 4 | Controlled PR delivery and merge verification | Items 1 and 2; item 3 for automatic repairs | Only the reviewed and verified revision can pass the configured merge policy |
 | 5 | Verified problem intake | Criteria and finding contracts from items 1 and 2 | Configured signals become deduplicated backlog candidates with provenance |
 
@@ -78,21 +78,22 @@ does not accept the task. See [review validation](FACTORY-REVIEW-VALIDATION.md).
 
 ## Bounded repair and verification loop
 
-- [ ] Route actionable findings to implementation or QA, retaining the finding
+- [x] Route actionable findings to implementation or QA, retaining the finding
   and evidence that caused the transition.
-- [ ] Record each repair and verification round as a distinct attempt. Preserve
+- [x] Record each repair and verification round as a distinct attempt. Preserve
   earlier specifications, outputs and review receipts.
-- [ ] Configure retry, time and cost budgets through project policy. Halt on
+- [x] Configure retry, time and cost budgets through project policy. Halt on
   exhausted budgets, repeated lack of progress, scope changes or required human
   decisions rather than looping indefinitely.
-- [ ] Re-run affected checks after repairs and invalidate approval for changed
+- [x] Re-run affected checks after repairs and invalidate approval for changed
   code. Earlier successful checks cannot approve a later revision.
-- [ ] Preserve explicit stop, cancellation and interruption semantics. A backend
+- [x] Preserve explicit stop, cancellation and interruption semantics. A backend
   restart must not silently replay work or repeat external actions.
 
-Complete when a failing check returns work to its responsible stage, a repair
-receives fresh QA/review, and an unrepaired or repeatedly failing case stops with
-an actionable explanation. Task workflow status stays independent.
+Delivered with distinct retained attempts, captured project limits, explicit start/stop,
+fresh QA and independent rechecks. Monetary usage is unavailable: a configured
+currency cap blocks dispatch, and uncapped execution requires explicit consent.
+Task workflow status stays independent. See [repair validation](FACTORY-REPAIR-VALIDATION.md).
 
 ## Controlled PR delivery and merge verification
 

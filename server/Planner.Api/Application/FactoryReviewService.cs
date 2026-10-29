@@ -68,7 +68,11 @@ public sealed class FactoryReviewService(IWorkspaceStore store, IVerificationEnv
         var hash = Hash(input); var data = await store.ReadAsync(ct);
         var replay = Replay(data, input.RequestId, "begin", hash);
         if (replay is not null) { if (replay.RunId != runId) throw new RuleException("That request ID belongs to another run.", 409); return await Read(replay.Id, ct); }
-        var run = FactoryDispatchService.Find(data, runId); Idle(data, run); Rules.Revision(input.ExpectedRevision, run.Revision);
+        var run = FactoryDispatchService.Find(data, runId); Idle(data, run);
+        var repair = data.RepairLoops.SingleOrDefault(x => x.ItemId == run.ItemId && x.Open);
+        if (repair is not null && data.RepairAttempts.Where(x => x.LoopId == repair.Id).OrderByDescending(x => x.Number).FirstOrDefault()?.RunId != runId)
+            throw new RuleException("Review the current repair attempt, or stop its loop before reviewing other work orders.", 409);
+        Rules.Revision(input.ExpectedRevision, run.Revision);
         var q = await quality.Read(runId, ct); RequireContext(q, input.ExpectedContext);
         var packet = await CapturePacket(data, run, ct);
         if (packet.Context.Fingerprint != q.Context!.Fingerprint) throw new RuleException("Review inputs changed. Refresh before starting.", 409);
@@ -77,7 +81,10 @@ public sealed class FactoryReviewService(IWorkspaceStore store, IVerificationEnv
         {
             var duplicate = Replay(saved, input.RequestId, "begin", hash);
             if (duplicate is not null) { if (duplicate.RunId != runId) throw new RuleException("That request ID belongs to another run.", 409); result = duplicate.Id; return; }
-            var current = FactoryDispatchService.Find(saved, runId); Idle(saved, current); Rules.Revision(input.ExpectedRevision, current.Revision);
+            var current = FactoryDispatchService.Find(saved, runId); Idle(saved, current);
+            var currentRepair = saved.RepairLoops.SingleOrDefault(x => x.ItemId == current.ItemId && x.Open);
+            if (currentRepair is not null && saved.RepairAttempts.Where(x => x.LoopId == currentRepair.Id).OrderByDescending(x => x.Number).FirstOrDefault()?.RunId != runId) throw new RuleException("Review the current repair attempt.", 409);
+            Rules.Revision(input.ExpectedRevision, current.Revision);
             if (saved.ReviewRounds.Any(x => x.ItemId == run.ItemId && x.Open)) throw new RuleException("Finish or abandon the task's open review before starting another round.", 409);
             SameSource(data, saved, run);
             if (Hash(Findings(data, run, q.Context)) != Hash(Findings(saved, current, q.Context))) throw new RuleException("Prior findings changed. Refresh the review packet.", 409);
@@ -179,7 +186,7 @@ public sealed class FactoryReviewService(IWorkspaceStore store, IVerificationEnv
     { if (q.Context is null || q.SourceChanged || q.Context.Fingerprint != expected) throw new RuleException(q.ContextError ?? "Review inputs changed. Refresh and prepare a current work order.", 409); }
     private static void RequireRound(FactoryReviewRound round, WorkspaceData data, FactoryRun run, FactoryQualityDetail q)
     { var stale = Stale(round, data, run, q); if (stale is not null) throw new RuleException(stale, 409); }
-    private static string? Stale(FactoryReviewRound round, WorkspaceData data, FactoryRun run, FactoryQualityDetail q)
+    public static string? Stale(FactoryReviewRound round, WorkspaceData data, FactoryRun run, FactoryQualityDetail q)
     {
         if (q.Context is null) return q.ContextError ?? "Verification context is unavailable.";
         if (q.SourceChanged || round.SourceHash != FactoryQualityService.Source(data, run)) return "Task inputs changed. Abandon unfinished review and prepare a new work order.";
@@ -233,7 +240,7 @@ public sealed class FactoryReviewService(IWorkspaceStore store, IVerificationEnv
     }
     private static IReadOnlyList<ReviewBuilderReport> BuilderReports(WorkspaceData data, FactoryRun run) => data.FactoryStepRuns.Where(x => x.RunId == run.Id && Definition(data, run, x)?.Role == "implementation")
         .Select(x => { using var value = JsonDocument.Parse(x.Evidence.Length == 0 ? "{}" : x.Evidence); var report = value.RootElement.TryGetProperty("result", out var result) && result.ValueKind == JsonValueKind.String ? result.GetString()! : ""; return new ReviewBuilderReport(x.Id, Definition(data, run, x)!.Name, report, FactoryArtifact.Hash(x.Evidence)); }).Where(x => x.Report.Length > 0).ToList();
-    private static IReadOnlyList<ReviewFindingView> Findings(WorkspaceData data, FactoryRun run, VerificationContext? context) => data.ReviewFindings.Where(x => x.ItemId == run.ItemId).OrderBy(x => x.Number).Select(finding =>
+    public static IReadOnlyList<ReviewFindingView> Findings(WorkspaceData data, FactoryRun run, VerificationContext? context) => data.ReviewFindings.Where(x => x.ItemId == run.ItemId).OrderBy(x => x.Number).Select(finding =>
     {
         var history = data.ReviewRounds.Where(x => x.ItemId == run.ItemId && x.State == "submitted").OrderByDescending(x => x.Number).SelectMany(round =>
         {

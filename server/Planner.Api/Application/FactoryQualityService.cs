@@ -134,5 +134,5 @@ public sealed class FactoryQualityService(IWorkspaceStore store, IVerificationEn
     public static string Source(WorkspaceData data, FactoryRun run) => FactoryCriterionVerdict.Source(Item(data, run.ItemId).SpecJson,
         data.AcceptanceCriteria.SingleOrDefault(x => x.Id == run.ItemId)?.Criteria ?? [], Attachment(data, run));
     public static string CapturedSource(FactoryRun run) => FactoryCriterionVerdict.Source(run.Snapshot.SpecJson, run.Snapshot.Criteria ?? [],
-        new { run.Snapshot.PipelineVersionId, run.Snapshot.Overrides });
+        new { PipelineVersionId = run.Snapshot.Repair?.SourcePipelineVersionId ?? run.Snapshot.PipelineVersionId, Overrides = run.Snapshot.Repair?.SourceOverrides ?? run.Snapshot.Overrides });
 }

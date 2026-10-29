@@ -11,7 +11,7 @@ public sealed record FactoryEnvironmentSnapshot(string RepositoryPath, string Ba
     string ProjectInstructions, string DefaultProvider, FactoryDefinition Definition, IReadOnlyList<FactorySkillSnapshot> Skills);
 public sealed record FactoryRunSnapshot(Guid PipelineVersionId, int VersionNumber, string PipelineName, string Source,
     string Title, string SpecJson, long ProjectRevision, FactoryOverrides Overrides,
-    FactoryEnvironmentSnapshot Environment, IReadOnlyList<FactoryReadinessCheck> Checks, DateTime CheckedAt, IReadOnlyList<AcceptanceCriterion>? Criteria = null);
+    FactoryEnvironmentSnapshot Environment, IReadOnlyList<FactoryReadinessCheck> Checks, DateTime CheckedAt, IReadOnlyList<AcceptanceCriterion>? Criteria = null, FactoryRepairLineage? Repair = null);
 
 public sealed class FactoryRun
 {

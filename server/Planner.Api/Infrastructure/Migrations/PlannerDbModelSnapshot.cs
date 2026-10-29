@@ -287,6 +287,113 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("FactoryPipelines");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.FactoryRepairAttempt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("FeedbackHash")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("FeedbackJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("LoopId")
+                        .HasColumnType("UUID");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("ParentRunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("UUID");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RunId")
+                        .IsUnique();
+
+                    b.HasIndex("LoopId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("RepairAttempts");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.FactoryRepairLoop", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ContextJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("UUID");
+
+                    b.Property<int>("NoProgressRounds")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("OperationsJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("PolicyJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<int>("RemainingCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("UUID");
+
+                    b.Property<int>("ReservedAgentInvocations")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("Revision")
+                        .HasColumnType("BIGINT");
+
+                    b.Property<Guid>("RootRunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ScopeJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique();
+
+                    b.ToTable("RepairLoops");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.FactoryReviewFinding", b =>
                 {
                     b.Property<Guid>("Id")
@@ -706,6 +813,20 @@ namespace Planner.Api.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("AgentConnections");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.ProjectRepairPolicy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("PolicyJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RepairPolicies");
                 });
 
             modelBuilder.Entity("Planner.Api.Domain.SpecFileLink", b =>

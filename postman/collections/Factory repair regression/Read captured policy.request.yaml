@@ -1,0 +1,14 @@
+$kind: http-request
+name: Read captured policy
+method: GET
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/repair-policy'
+order: 1000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated' || !pm.variables.get('runId') || !pm.variables.get('projectId') || !pm.variables.get('loopId')) throw new Error('Supply the isolated fixtureMode, runId, projectId and loopId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Policy readable',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('Explicit policy exists',()=>pm.expect(d.policy.enabled).to.equal(true));pm.test('Limits are explicit',()=>pm.expect(d.policy.maxAttempts).to.be.above(0));pm.collectionVariables.set('projectRevision',d.projectRevision);pm.collectionVariables.set('policyJson',JSON.stringify(d.policy));

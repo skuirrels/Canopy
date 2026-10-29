@@ -1,0 +1,6 @@
+$kind: http-request
+name: Read project repair policy
+method: GET
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/repair-policy'
+order: 1000
+examples: ./.resources/Read project repair policy.resources/examples
