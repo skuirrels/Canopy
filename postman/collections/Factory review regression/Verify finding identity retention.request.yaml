@@ -1,0 +1,15 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/factory/runs/{{runId}}/reviews'
+order: 8000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated' || !pm.variables.get('runId')) throw new Error('Supply the isolated fixtureMode and runId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Review history readable',()=>pm.response.to.have.status(200));
+      const d=pm.response.json();pm.test('Contract test did not add findings',()=>pm.expect(d.findings.length).to.equal(Number(pm.collectionVariables.get('findingCount'))));
+      pm.test('One captured review',()=>pm.expect(d.rounds.filter(r=>r.id===pm.collectionVariables.get('roundId')).length).to.equal(1));

@@ -7,7 +7,7 @@ using Planner.Api.Domain;
 
 namespace Planner.Api.Infrastructure;
 
-public sealed class LocalVerificationEnvironment( IMarkdownFiles markdown, AgentOptions options) : IVerificationEnvironment
+public sealed class LocalVerificationEnvironment( IMarkdownFiles markdown, AgentOptions options) : IVerificationEnvironment, IReviewChanges
 {
     public async Task<VerificationContext> Observe(FactoryRun run, CancellationToken ct)
     {
@@ -58,6 +58,20 @@ public sealed class LocalVerificationEnvironment( IMarkdownFiles markdown, Agent
         if (line > lines.Length || string.IsNullOrWhiteSpace(lines[line - 1])) throw new RuleException("The asserting-test line must exist and contain text.");
         return Convert.ToHexString(SHA256.HashData(bytes));
     }
+    public async Task<string> RawChange(FactoryRun run, string baseCommit, CancellationToken ct)
+    {
+        var root = Workspace(run); var change = new StringBuilder();
+        void Append(string value)
+        {
+            if ((long)change.Length + value.Length > options.MaxOutputCharacters) throw new RuleException("The raw review change exceeds Agents:MaxOutputCharacters. Increase the configured limit or split the work; partial changes cannot be approved.");
+            change.Append(value);
+        }
+        Append(await Git(root, ["diff", "--no-ext-diff", "--no-textconv", "--binary", baseCommit, "--"], ct, limit: options.MaxOutputCharacters));
+        var untracked = await Git(root, ["ls-files", "--others", "--exclude-standard", "-z"], ct);
+        foreach (var path in untracked.Split('\0', StringSplitOptions.RemoveEmptyEntries).Order(StringComparer.Ordinal))
+            Append(await Git(root, ["diff", "--no-index", "--no-ext-diff", "--no-textconv", "--binary", "--", "/dev/null", SafeFile(root, path)], ct, true, options.MaxOutputCharacters));
+        return change.ToString();
+    }
     private string Workspace(FactoryRun run)
     {
         if (run.WorkspacePath is null || !Directory.Exists(run.WorkspacePath)) throw new RuleException("The retained verification worktree is unavailable.");
@@ -80,7 +94,17 @@ public sealed class LocalVerificationEnvironment( IMarkdownFiles markdown, Agent
         for (FileSystemInfo? current = new FileInfo(path); current is not null; current = current is FileInfo file ? file.Directory : ((DirectoryInfo)current).Parent)
             if (current.LinkTarget is not null) throw new RuleException("Verification cannot traverse symbolic links.");
     }
-    private async Task<string> Git(string directory, string[] arguments, CancellationToken ct)
+    private static async Task<string> ReadOutput(StreamReader reader, int? limit, CancellationToken ct)
+    {
+        var result = new StringBuilder(); var buffer = new char[4096]; int count;
+        while ((count = await reader.ReadAsync(buffer, ct)) > 0)
+        {
+            if (limit.HasValue && (long)result.Length + count > limit.Value) throw new RuleException("The raw review change exceeds Agents:MaxOutputCharacters. Partial changes cannot be approved.");
+            result.Append(buffer, 0, count);
+        }
+        return result.ToString();
+    }
+    private async Task<string> Git(string directory, string[] arguments, CancellationToken ct, bool acceptDiff = false, int? limit = null)
     {
         // Fingerprints must not use the runner's truncated human-readable Git output.
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -91,9 +115,9 @@ public sealed class LocalVerificationEnvironment( IMarkdownFiles markdown, Agent
         using var process = Process.Start(info) ?? throw new RuleException("Git could not inspect verification inputs.");
         try
         {
-            var output = process.StandardOutput.ReadToEndAsync(deadline.Token); var error = process.StandardError.ReadToEndAsync(deadline.Token);
-            await process.WaitForExitAsync(deadline.Token); var result = await output; await error;
-            if (process.ExitCode != 0) throw new RuleException("Git could not inspect the retained verification worktree.");
+            var output = ReadOutput(process.StandardOutput, limit, deadline.Token); var error = process.StandardError.ReadToEndAsync(deadline.Token);
+            var result = await output; await process.WaitForExitAsync(deadline.Token); await error;
+            if (process.ExitCode != 0 && !(acceptDiff && process.ExitCode == 1)) throw new RuleException("Git could not inspect the retained verification worktree.");
             return result;
         }
         finally { if (!process.HasExited) { process.Kill(true); await process.WaitForExitAsync(CancellationToken.None); } }

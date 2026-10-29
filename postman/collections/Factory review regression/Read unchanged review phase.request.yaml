@@ -1,0 +1,15 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/factory/reviews/{{roundId}}'
+order: 5000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated' || !pm.variables.get('runId')) throw new Error('Supply the isolated fixtureMode and runId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Review remains readable',()=>pm.response.to.have.status(200));
+      const d=pm.response.json();pm.test('Invalid submit did not approve',()=>pm.expect(d.round.state).to.equal('assessed'));
+      pm.collectionVariables.set('abandonRevision',d.round.revision);pm.collectionVariables.set('abandonId',pm.variables.replaceIn('{{$guid}}'));

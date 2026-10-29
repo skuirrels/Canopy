@@ -1,0 +1,28 @@
+$kind: http-example
+name: 'Isolated native API fixture - OK'
+request:
+  url: '{{baseUrl}}/api/factory/runs/:id/reviews'
+  method: GET
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json; charset=utf-8
+  body:
+    type: json
+    content: |-
+      {
+        "runId": "59f26449-059e-4b40-81dc-73ea5a7b7422",
+        "runRevision": 7,
+        "context": {
+          "headCommit": "ac76d07503b5c6db7de14fe330890510e04e746c",
+          "codeHash": "E0D449F33737F76ED15364712C7C69B34BFAD9112056715510C2A8A4198941C4",
+          "configurationHash": "9312DB6FA8F454970BCD0AE49A62F2187ACCD0EB915145DB0809978C516F0F1C",
+          "fingerprint": "EFDAEE394E43E038024F8AA3632DCB272F96EDDD209DF7982DC03BF5F27B1C99"
+        },
+        "contextError": null,
+        "sourceChanged": false,
+        "rounds": [],
+        "findings": [],
+        "assessments": []
+      }

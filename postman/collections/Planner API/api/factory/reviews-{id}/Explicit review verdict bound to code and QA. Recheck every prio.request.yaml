@@ -1,0 +1,20 @@
+$kind: http-request
+name: Explicit review verdict bound to code and QA. Recheck every prior finding; fixed needs current code and successful verification. Does not accept the task or merge code.
+description: Explicit review verdict bound to code and QA. Recheck every prior finding; fixed needs current code and successful verification. Does not accept the task or merge code.
+url: "{{baseUrl}}/api/factory/reviews/:id/submit"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: '{{reviewId}}'
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {{reviewSubmissionJson}}
+settings: {}
+examples: ./.resources/Explicit review verdict bound to code and QA. Recheck every prio.resources/examples
+order: 3000

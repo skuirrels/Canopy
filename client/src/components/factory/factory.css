@@ -251,3 +251,10 @@
 .factory-qa-status { display: inline-block; padding: 3px 8px; border: 1px solid currentColor; border-radius: 8px; font-size: 12px; }
 .factory-qa-status.qa-pass { color: var(--foreground); }
 .factory-qa-status.qa-fail, .factory-qa-status.qa-stale { color: var(--factory-danger); }
+
+.factory-review-round { display: block; width: 100%; text-align: left; padding: 9px; margin-block: 5px; border: 1px solid var(--line); border-radius: 6px; overflow-wrap: anywhere; }
+.factory-review-round[aria-pressed=true] { border-color: var(--accent); }
+.factory-review-round small { display: block; color: var(--secondary-text); margin-top: 5px; }
+.factory-review-detail { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 14px; }
+.factory-review .factory-fieldset { display: grid; gap: 9px; }
+.factory-review-code { display: block; overflow-wrap: anywhere; }

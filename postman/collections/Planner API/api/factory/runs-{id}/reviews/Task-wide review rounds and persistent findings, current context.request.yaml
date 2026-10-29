@@ -1,0 +1,15 @@
+$kind: http-request
+name: Task-wide review rounds and persistent findings, current context and eligible independent assessments. Process completion is never approval.
+description: Task-wide review rounds and persistent findings, current context and eligible independent assessments. Process completion is never approval.
+url: "{{baseUrl}}/api/factory/runs/:id/reviews"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: '{{runId}}'
+    disabled: false
+    description: "(Required) "
+settings: {}
+examples: ./.resources/Task-wide review rounds and persistent findings, current context.resources/examples
+order: 1000

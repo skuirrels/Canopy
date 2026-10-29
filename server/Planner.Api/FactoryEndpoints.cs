@@ -19,6 +19,20 @@ public static class FactoryEndpoints
             http.Response.Headers.CacheControl = "no-store";
             return await next(context);
         });
+        group.MapGet("/runs/{id:guid}/reviews", (Guid id, FactoryReviewService service, CancellationToken ct) => service.List(id, ct))
+            .WithDescription("Task-wide review rounds and persistent findings, current context and eligible independent assessments. Process completion is never approval.").ProducesProblem(403).ProducesProblem(404);
+        group.MapPost("/runs/{id:guid}/reviews", (Guid id, BeginFactoryReview input, FactoryReviewService service, CancellationToken ct) => service.Begin(id, input, ct))
+            .WithDescription("Capture a raw independent review packet before builder explanations. expectedRevision is the run revision; requestId replays exactly.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapGet("/reviews/{id:guid}", (Guid id, FactoryReviewService service, CancellationToken ct) => service.Read(id, ct))
+            .WithDescription("Review packet, immutable findings and freshness. Builder reports are withheld until independent assessment is recorded.").ProducesProblem(403).ProducesProblem(404);
+        group.MapPost("/reviews/{id:guid}/assessment", (Guid id, AssessFactoryReview input, FactoryReviewService service, CancellationToken ct) => service.Assess(id, input, ct))
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapPost("/reviews/{id:guid}/submit", (Guid id, SubmitFactoryReview input, FactoryReviewService service, CancellationToken ct) => service.Submit(id, input, ct))
+            .WithDescription("Explicit review verdict bound to code and QA. Recheck every prior finding; fixed needs current code and successful verification. Does not accept the task or merge code.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapPost("/reviews/{id:guid}/abandon", (Guid id, AbandonFactoryReview input, FactoryReviewService service, CancellationToken ct) => service.Abandon(id, input, ct))
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
         group.MapGet("/tasks/{id:guid}/criteria", (Guid id, FactoryQualityService service, CancellationToken ct) => service.Criteria(id, ct));
         group.MapPut("/tasks/{id:guid}/criteria", (Guid id, EditAcceptanceCriteria input, FactoryQualityService service, CancellationToken ct) => service.Edit(id, input, ct))
             .WithDescription("Explicitly adopt acceptance criteria with stable IDs. Uses the project revision; captured work orders remain immutable.")

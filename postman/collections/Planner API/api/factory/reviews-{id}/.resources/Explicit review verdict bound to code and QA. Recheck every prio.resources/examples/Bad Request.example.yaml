@@ -1,0 +1,44 @@
+$kind: http-example
+name: 'Isolated native API fixture - Bad Request'
+request:
+  url: '{{baseUrl}}/api/factory/reviews/:id/submit'
+  method: POST
+  body:
+    type: json
+    content: |-
+      {
+        "requestId": "8effbc76-1572-41e3-8ff0-093a1ff01806",
+        "expectedRevision": 2,
+        "expectedContext": "EFDAEE394E43E038024F8AA3632DCB272F96EDDD209DF7982DC03BF5F27B1C99",
+        "verdict": "unknown",
+        "summary": "Isolated contract fixture preserves the explicit verification gap without accepting the task.",
+        "rechecks": [],
+        "newFindings": [
+          {
+            "id": "977cf0f2-c740-4f79-8698-fb12aef17f0c",
+            "title": "Verification strength remains to be reviewed",
+            "description": "The command output alone does not establish the criterion; inspect an asserting test before approval.",
+            "category": "verificationGap",
+            "severity": "medium",
+            "owner": "verification",
+            "criterionIds": [
+              "44c99fec-8bf3-4deb-8b57-35ab141b8424"
+            ],
+            "codeReferences": [],
+            "evidence": []
+          }
+        ]
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+        "title": "Choose approve, requestChanges or inconclusive.",
+        "status": 400
+      }

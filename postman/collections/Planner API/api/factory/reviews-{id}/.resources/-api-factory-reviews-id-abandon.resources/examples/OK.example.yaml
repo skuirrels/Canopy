@@ -1,0 +1,144 @@
+$kind: http-example
+name: 'Isolated native API fixture - OK'
+request:
+  url: '{{baseUrl}}/api/factory/reviews/:id/abandon'
+  method: POST
+  body:
+    type: json
+    content: |-
+      {
+        "requestId": "0957fb81-8f88-4f80-b449-04cdecf559a1",
+        "expectedRevision": 1,
+        "reason": "Isolated example capture completed; no approval intended."
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json; charset=utf-8
+  body:
+    type: json
+    content: |-
+      {
+        "round": {
+          "id": "376a74b0-9125-43ee-a02b-cfe16fd9f24e",
+          "requestId": "a371aa5b-2198-493c-98a5-66ccfdc3729c",
+          "projectId": "9ffaeba9-8107-46d1-9c4e-472b3381e9ac",
+          "itemId": "b1015e4a-1605-4c41-835a-142b99c5a8a5",
+          "runId": "59f26449-059e-4b40-81dc-73ea5a7b7422",
+          "number": 2,
+          "revision": 2,
+          "reviewer": "Isolated API example reviewer",
+          "state": "abandoned",
+          "sourceHash": "04154F069ED4C31AC919EA978D19B8537B2E535B0B1CAD2F1C64F5DB297766EE",
+          "assessment": "",
+          "assessmentStepRunId": null,
+          "assessmentEvidenceHash": null,
+          "abandonReason": "Isolated example capture completed; no approval intended.",
+          "submission": null,
+          "createdAt": "2026-10-29T18:39:10.235179Z",
+          "assessedAt": null,
+          "finishedAt": "2026-10-29T18:39:10.454703Z",
+          "open": false
+        },
+        "packet": {
+          "title": "Isolated review contract examples",
+          "specJson": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\"}]}",
+          "baseCommit": "ac76d07503b5c6db7de14fe330890510e04e746c",
+          "context": {
+            "headCommit": "ac76d07503b5c6db7de14fe330890510e04e746c",
+            "codeHash": "E0D449F33737F76ED15364712C7C69B34BFAD9112056715510C2A8A4198941C4",
+            "configurationHash": "9312DB6FA8F454970BCD0AE49A62F2187ACCD0EB915145DB0809978C516F0F1C",
+            "fingerprint": "EFDAEE394E43E038024F8AA3632DCB272F96EDDD209DF7982DC03BF5F27B1C99"
+          },
+          "priorFindings": [
+            {
+              "id": "977cf0f2-c740-4f79-8698-fb12aef17f0c",
+              "number": 1,
+              "data": {
+                "title": "Verification strength remains to be reviewed",
+                "description": "The command output alone does not establish the criterion; inspect an asserting test before approval.",
+                "category": "verificationGap",
+                "severity": "medium",
+                "owner": "verification",
+                "criterionIds": [
+                  "44c99fec-8bf3-4deb-8b57-35ab141b8424"
+                ],
+                "codeReferences": [],
+                "evidence": []
+              },
+              "lastStatus": "unfixed",
+              "lastReason": "The command output alone does not establish the criterion; inspect an asserting test before approval.",
+              "lastContext": {
+                "headCommit": "ac76d07503b5c6db7de14fe330890510e04e746c",
+                "codeHash": "E0D449F33737F76ED15364712C7C69B34BFAD9112056715510C2A8A4198941C4",
+                "configurationHash": "9312DB6FA8F454970BCD0AE49A62F2187ACCD0EB915145DB0809978C516F0F1C",
+                "fingerprint": "EFDAEE394E43E038024F8AA3632DCB272F96EDDD209DF7982DC03BF5F27B1C99"
+              }
+            }
+          ],
+          "criteria": [
+            {
+              "id": "44c99fec-8bf3-4deb-8b57-35ab141b8424",
+              "description": "Inspect actual command output",
+              "expectedResult": "Recorded output contains the contract fixture marker",
+              "verificationMethod": "Inspect actual command evidence before an explicit operator verdict",
+              "needsClarification": false
+            }
+          ],
+          "rawChange": "",
+          "verificationEvidence": [
+            {
+              "stepRunId": "ab4b6e9f-f6b5-406c-9584-3b905c84430e",
+              "name": "Contract command",
+              "evidence": "{\"exitCode\":0,\"output\":\"[stdout] contract fixture marker\\n\",\"outputLimitReached\":false}",
+              "current": true,
+              "evidenceHash": "88C1F0FC203AEBA2B96348CFB460CC10045ACBBB8B6C81A955F2A3AE7183C9F0"
+            }
+          ]
+        },
+        "builderReports": null,
+        "staleReason": null,
+        "findings": [
+          {
+            "finding": {
+              "id": "977cf0f2-c740-4f79-8698-fb12aef17f0c",
+              "projectId": "9ffaeba9-8107-46d1-9c4e-472b3381e9ac",
+              "itemId": "b1015e4a-1605-4c41-835a-142b99c5a8a5",
+              "roundId": "6af6600d-9181-44ad-a868-9681c62783b8",
+              "number": 1,
+              "data": {
+                "title": "Verification strength remains to be reviewed",
+                "description": "The command output alone does not establish the criterion; inspect an asserting test before approval.",
+                "category": "verificationGap",
+                "severity": "medium",
+                "owner": "verification",
+                "criterionIds": [
+                  "44c99fec-8bf3-4deb-8b57-35ab141b8424"
+                ],
+                "codeReferences": [],
+                "evidence": []
+              }
+            },
+            "status": "unfixed",
+            "history": [
+              {
+                "roundId": "6af6600d-9181-44ad-a868-9681c62783b8",
+                "runId": "59f26449-059e-4b40-81dc-73ea5a7b7422",
+                "roundNumber": 1,
+                "reviewer": "Isolated API example reviewer",
+                "status": "unfixed",
+                "reason": "The command output alone does not establish the criterion; inspect an asserting test before approval.",
+                "context": {
+                  "headCommit": "ac76d07503b5c6db7de14fe330890510e04e746c",
+                  "codeHash": "E0D449F33737F76ED15364712C7C69B34BFAD9112056715510C2A8A4198941C4",
+                  "configurationHash": "9312DB6FA8F454970BCD0AE49A62F2187ACCD0EB915145DB0809978C516F0F1C",
+                  "fingerprint": "EFDAEE394E43E038024F8AA3632DCB272F96EDDD209DF7982DC03BF5F27B1C99"
+                },
+                "codeReferences": [],
+                "evidence": []
+              }
+            ]
+          }
+        ]
+      }

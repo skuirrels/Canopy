@@ -1,0 +1,15 @@
+$kind: http-request
+name: Review packet, immutable findings and freshness. Builder reports are withheld until independent assessment is recorded.
+description: Review packet, immutable findings and freshness. Builder reports are withheld until independent assessment is recorded.
+url: "{{baseUrl}}/api/factory/reviews/:id"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: '{{reviewId}}'
+    disabled: false
+    description: "(Required) "
+settings: {}
+examples: ./.resources/Review packet, immutable findings and freshness. Builder reports.resources/examples
+order: 1000

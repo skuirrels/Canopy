@@ -1,0 +1,23 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/factory/reviews/{{roundId}}/assessment'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"requestId":"{{$guid}}","expectedRevision":{{roundRevision}},"assessment":"Protocol fixture assessment: prior finding IDs and raw change were read before builder comparison; no approval is granted.","assessmentStepRunId":null}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated' || !pm.variables.get('runId')) throw new Error('Supply the isolated fixtureMode and runId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Assessment saved',()=>pm.response.to.have.status(200));
+      const d=pm.response.json();pm.collectionVariables.set('roundRevision',d.round.revision);
+      pm.test('Review still unsubmitted',()=>pm.expect(d.round.submission).to.equal(null));
+      pm.test('Builder comparison now available',()=>pm.expect(d.builderReports).to.be.an('array'));

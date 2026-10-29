@@ -1,0 +1,20 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/factory/reviews/{{roundId}}/abandon'
+order: 7000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"requestId":"{{abandonId}}","expectedRevision":{{abandonRevision}},"reason":"Isolated API contract check complete; no approval intended."}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated' || !pm.variables.get('runId')) throw new Error('Supply the isolated fixtureMode and runId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Exact retry remains abandoned',()=>{pm.response.to.have.status(200);pm.expect(pm.response.json().round.state).to.equal('abandoned');});

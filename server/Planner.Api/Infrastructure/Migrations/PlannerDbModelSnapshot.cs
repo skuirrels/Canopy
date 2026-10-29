@@ -287,6 +287,119 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("FactoryPipelines");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.FactoryReviewFinding", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("DataJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("UUID");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("RoundId")
+                        .HasColumnType("UUID");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("ReviewFindings");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.FactoryReviewRound", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("AbandonReason")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime?>("AssessedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("Assessment")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("AssessmentEvidenceHash")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid?>("AssessmentStepRunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("BuilderReportsJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("UUID");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("OperationsJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("PacketJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Reviewer")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<long>("Revision")
+                        .HasColumnType("BIGINT");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("SourceHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("SubmissionJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique();
+
+                    b.HasIndex("ItemId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("ReviewRounds");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.FactoryRun", b =>
                 {
                     b.Property<Guid>("Id")
