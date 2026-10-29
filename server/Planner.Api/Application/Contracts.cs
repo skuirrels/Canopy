@@ -24,6 +24,9 @@ public sealed record EditPerson(string Name);
 public sealed record WorkflowDefault(string Name, string Color, bool IsCompleted);
 public sealed class WorkspaceData
 {
+    [JsonIgnore] public List<ProjectDeliveryPolicy> DeliveryPolicies { get; init; } = [];
+    [JsonIgnore] public List<FactoryDelivery> Deliveries { get; init; } = [];
+    [JsonIgnore] public List<FactoryDeliveryOperation> DeliveryOperations { get; init; } = [];
     [JsonIgnore] public List<ProjectRepairPolicy> RepairPolicies { get; init; } = [];
     [JsonIgnore] public List<FactoryRepairLoop> RepairLoops { get; init; } = [];
     [JsonIgnore] public List<FactoryRepairAttempt> RepairAttempts { get; init; } = [];
@@ -50,6 +53,8 @@ public sealed class WorkspaceData
     public void RemoveFactoryRuns(IEnumerable<Guid> runIds)
     {
         var ids = runIds.ToHashSet();
+        var deliveryIds = Deliveries.Where(x => ids.Contains(x.RunId)).Select(x => x.Id).ToHashSet();
+        DeliveryOperations.RemoveAll(x => deliveryIds.Contains(x.DeliveryId)); Deliveries.RemoveAll(x => deliveryIds.Contains(x.Id));
         var loopIds = RepairLoops.Where(x => ids.Contains(x.RootRunId)).Select(x => x.Id).ToHashSet();
         RepairAttempts.RemoveAll(x => loopIds.Contains(x.LoopId)); RepairLoops.RemoveAll(x => loopIds.Contains(x.Id));
         var roundIds = ReviewRounds.Where(x => ids.Contains(x.RunId)).Select(x => x.Id).ToHashSet();

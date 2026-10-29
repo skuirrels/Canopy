@@ -1,0 +1,12 @@
+$kind: collection
+name: Factory delivery regression
+description: Explicit isolated fixture only. Reads persisted authority and verifies rejected mutations; never publishes or merges.
+variables:
+  - key: baseUrl
+    value: 'http://127.0.0.1:5274'
+  - key: projectId
+    value: ''
+  - key: runId
+    value: ''
+  - key: deliveryId
+    value: ''

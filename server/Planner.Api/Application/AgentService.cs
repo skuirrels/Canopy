@@ -25,7 +25,7 @@ public sealed class AgentService(IWorkspaceStore store, IAgentEnvironment enviro
         var data = await store.WriteAsync(data =>
         {
             var graph = data.Graph(projectId, input.ExpectedRevision);
-            if ((data.RepairLoops.Any(x => x.ProjectId == projectId && x.Open) || data.AgentRuns.Any(x => x.ProjectId == projectId && x.Active) || data.FactoryRuns.Any(x => x.ProjectId == projectId && x.Active))) throw new RuleException("Stop active runs and open repair loops before changing the connection.", 409);
+            if (((data.Deliveries.Any(x => x.ProjectId == projectId && x.Open) || data.RepairLoops.Any(x => x.ProjectId == projectId && x.Open)) || data.AgentRuns.Any(x => x.ProjectId == projectId && x.Active) || data.FactoryRuns.Any(x => x.ProjectId == projectId && x.Active))) throw new RuleException("Stop active runs and repair loops, and close open deliveries before changing the connection.", 409);
             var connection = data.AgentConnections.SingleOrDefault(x => x.ProjectId == projectId);
             if (connection is null) { connection = ProjectAgentConnection.Create(projectId); data.AgentConnections.Add(connection); }
             connection.Configure(path, input.BaseRef, input.Provider, input.Model, input.Instructions, input.Settings);
@@ -37,7 +37,7 @@ public sealed class AgentService(IWorkspaceStore store, IAgentEnvironment enviro
     public async Task Disconnect(Guid projectId, long revision, CancellationToken ct) => await store.WriteAsync(data =>
     {
         var graph = data.Graph(projectId, revision);
-        if ((data.RepairLoops.Any(x => x.ProjectId == projectId && x.Open) || data.AgentRuns.Any(x => x.ProjectId == projectId && x.Active) || data.FactoryRuns.Any(x => x.ProjectId == projectId && x.Active))) throw new RuleException("Stop active runs and open repair loops before disconnecting.", 409);
+        if (((data.Deliveries.Any(x => x.ProjectId == projectId && x.Open) || data.RepairLoops.Any(x => x.ProjectId == projectId && x.Open)) || data.AgentRuns.Any(x => x.ProjectId == projectId && x.Active) || data.FactoryRuns.Any(x => x.ProjectId == projectId && x.Active))) throw new RuleException("Stop active runs and repair loops, and close open deliveries before disconnecting.", 409);
         data.AgentConnections.RemoveAll(x => x.ProjectId == projectId); graph.Project.Touch();
     }, ct);
     public async Task<IReadOnlyList<AgentRun>> Runs(Guid itemId, CancellationToken ct)
@@ -62,7 +62,7 @@ public sealed class AgentService(IWorkspaceStore store, IAgentEnvironment enviro
             var connection = data.AgentConnections.SingleOrDefault(x => x.ProjectId == graph.Project.Id) ?? throw new RuleException("Connect this project to a repository first.");
             AgentRun.RequireProvider(input.Provider);
             if (!environment.Providers().Any(x => x.Id == input.Provider && x.Available)) throw new RuleException("The selected agent executable is unavailable. Install it or configure Agents in the backend.", 503);
-            if ((data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.RepairLoops.Any(x => x.ItemId == itemId && x.Open) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) throw new RuleException("This task already has an active run.", 409);
+            if ((data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || (data.Deliveries.Any(x => x.ItemId == itemId && x.Open) || data.RepairLoops.Any(x => x.ItemId == itemId && x.Open)) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) throw new RuleException("This task already has an active run.", 409);
             var previous = input.PreviousRunId.HasValue ? Find(data, input.PreviousRunId.Value) : null;
             var run = AgentRun.Create(input.RequestId, graph.Item(itemId), connection, graph.Project.Revision, input.Provider, input.Purpose, input.Instructions, previous, input.Model, input.Effort);
             RequireEffort(run.Provider, run.Effort);

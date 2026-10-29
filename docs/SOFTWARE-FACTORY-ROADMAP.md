@@ -19,8 +19,8 @@ Next comes bounded repair, controlled PR delivery and verified problem intake.
 
 ## Planned priorities
 
-Items 1–3 are delivered with explicit operator decisions, independent review
-and bounded repair. Items 4–5 remain pending. Order
+Items 1–4 are delivered with explicit operator decisions, independent review,
+bounded repair and controlled GitHub delivery. Item 5 remains pending. Order
 expresses priority and dependencies, with no delivery dates or estimates assigned.
 
 | Order | Item | Depends on | Completion outcome |
@@ -28,7 +28,7 @@ expresses priority and dependencies, with no delivery dates or estimates assigne
 | 1 | [Delivered: acceptance criteria and evidence based QA](FACTORY-QUALITY.md) | Delivered foundation | Captured criteria, explicit operator verdicts, test/command references and stale-evidence detection |
 | 2 | [Delivered: independent review with persistent findings](FACTORY-REVIEW.md) | Item 1 | Stable finding IDs, assessment before builder comparison, verified rechecks and revision-bound approval |
 | 3 | [Delivered: bounded repair and verification loop](FACTORY-REPAIR.md) | Items 1 and 2 | Findings return to the responsible stage and are verified after repair |
-| 4 | Controlled PR delivery and merge verification | Items 1 and 2; item 3 for automatic repairs | Only the reviewed and verified revision can pass the configured merge policy |
+| 4 | [Delivered: controlled PR delivery and merge verification](FACTORY-DELIVERY.md) | Items 1 and 2; item 3 for automatic repairs | Only the reviewed and verified revision can pass the configured merge policy |
 | 5 | Verified problem intake | Criteria and finding contracts from items 1 and 2 | Configured signals become deduplicated backlog candidates with provenance |
 
 ## Acceptance criteria and evidence based QA
@@ -97,26 +97,28 @@ Task workflow status stays independent. See [repair validation](FACTORY-REPAIR-V
 
 ## Controlled PR delivery and merge verification
 
-- [ ] Add explicit project policy for branch, draft PR and merge authority.
+- [x] Add explicit project policy for branch, draft PR and merge authority.
   Creating a PR, merging, releasing and deploying remain separate actions.
-- [ ] Associate each PR with its captured work order, actual branch/head commit,
+- [x] Associate each PR with its captured work order, actual branch/head commit,
   verification evidence and review findings.
-- [ ] Require the owning project's configured verification commands and required
+- [x] Require the owning project's configured verification commands and required
   GitHub checks. Missing or unavailable evidence blocks the gate.
-- [ ] Verify integration with the current target branch immediately before
+- [x] Verify integration with the current target branch immediately before
   merging. Pin review and merge to the same head; a changed head or base requires
   renewed verification. Use server-side protection or a merge queue where needed
   rather than treating a local mutex as protection from every writer.
-- [ ] Bind human approvals to the reviewed revision and requested action.
+- [x] Bind human approvals to the reviewed revision and requested action.
   Configure sensitive changes and migration environments explicitly.
-- [ ] Reconcile the actual merge result and target-branch ancestry before marking
+- [x] Reconcile the actual merge result and target-branch ancestry before marking
   delivery complete. Retries must not repeat a completed merge or external step.
   Configured post-merge restarts retain health and persistence receipts; failures
   remain visible as operational follow-up.
 
-Complete when changed-head/base cases, failed checks, missing approvals and lost
-responses cannot cause an unverified or duplicate merge, and the successful case
-records the actual merge commit and any required post-merge checks.
+Delivered for GitHub direct merge commits with strict, non-bypassable branch
+protection and configured check App IDs. Unsupported protection, queue/method or
+provider evidence blocks the gate. Project policy and each requested action remain
+explicit. Configured post-merge hooks verify instance, deployed revision, health
+and persistence. See [delivery validation](FACTORY-DELIVERY-VALIDATION.md).
 
 ## Verified problem intake
 

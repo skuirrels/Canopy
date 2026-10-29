@@ -3555,6 +3555,526 @@
           }
         }
       }
+    },
+    "/api/factory/projects/{id}/delivery-policy": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Read project delivery policy",
+        "description": "Commit-bound delivery authority and persistent operation receipts. Capturing executes nothing. Mutations are asynchronous; exact retries never repeat side effects. Unknown outcomes require reconciliation.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryPolicyDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Adopt explicit delivery authority",
+        "description": "Commit-bound delivery authority and persistent operation receipts. Capturing executes nothing. Mutations are asynchronous; exact retries never repeat side effects. Unknown outcomes require reconciliation.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditDeliveryPolicy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryPolicyDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/runs/{id}/delivery": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Read delivery readiness and history",
+        "description": "Commit-bound delivery authority and persistent operation receipts. Capturing executes nothing. Mutations are asynchronous; exact retries never repeat side effects. Unknown outcomes require reconciliation.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryLibrary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/runs/{id}/deliveries": {
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Capture a reviewed committed candidate",
+        "description": "Commit-bound delivery authority and persistent operation receipts. Capturing executes nothing. Mutations are asynchronous; exact retries never repeat side effects. Unknown outcomes require reconciliation.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepareDelivery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/deliveries/{id}": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Read delivery evidence and operations",
+        "description": "Commit-bound delivery authority and persistent operation receipts. Capturing executes nothing. Mutations are asynchronous; exact retries never repeat side effects. Unknown outcomes require reconciliation.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/deliveries/{id}/actions": {
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Request an explicit delivery action",
+        "description": "Commit-bound delivery authority and persistent operation receipts. Capturing executes nothing. Mutations are asynchronous; exact retries never repeat side effects. Unknown outcomes require reconciliation.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActOnDelivery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8045,6 +8565,861 @@
             "format": "int64"
           },
           "reason": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ActOnDelivery": {
+        "required": [
+          "requestId",
+          "expectedRevision",
+          "action"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "action": {
+            "type": "string"
+          },
+          "approvalNote": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeliveryApproval": {
+        "required": [
+          "action",
+          "binding",
+          "note",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "binding": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "DeliveryCapture": {
+        "required": [
+          "context",
+          "sourceHash",
+          "reviewId",
+          "reviewHash",
+          "qaHash",
+          "headSha",
+          "treeSha",
+          "baseSha",
+          "branchName",
+          "providerBinding",
+          "hookHash",
+          "sensitiveFiles",
+          "migrationFiles"
+        ],
+        "type": "object",
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/VerificationContext"
+          },
+          "sourceHash": {
+            "type": "string"
+          },
+          "reviewId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reviewHash": {
+            "type": "string"
+          },
+          "qaHash": {
+            "type": "string"
+          },
+          "headSha": {
+            "type": "string"
+          },
+          "treeSha": {
+            "type": "string"
+          },
+          "baseSha": {
+            "type": "string"
+          },
+          "branchName": {
+            "type": "string"
+          },
+          "providerBinding": {
+            "type": "string"
+          },
+          "hookHash": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sensitiveFiles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "migrationFiles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "DeliveryCheck": {
+        "required": [
+          "name",
+          "appId"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "appId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeliveryCheckResult": {
+        "required": [
+          "id",
+          "name",
+          "appId",
+          "headSha",
+          "status",
+          "conclusion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "appId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "headSha": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "conclusion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "DeliveryDetail": {
+        "required": [
+          "delivery",
+          "operations",
+          "local",
+          "mergeErrors",
+          "pollIntervalMs"
+        ],
+        "type": "object",
+        "properties": {
+          "delivery": {
+            "$ref": "#/components/schemas/FactoryDelivery"
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryDeliveryOperation"
+            }
+          },
+          "local": {
+            "$ref": "#/components/schemas/DeliveryLocalReadiness"
+          },
+          "mergeErrors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pollIntervalMs": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "DeliveryHookInfo": {
+        "required": [
+          "id",
+          "name",
+          "ready",
+          "error"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "DeliveryHookReceipt": {
+        "required": [
+          "before",
+          "after",
+          "exitCode",
+          "output",
+          "outputTruncated",
+          "error"
+        ],
+        "type": "object",
+        "properties": {
+          "before": {
+            "$ref": "#/components/schemas/DeliveryProbe"
+          },
+          "after": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DeliveryProbe"
+              }
+            ]
+          },
+          "exitCode": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "output": {
+            "type": "string"
+          },
+          "outputTruncated": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "DeliveryLibrary": {
+        "required": [
+          "runId",
+          "policy",
+          "local",
+          "deliveries",
+          "pollIntervalMs"
+        ],
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/DeliveryPolicyDetail"
+          },
+          "local": {
+            "$ref": "#/components/schemas/DeliveryLocalReadiness"
+          },
+          "deliveries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryDelivery"
+            }
+          },
+          "pollIntervalMs": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "DeliveryLocalReadiness": {
+        "required": [
+          "ready",
+          "runRevision",
+          "context",
+          "reviewId",
+          "reviewHash",
+          "qaHash",
+          "errors"
+        ],
+        "type": "object",
+        "properties": {
+          "ready": {
+            "type": "boolean"
+          },
+          "runRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "context": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VerificationContext"
+              }
+            ]
+          },
+          "reviewId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "reviewHash": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "qaHash": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "DeliveryObservation": {
+        "required": [
+          "repository",
+          "cloneUrl",
+          "sshUrl",
+          "baseSha",
+          "branchSha",
+          "pullRequest",
+          "checks",
+          "protectionStrict",
+          "adminEnforced",
+          "reviewBypass",
+          "protectedChecks",
+          "mergeAllowed",
+          "linearHistory",
+          "mergeQueue",
+          "baseIsAncestor",
+          "observedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "repository": {
+            "type": "string"
+          },
+          "cloneUrl": {
+            "type": "string"
+          },
+          "sshUrl": {
+            "type": "string"
+          },
+          "baseSha": {
+            "type": "string"
+          },
+          "branchSha": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "pullRequest": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DeliveryRemote"
+              }
+            ]
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryCheckResult"
+            }
+          },
+          "protectionStrict": {
+            "type": "boolean"
+          },
+          "adminEnforced": {
+            "type": "boolean"
+          },
+          "reviewBypass": {
+            "type": "boolean"
+          },
+          "protectedChecks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryCheck"
+            }
+          },
+          "mergeAllowed": {
+            "type": "boolean"
+          },
+          "linearHistory": {
+            "type": "boolean"
+          },
+          "mergeQueue": {
+            "type": "boolean"
+          },
+          "baseIsAncestor": {
+            "type": "boolean"
+          },
+          "observedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "DeliveryPolicy": {
+        "required": [
+          "enabled",
+          "repository",
+          "remoteName",
+          "targetBranch",
+          "branchPrefix",
+          "allowDraftPr",
+          "allowMerge",
+          "requiredChecks",
+          "postMergeHookId",
+          "environment",
+          "sensitivePaths",
+          "migrationPaths"
+        ],
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "repository": {
+            "type": "string"
+          },
+          "remoteName": {
+            "type": "string"
+          },
+          "targetBranch": {
+            "type": "string"
+          },
+          "branchPrefix": {
+            "type": "string"
+          },
+          "allowDraftPr": {
+            "type": "boolean"
+          },
+          "allowMerge": {
+            "type": "boolean"
+          },
+          "requiredChecks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryCheck"
+            }
+          },
+          "postMergeHookId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "environment": {
+            "type": "string"
+          },
+          "sensitivePaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "migrationPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeliveryPolicyDetail": {
+        "required": [
+          "projectRevision",
+          "policy",
+          "hooks"
+        ],
+        "type": "object",
+        "properties": {
+          "projectRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "policy": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DeliveryPolicy"
+              }
+            ]
+          },
+          "hooks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryHookInfo"
+            }
+          }
+        }
+      },
+      "DeliveryProbe": {
+        "required": [
+          "instance",
+          "revision",
+          "snapshotHash",
+          "healthHash"
+        ],
+        "type": "object",
+        "properties": {
+          "instance": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "snapshotHash": {
+            "type": "string"
+          },
+          "healthHash": {
+            "type": "string"
+          }
+        }
+      },
+      "DeliveryRemote": {
+        "required": [
+          "number",
+          "url",
+          "headSha",
+          "baseSha",
+          "state",
+          "draft",
+          "mergeSha"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "url": {
+            "type": "string"
+          },
+          "headSha": {
+            "type": "string"
+          },
+          "baseSha": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "draft": {
+            "type": "boolean"
+          },
+          "mergeSha": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mergeRequestId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mergeable": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          }
+        }
+      },
+      "EditDeliveryPolicy": {
+        "required": [
+          "expectedRevision",
+          "policy"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/DeliveryPolicy"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FactoryDelivery": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestHash": {
+            "type": "string"
+          },
+          "revision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "state": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "currentOperationId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "open": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/DeliveryPolicy"
+          },
+          "capture": {
+            "$ref": "#/components/schemas/DeliveryCapture"
+          },
+          "remote": {
+            "$ref": "#/components/schemas/DeliveryRemote"
+          },
+          "approvals": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/DeliveryApproval"
+            }
+          },
+          "observation": {
+            "$ref": "#/components/schemas/DeliveryObservation"
+          },
+          "hook": {
+            "$ref": "#/components/schemas/DeliveryHookReceipt"
+          },
+          "binding": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "marker": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "FactoryDeliveryOperation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deliveryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "approvalNote": {
+            "type": "string"
+          },
+          "requestHash": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finishedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "pending": {
+            "type": "boolean"
+          },
+          "result": {
+            "$ref": "#/components/schemas/JsonElement"
+          }
+        }
+      },
+      "JsonElement": {},
+      "PrepareDelivery": {
+        "required": [
+          "requestId",
+          "expectedRevision",
+          "branchName"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "branchName": {
             "type": "string"
           }
         },

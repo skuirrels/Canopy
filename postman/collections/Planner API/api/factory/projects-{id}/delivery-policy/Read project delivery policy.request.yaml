@@ -1,0 +1,6 @@
+$kind: http-request
+name: Read project delivery policy
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/delivery-policy'
+method: GET
+order: 1000
+examples: ./.resources/Read project delivery policy.resources/examples

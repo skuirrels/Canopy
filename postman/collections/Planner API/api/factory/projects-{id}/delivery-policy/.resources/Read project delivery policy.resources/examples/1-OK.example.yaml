@@ -1,0 +1,45 @@
+$kind: http-example
+name: 'Isolated native delivery fixture - OK'
+request:
+  method: GET
+  url: '{{baseUrl}}/api/factory/projects/{{projectId}}/delivery-policy'
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json; charset=utf-8
+  body:
+    type: json
+    content: |-
+      {
+        "projectRevision": 19,
+        "policy": {
+          "enabled": true,
+          "repository": "regression/candidate",
+          "remoteName": "origin",
+          "targetBranch": "main",
+          "branchPrefix": "feature/",
+          "allowDraftPr": true,
+          "allowMerge": true,
+          "requiredChecks": [
+            {
+              "name": "fixture-verify",
+              "appId": 9001
+            }
+          ],
+          "postMergeHookId": null,
+          "environment": "Isolated fixture",
+          "sensitivePaths": [
+            "counter.py"
+          ],
+          "migrationPaths": []
+        },
+        "hooks": [
+          {
+            "id": "fixture-restart",
+            "name": "Restart isolated application",
+            "ready": true,
+            "error": null
+          }
+        ]
+      }

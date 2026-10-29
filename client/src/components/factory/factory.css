@@ -263,3 +263,6 @@
 .factory-repair-check { display: flex !important; align-items: flex-start; gap: 8px; }
 .factory-repair-check input { width: auto !important; flex: 0 0 auto; margin-top: 4px; }
 .factory-repair-check small { display: block; }
+
+.factory-delivery-record { border-block-start: 1px solid var(--line); padding-block: 12px; overflow-wrap: anywhere; }
+.factory-delivery label { display: grid; gap: 6px; margin-block: 8px; }

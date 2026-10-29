@@ -1,0 +1,14 @@
+$kind: http-request
+name: Read policy
+method: GET
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/delivery-policy'
+order: 1000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')||!pm.variables.get('runId')||!pm.variables.get('deliveryId')) throw new Error('Supply isolated fixtureMode, projectId, runId and deliveryId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Policy readable',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('Authority explicit',()=>pm.expect(d.policy.repository).to.be.a('string'));pm.collectionVariables.set('policyJson',JSON.stringify(d.policy));pm.collectionVariables.set('projectRevision',d.projectRevision);

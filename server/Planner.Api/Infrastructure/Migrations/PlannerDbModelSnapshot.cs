@@ -244,6 +244,128 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("CriterionVerdicts");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.FactoryDelivery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ApprovalsJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("CaptureJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<Guid?>("CurrentOperationId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("HookJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ObservationJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("PolicyJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("RemoteJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("UUID");
+
+                    b.Property<long>("Revision")
+                        .HasColumnType("BIGINT");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique();
+
+                    b.ToTable("Deliveries");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.FactoryDeliveryOperation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ApprovalNote")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<Guid>("DeliveryId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ResultJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeliveryId");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique();
+
+                    b.ToTable("DeliveryOperations");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.FactoryPipeline", b =>
                 {
                     b.Property<Guid>("Id")
@@ -813,6 +935,20 @@ namespace Planner.Api.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("AgentConnections");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.ProjectDeliveryPolicy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("PolicyJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DeliveryPolicies");
                 });
 
             modelBuilder.Entity("Planner.Api.Domain.ProjectRepairPolicy", b =>

@@ -1,0 +1,6 @@
+$kind: http-request
+name: Read delivery readiness and history
+url: '{{baseUrl}}/api/factory/runs/{{runId}}/delivery'
+method: GET
+order: 3000
+examples: ./.resources/Read delivery readiness and history.resources/examples

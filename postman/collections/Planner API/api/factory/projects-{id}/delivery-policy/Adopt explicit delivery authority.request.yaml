@@ -1,0 +1,12 @@
+$kind: http-request
+name: Adopt explicit delivery authority
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/delivery-policy'
+method: PUT
+order: 2000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {{deliveryPolicyJson}}
+examples: ./.resources/Adopt explicit delivery authority.resources/examples

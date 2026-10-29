@@ -1,0 +1,11 @@
+version: 1
+id: 3d22b785-64f2-439d-8fc4-4b3529c64943
+name: GitHub factory delivery contract subset
+slug: github-factory-delivery-contract
+interceptRequests: true
+protocol: http
+port: 4500
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

@@ -1,0 +1,27 @@
+$kind: http-example
+name: 'Isolated native delivery fixture - Conflict'
+request:
+  method: POST
+  url: '{{baseUrl}}/api/factory/deliveries/{{deliveryId}}/actions'
+  body:
+    type: json
+    content: |-
+      {
+        "requestId": "825c3d5e-7ad8-4b13-b6f3-c9c9eda4d3e2",
+        "expectedRevision": -1,
+        "action": "publish",
+        "approvalNote": ""
+      }
+response:
+  statusCode: 409
+  statusText: Conflict
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+        "title": "This project changed since you loaded it. Your latest changes have not been saved. Refresh and try again.",
+        "status": 409
+      }

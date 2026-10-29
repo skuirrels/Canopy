@@ -29,7 +29,7 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
         var version = data.PipelineVersions.Single(x => x.Id == attachment.PipelineVersionId);
         if (data.FactoryPipelines.Single(x => x.Id == version.PipelineId).Archived)
             checks.Add(new("pipeline.archived", "error", "Choose an active pipeline before preparing new work."));
-        if ((data.RepairLoops.Any(x => x.ItemId == itemId && x.Open) || data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) checks.Add(new("task.busy", "error", "Stop the task's open repair loop, or wait for active execution."));
+        if (((data.Deliveries.Any(x => x.ItemId == itemId && x.Open) || data.RepairLoops.Any(x => x.ItemId == itemId && x.Open)) || data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) checks.Add(new("task.busy", "error", "Stop the repair loop or close the delivery, or wait for active execution."));
         if (data.Dependencies.Where(x => x.ItemId == itemId).Any(d => !data.Statuses.Single(s => s.Id == data.Items.Single(i => i.Id == d.DependsOnId).StatusId).IsCompleted))
             checks.Add(new("task.blocked", "error", "Complete prerequisite tasks before preparing pipeline work."));
         var definition = FactoryRules.Resolve(version.Definition, attachment.Overrides);
@@ -60,7 +60,7 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
             var existing = data.FactoryRuns.SingleOrDefault(x => x.RequestId == input.RequestId);
             if (existing is not null) { Replay(data, existing, itemId); return; }
             data.ForItem(itemId, input.ExpectedRevision);
-            if ((data.RepairLoops.Any(x => x.ItemId == itemId && x.Open) || data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) throw new RuleException("Stop the task's open repair loop, or wait for active execution.", 409);
+            if (((data.Deliveries.Any(x => x.ItemId == itemId && x.Open) || data.RepairLoops.Any(x => x.ItemId == itemId && x.Open)) || data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) throw new RuleException("Stop the repair loop or close the delivery, or wait for active execution.", 409);
             data.FactoryRuns.Add(run);
             foreach (var stage in snapshot.Environment.Definition.Stages)
             {
