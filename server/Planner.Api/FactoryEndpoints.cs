@@ -19,6 +19,14 @@ public static class FactoryEndpoints
             http.Response.Headers.CacheControl = "no-store";
             return await next(context);
         });
+        group.MapPost("/runs/{id:guid}/start", (Guid id, StartFactoryRun input, FactoryDispatchService service, CancellationToken ct) => service.Start(id, input, ct))
+            .WithDescription("Explicitly dispatch a prepared work order in its own worktree. expectedRevision is the run revision. Reusing the same requestId never redispatches work.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapPost("/runs/{id:guid}/cancel", (Guid id, CancelFactoryRun input, FactoryDispatchService service, CancellationToken ct) => service.Cancel(id, input, ct))
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapPost("/runs/{id:guid}/steps/{stepId:guid}/decision", (Guid id, Guid stepId, DecideFactoryStep input, FactoryDispatchService service, CancellationToken ct) => service.Decide(id, stepId, input, ct))
+            .WithDescription("Explicit human decision for a waiting manual step. expectedRevision is the run revision; a decision requestId is idempotent for the same decision.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
         group.MapGet("/tasks/{id:guid}/readiness", (Guid id, FactoryRunService service, CancellationToken ct) => service.Readiness(id, ct))
             .WithDescription("Read-only local observations for preparing an immutable work order. Does not verify credentials/model access or execute work.").ProducesProblem(403).ProducesProblem(404);
         group.MapGet("/tasks/{id:guid}/runs", (Guid id, FactoryRunService service, CancellationToken ct) => service.List(id, ct)).ProducesProblem(403).ProducesProblem(404);

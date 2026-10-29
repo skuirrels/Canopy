@@ -25,7 +25,7 @@ public sealed class AgentService(IWorkspaceStore store, IAgentEnvironment enviro
         var data = await store.WriteAsync(data =>
         {
             var graph = data.Graph(projectId, input.ExpectedRevision);
-            if (data.AgentRuns.Any(x => x.ProjectId == projectId && x.Active)) throw new RuleException("Wait for active runs before changing the connection.", 409);
+            if ((data.AgentRuns.Any(x => x.ProjectId == projectId && x.Active) || data.FactoryRuns.Any(x => x.ProjectId == projectId && x.Active))) throw new RuleException("Wait for active runs before changing the connection.", 409);
             var connection = data.AgentConnections.SingleOrDefault(x => x.ProjectId == projectId);
             if (connection is null) { connection = ProjectAgentConnection.Create(projectId); data.AgentConnections.Add(connection); }
             connection.Configure(path, input.BaseRef, input.Provider, input.Model, input.Instructions, input.Settings);
@@ -37,14 +37,14 @@ public sealed class AgentService(IWorkspaceStore store, IAgentEnvironment enviro
     public async Task Disconnect(Guid projectId, long revision, CancellationToken ct) => await store.WriteAsync(data =>
     {
         var graph = data.Graph(projectId, revision);
-        if (data.AgentRuns.Any(x => x.ProjectId == projectId && x.Active)) throw new RuleException("Stop active runs before disconnecting.", 409);
+        if ((data.AgentRuns.Any(x => x.ProjectId == projectId && x.Active) || data.FactoryRuns.Any(x => x.ProjectId == projectId && x.Active))) throw new RuleException("Stop active runs before disconnecting.", 409);
         data.AgentConnections.RemoveAll(x => x.ProjectId == projectId); graph.Project.Touch();
     }, ct);
     public async Task<IReadOnlyList<AgentRun>> Runs(Guid itemId, CancellationToken ct)
     {
         var data = await store.ReadAsync(ct);
         if (!data.Items.Any(x => x.Id == itemId)) throw new RuleException("Task not found.", 404);
-        return data.AgentRuns.Where(x => x.ItemId == itemId).OrderByDescending(x => x.CreatedAt).ToList();
+        return data.AgentRuns.Where(x => x.ItemId == itemId && x.FactoryStepRunId == null).OrderByDescending(x => x.CreatedAt).ToList();
     }
     public async Task<AgentRun> Run(Guid id, CancellationToken ct) => Find(await store.ReadAsync(ct), id);
     public async Task<AgentRun> Start(Guid itemId, StartAgentRun input, CancellationToken ct)
@@ -54,7 +54,7 @@ public sealed class AgentService(IWorkspaceStore store, IAgentEnvironment enviro
             var duplicate = data.AgentRuns.SingleOrDefault(x => x.RequestId == input.RequestId);
             if (duplicate is not null)
             {
-                if (duplicate.ItemId != itemId || duplicate.Provider != input.Provider || duplicate.Purpose != input.Purpose || duplicate.Instructions != (input.Instructions ?? "").Trim() || duplicate.PreviousRunId != input.PreviousRunId || duplicate.RequestedModel != input.Model?.Trim() || duplicate.RequestedEffort != input.Effort?.Trim())
+                if (duplicate.FactoryStepRunId is not null || duplicate.ItemId != itemId || duplicate.Provider != input.Provider || duplicate.Purpose != input.Purpose || duplicate.Instructions != (input.Instructions ?? "").Trim() || duplicate.PreviousRunId != input.PreviousRunId || duplicate.RequestedModel != input.Model?.Trim() || duplicate.RequestedEffort != input.Effort?.Trim())
                     throw new RuleException("That request ID was already used for different work.", 409);
                 return;
             }
@@ -62,7 +62,7 @@ public sealed class AgentService(IWorkspaceStore store, IAgentEnvironment enviro
             var connection = data.AgentConnections.SingleOrDefault(x => x.ProjectId == graph.Project.Id) ?? throw new RuleException("Connect this project to a repository first.");
             AgentRun.RequireProvider(input.Provider);
             if (!environment.Providers().Any(x => x.Id == input.Provider && x.Available)) throw new RuleException("The selected agent executable is unavailable. Install it or configure Agents in the backend.", 503);
-            if (data.AgentRuns.Any(x => x.ItemId == itemId && x.Active)) throw new RuleException("This task already has an active run.", 409);
+            if ((data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) throw new RuleException("This task already has an active run.", 409);
             var previous = input.PreviousRunId.HasValue ? Find(data, input.PreviousRunId.Value) : null;
             var run = AgentRun.Create(input.RequestId, graph.Item(itemId), connection, graph.Project.Revision, input.Provider, input.Purpose, input.Instructions, previous, input.Model, input.Effort);
             RequireEffort(run.Provider, run.Effort);

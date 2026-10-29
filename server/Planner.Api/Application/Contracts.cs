@@ -24,6 +24,7 @@ public sealed record EditPerson(string Name);
 public sealed record WorkflowDefault(string Name, string Color, bool IsCompleted);
 public sealed class WorkspaceData
 {
+    [JsonIgnore] public List<FactoryArtifact> FactoryArtifacts { get; init; } = [];
     [JsonIgnore] public List<FactoryRun> FactoryRuns { get; init; } = [];
     [JsonIgnore] public List<FactoryStageRun> FactoryStageRuns { get; init; } = [];
     [JsonIgnore] public List<FactoryStepRun> FactoryStepRuns { get; init; } = [];
@@ -41,6 +42,7 @@ public sealed class WorkspaceData
     public void RemoveFactoryRuns(IEnumerable<Guid> runIds)
     {
         var ids = runIds.ToHashSet();
+        FactoryArtifacts.RemoveAll(x => ids.Contains(x.RunId));
         FactoryStepRuns.RemoveAll(x => ids.Contains(x.RunId)); FactoryStageRuns.RemoveAll(x => ids.Contains(x.RunId)); FactoryRuns.RemoveAll(x => ids.Contains(x.Id));
     }
     public ProjectGraph Graph(Guid projectId, long? revision = null)

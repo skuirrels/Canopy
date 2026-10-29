@@ -15,7 +15,7 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
     public Task<WorkspaceData> DeleteProject(Guid id, long revision, CancellationToken ct) => store.WriteAsync(data =>
     {
         var graph = data.Graph(id, revision);
-        if (data.AgentRuns.Any(x => x.ProjectId == id && x.Active)) throw new RuleException("Stop active agent runs before deleting this project.", 409);
+        if ((data.AgentRuns.Any(x => x.ProjectId == id && x.Active) || data.FactoryRuns.Any(x => x.ProjectId == id && x.Active))) throw new RuleException("Stop active agent runs before deleting this project.", 409);
         data.RemoveFactoryRuns(data.FactoryRuns.Where(x => x.ProjectId == id).Select(x => x.Id));
         data.AgentConnections.RemoveAll(x => x.ProjectId == id); data.AgentRuns.RemoveAll(x => x.ProjectId == id);
         data.SpecFiles.RemoveAll(x => x.ProjectId == id);
@@ -48,7 +48,7 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
     public Task<WorkspaceData> DeleteItem(Guid id, long revision, CancellationToken ct) => store.WriteAsync(data =>
     {
         var graph = data.ForItem(id, revision); var deleted = graph.Subtree(id);
-        if (data.AgentRuns.Any(x => deleted.Contains(x.ItemId) && x.Active)) throw new RuleException("Stop active agent runs before deleting these tasks.", 409);
+        if ((data.AgentRuns.Any(x => deleted.Contains(x.ItemId) && x.Active) || data.FactoryRuns.Any(x => deleted.Contains(x.ItemId) && x.Active))) throw new RuleException("Stop active agent runs before deleting these tasks.", 409);
         data.RemoveFactoryRuns(data.FactoryRuns.Where(x => deleted.Contains(x.ItemId)).Select(x => x.Id));
         data.AgentRuns.RemoveAll(x => deleted.Contains(x.ItemId));
         data.SpecFiles.RemoveAll(x => deleted.Contains(x.Id));

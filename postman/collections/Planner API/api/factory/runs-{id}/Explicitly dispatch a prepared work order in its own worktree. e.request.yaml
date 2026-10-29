@@ -1,0 +1,23 @@
+$kind: http-request
+name: Explicitly dispatch a prepared work order in its own worktree. expectedRevision is the run revision. Reusing the same requestId never redispatches work.
+description: Explicitly dispatch a prepared work order in its own worktree. expectedRevision is the run revision. Reusing the same requestId never redispatches work.
+url: "{{baseUrl}}/api/factory/runs/:id/start"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: b249295b-a1a1-b9c4-0061-1757aed7b8db
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "requestId": "20d32d8f-1bd7-930a-9fd4-8919e728a6ed",
+      "expectedRevision": -1137666
+    }
+settings: {}
+examples: ./.resources/Explicitly dispatch a prepared work order in its own worktree. e.resources/examples
+order: 2000

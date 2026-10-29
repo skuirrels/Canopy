@@ -1,0 +1,16 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/factory/runs/{{$guid}}/start'
+order: 9500
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"requestId":"{{$guid}}","expectedRevision":1}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Missing work order cannot dispatch',()=>pm.response.to.have.status(404));

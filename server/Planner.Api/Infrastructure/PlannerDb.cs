@@ -4,6 +4,7 @@ namespace Planner.Api.Infrastructure;
 
 public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(options)
 {
+    public DbSet<FactoryArtifact> FactoryArtifacts => Set<FactoryArtifact>();
     public DbSet<FactoryRun> FactoryRuns => Set<FactoryRun>();
     public DbSet<FactoryStageRun> FactoryStageRuns => Set<FactoryStageRun>();
     public DbSet<FactoryStepRun> FactoryStepRuns => Set<FactoryStepRun>();
@@ -21,6 +22,17 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<TaskFactoryConfiguration> TaskFactoryConfigurations => Set<TaskFactoryConfiguration>();
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.Entity<FactoryArtifact>().HasKey(x => x.Id);
+        model.Entity<FactoryArtifact>().HasIndex(x => new { x.RunId, x.Name }).IsUnique();
+        model.Entity<FactoryRun>().Ignore(x => x.Active);
+        model.Entity<FactoryRun>().Property(x => x.Revision).HasDefaultValue(1L);
+        model.Entity<AgentRun>().Ignore(x => x.ExecutionPermission);
+        model.Entity<AgentRun>().HasIndex(x => x.FactoryStepRunId).IsUnique();
+        foreach (var type in new[] { typeof(FactoryRun), typeof(FactoryStageRun), typeof(FactoryStepRun) })
+        {
+            model.Entity(type).Property<DateTime?>("StartedAt").HasConversion(value => value, value => value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : (DateTime?)null);
+            model.Entity(type).Property<DateTime?>("FinishedAt").HasConversion(value => value, value => value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : (DateTime?)null);
+        }
         model.Entity<FactoryRun>().HasKey(x => x.Id);
         model.Entity<FactoryRun>().Ignore(x => x.Snapshot);
         model.Entity<FactoryRun>().Property(x => x.CreatedAt).HasConversion(value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));

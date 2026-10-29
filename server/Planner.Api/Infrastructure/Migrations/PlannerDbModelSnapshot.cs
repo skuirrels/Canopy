@@ -42,6 +42,12 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.Property<string>("Error")
                         .HasColumnType("VARCHAR");
 
+                    b.Property<string>("FactoryPermission")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid?>("FactoryStepRunId")
+                        .HasColumnType("UUID");
+
                     b.Property<DateTime?>("FinishedAt")
                         .HasColumnType("TIMESTAMP");
 
@@ -120,6 +126,9 @@ namespace Planner.Api.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("FactoryStepRunId")
+                        .IsUnique();
+
                     b.HasIndex("ItemId");
 
                     b.HasIndex("RequestId")
@@ -147,6 +156,37 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.HasIndex("ProjectId");
 
                     b.ToTable("Dependencies");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.FactoryArtifact", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("EvidenceHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("StepRunId")
+                        .HasColumnType("UUID");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RunId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("FactoryArtifacts");
                 });
 
             modelBuilder.Entity("Planner.Api.Domain.FactoryPipeline", b =>
@@ -200,6 +240,12 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TIMESTAMP");
 
+                    b.Property<string>("Error")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("TIMESTAMP");
+
                     b.Property<Guid>("ItemId")
                         .HasColumnType("UUID");
 
@@ -209,12 +255,26 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.Property<Guid>("RequestId")
                         .HasColumnType("UUID");
 
+                    b.Property<long>("Revision")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("BIGINT")
+                        .HasDefaultValue(1L);
+
                     b.Property<string>("SnapshotJson")
                         .IsRequired()
                         .HasColumnType("VARCHAR");
 
+                    b.Property<Guid?>("StartRequestId")
+                        .HasColumnType("UUID");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("TIMESTAMP");
+
                     b.Property<string>("State")
                         .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("WorkspacePath")
                         .HasColumnType("VARCHAR");
 
                     b.HasKey("Id");
@@ -232,12 +292,18 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("UUID");
 
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("TIMESTAMP");
+
                     b.Property<Guid>("RunId")
                         .HasColumnType("UUID");
 
                     b.Property<string>("StageId")
                         .IsRequired()
                         .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("TIMESTAMP");
 
                     b.Property<string>("State")
                         .IsRequired()
@@ -256,11 +322,46 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("UUID");
 
+                    b.Property<Guid?>("AgentRunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<bool?>("Decision")
+                        .HasColumnType("BOOLEAN");
+
+                    b.Property<string>("DecisionNote")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid?>("DecisionRequestId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<int?>("ExitCode")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("Output")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<bool>("OutputLimitReached")
+                        .HasColumnType("BOOLEAN");
+
                     b.Property<Guid>("RunId")
                         .HasColumnType("UUID");
 
                     b.Property<Guid>("StageRunId")
                         .HasColumnType("UUID");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("TIMESTAMP");
 
                     b.Property<string>("State")
                         .IsRequired()

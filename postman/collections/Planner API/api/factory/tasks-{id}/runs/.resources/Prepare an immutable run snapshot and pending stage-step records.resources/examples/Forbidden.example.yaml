@@ -6,15 +6,15 @@ request:
     Accept: application/problem+json
   pathVariables:
     - key: id
-      value: 75d66fc6-e02c-352c-a98f-2f299fd00c34
+      value: b249295b-a1a1-b9c4-0061-1757aed7b8db
       disabled: false
       description: "(Required) "
   body:
     type: json
     content: |-
       {
-        "requestId": "9d8d6572-f43e-38e6-870a-680ce7587dca",
-        "expectedRevision": 146
+        "requestId": "20d32d8f-1bd7-930a-9fd4-8919e728a6ed",
+        "expectedRevision": -1137666
       }
 response:
   statusCode: 403
@@ -27,7 +27,7 @@ response:
       {
         "type": null,
         "title": null,
-        "status": "-916096946",
+        "status": "7",
         "detail": null,
         "instance": null
       }

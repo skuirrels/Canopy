@@ -22,6 +22,8 @@ builder.Services.AddSingleton<IReadOnlyList<FactoryTemplate>>(factoryTemplates);
 builder.Services.AddScoped<FactoryService>();
 builder.Services.AddSingleton<IFactoryEnvironment, LocalFactoryEnvironment>();
 builder.Services.AddScoped<FactoryRunService>();
+builder.Services.AddScoped<FactoryDispatchService>();
+builder.Services.AddSingleton<StartupRunRecovery>();
 var agentOptions = builder.Configuration.GetSection("Agents").Get<AgentOptions>() ?? throw new InvalidOperationException("Configure Agents.");
 agentOptions.WorkspaceRoot = Path.GetFullPath(agentOptions.WorkspaceRoot, builder.Environment.ContentRootPath);
 agentOptions.Validate();
@@ -30,6 +32,7 @@ builder.Services.AddSingleton<LocalAgentEnvironment>();
 builder.Services.AddSingleton<IAgentEnvironment>(services => services.GetRequiredService<LocalAgentEnvironment>());
 builder.Services.AddScoped<AgentService>();
 builder.Services.AddHostedService<LocalAgentRunner>();
+builder.Services.AddHostedService<LocalFactoryRunner>();
 var app = builder.Build();
 app.Use(async (context, next) =>
 {
@@ -43,6 +46,7 @@ await using (var scope = app.Services.CreateAsyncScope())
     await using var db = await factory.CreateDbContextAsync();
     await db.Database.MigrateAsync();
 }
+await app.Services.GetRequiredService<StartupRunRecovery>().Recover(CancellationToken.None);
 app.MapOpenApi();
 app.MapAgentEndpoints();
 app.MapSpecFileEndpoints();

@@ -1,0 +1,33 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/runs/:id/cancel"
+  method: POST
+  headers:
+    Accept: application/problem+json
+  pathVariables:
+    - key: id
+      value: b249295b-a1a1-b9c4-0061-1757aed7b8db
+      disabled: false
+      description: "(Required) "
+  body:
+    type: json
+    content: |-
+      {
+        "expectedRevision": 0
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": null,
+        "title": null,
+        "status": "7",
+        "detail": null,
+        "instance": null
+      }
+order: 2000

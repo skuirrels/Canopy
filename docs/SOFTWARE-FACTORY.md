@@ -2,8 +2,8 @@
 
 This phase supplies the persistent configuration API. The [phase-2 React Flow
 designer](FACTORY-DESIGNER.md) now uses it. [Run preparation](FACTORY-RUNS.md) adds
-local readiness observations and immutable work orders. Execution and installed
-skill discovery remain later slices.
+local readiness observations and immutable work orders, with explicit dispatch,
+manual gates and runtime evidence. Installed-skill discovery remains later work.
 Configuration endpoints never launch agents, run commands or change a task's
 hierarchy, workflow status, dates or map layout. Existing agent endpoints remain
 independent.

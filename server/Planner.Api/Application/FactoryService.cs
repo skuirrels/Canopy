@@ -77,7 +77,7 @@ public sealed class FactoryService(IWorkspaceStore store, IReadOnlyList<FactoryT
         var data = await store.WriteAsync(data =>
         {
             var graph = data.ForItem(id, input.ExpectedRevision);
-            if (data.AgentRuns.Any(x => x.ItemId == id && x.Active)) throw new RuleException("Wait for this task's active run before changing its factory configuration.", 409);
+            if ((data.AgentRuns.Any(x => x.ItemId == id && x.Active) || data.FactoryRuns.Any(x => x.ItemId == id && x.Active))) throw new RuleException("Wait for this task's active run before changing its factory configuration.", 409);
             var version = FindVersion(data, input.PipelineVersionId); Find(data, version.PipelineId).RequireActive();
             var configuration = data.TaskFactoryConfigurations.SingleOrDefault(x => x.Id == id);
             if (configuration is null) { configuration = TaskFactoryConfiguration.Create(id, graph.Project.Id); data.TaskFactoryConfigurations.Add(configuration); }
@@ -90,7 +90,7 @@ public sealed class FactoryService(IWorkspaceStore store, IReadOnlyList<FactoryT
         var data = await store.WriteAsync(data =>
         {
             var graph = data.ForItem(id, revision);
-            if (data.AgentRuns.Any(x => x.ItemId == id && x.Active)) throw new RuleException("Wait for this task's active run before changing its factory configuration.", 409);
+            if ((data.AgentRuns.Any(x => x.ItemId == id && x.Active) || data.FactoryRuns.Any(x => x.ItemId == id && x.Active))) throw new RuleException("Wait for this task's active run before changing its factory configuration.", 409);
             data.TaskFactoryConfigurations.RemoveAll(x => x.Id == id); graph.Project.Touch();
         }, ct);
         return TaskDetail(data, id);

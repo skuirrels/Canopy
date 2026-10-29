@@ -10,6 +10,17 @@ public sealed record FactorySkillLocation(string Id, string Source, string Path)
 // Provider credentials/model access and execution success are never inferred from a binary.
 public sealed class LocalFactoryEnvironment(LocalAgentEnvironment agents, IMarkdownFiles markdown, IConfiguration configuration) : IFactoryEnvironment
 {
+    public async Task<FactoryInspection> InspectCaptured(FactoryEnvironmentSnapshot snapshot, CancellationToken ct)
+    {
+        var connection = ProjectAgentConnection.Create(Guid.Empty);
+        connection.Configure(snapshot.RepositoryPath, snapshot.BaseCommit, snapshot.DefaultProvider, null, snapshot.ProjectInstructions);
+        var current = await Inspect(snapshot.Definition, connection, ct);
+        var checks = current.Checks.ToList();
+        foreach (var skill in snapshot.Skills)
+            if (current.Environment?.Skills.Any(x => x.Id == skill.Id && x.Source == skill.Source && x.Path == skill.Path && x.Hash == skill.Hash) != true)
+                checks.Add(new("skill.changed", "error", $"Skill '{skill.Id}' changed after preparation. Prepare a new work order."));
+        return current with { Checks = checks };
+    }
     public async Task<FactoryInspection> Inspect(FactoryDefinition definition, ProjectAgentConnection? connection, CancellationToken ct)
     {
         var checks = new List<FactoryReadinessCheck>();
