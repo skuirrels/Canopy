@@ -88,7 +88,8 @@ and installed CLI help were checked when reusing this integration.
 Commands use executable/argument arrays without an implicit shell. They run in
 the worktree with this local account; no additional OS sandbox is promised for
 configured commands. Environment references resolve at invocation without
-persisting their values. Provider-specific CLI context cleanup does not strip
+persisting their values as command configuration. Command output is retained as
+emitted. Provider-specific CLI context cleanup does not strip
 explicit command references. Command deadlines and the backend's configured
 `Agents:MaxRunMinutes` active-step ceiling both apply. Output retention uses
 `Agents:MaxOutputCharacters`; Git operations use the existing configured timeout.
@@ -144,3 +145,32 @@ worktrees and verification commands, while Codex/Claude protocol responses come
 from explicit executable fixtures. It checks gates, both permission paths,
 commit/model pinning, cancellation, timeouts, evidence and restart without
 contacting a model service.
+
+## Execution workspace
+
+Open a run from the project's **Software Factory → Runs** library, or choose
+**Open execution view** in the task's factory history. The read-only React Flow
+canvas uses the captured definition; status badges come from persisted stage and
+step records. The step list provides the same inspection path on small screens.
+**Focus step** centres the selected stage without changing executable dependencies.
+Camera and arrangement preferences are scoped to the run in this browser.
+
+The inspector shows actual activity, recorded timestamps/exit codes, operator
+decisions, captured skill paths/hashes, reports and diffs. Downloads contain that
+recorded text. Logical artifact links navigate to the producing step and expose
+its evidence hash. **Review decision** brings a waiting gate into view; stopping
+and leaving the view remain separate actions. Run completion never changes the
+task's workflow state or certifies a model's conclusions.
+
+Active reads form one polling chain at the configured backend interval. Older
+revision responses cannot replace newer states; transient failures retain the
+last saved state with an explicit warning. Refresh reloads terminal records;
+workspace edits also refresh the current run. Historical titles come from the
+captured work order, even after a task is renamed. Backend restart retains the
+same history, reports, diffs and evidence. Interrupted work requires an explicit
+new work order after review.
+
+`GET /api/factory/projects/{id}/runs` returns this project's summaries newest
+first, including the captured title and actual run revision. It is read-only and
+uses the existing local-origin boundary. Records remain in native DuckDB; browser
+preferences do not become a persistence source for run data.

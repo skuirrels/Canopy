@@ -134,3 +134,9 @@ smaller reusable lifecycle check and creates/deletes its own project.
 OpenAPI is generated from endpoint types at `/openapi/v1.json`. Refresh the saved
 specification and regenerate only `Planner API`; preserve both regression
 collections. See the [designer guide](FACTORY-DESIGNER.md) for the configuration UI.
+
+Phase 3 also provides the read-only React Flow execution workspace: project run
+history, actual stage/step states, manual decisions, command output, agent reports
+and diffs, logical evidence navigation/downloads, phone step-list navigation and
+restart recovery. See [execution workflow](FACTORY-RUNS.md) and
+[validation evidence](FACTORY-PHASE3-RUN-VIEW-VALIDATION.md).

@@ -1,0 +1,45 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/projects/:id/runs"
+  method: GET
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: id
+      value: 6492a522-59b0-b8d2-468f-c47a01272f88
+      disabled: false
+      description: "(Required) "
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      [
+        {
+          "id": "21be60cc-0764-b220-347c-0da48631f1bf",
+          "itemId": "68a160e7-9f06-532b-978c-8429b615fe5a",
+          "state": "string",
+          "createdAt": "2000-02-12T18:11:17.206Z",
+          "pipelineName": "string",
+          "versionNumber": 0,
+          "title": "string",
+          "revision": 39
+        },
+        {
+          "id": "da72be0b-c3af-83e8-0230-efb737d57904",
+          "itemId": "e2bbbf63-2b12-aac6-22f3-614f7318feac",
+          "state": "string",
+          "createdAt": "1967-03-04T13:50:53.432Z",
+          "pipelineName": "string",
+          "versionNumber": -1876,
+          "title": "string",
+          "revision": 0
+        }
+      ]
+order: 1000

@@ -14,7 +14,7 @@ import { TaskFactoryRuns } from './TaskFactoryRuns';
 type TaskDraft = { pipelineId: string; versionId: string; overrides: FactoryOverrides; base: string };
 const signature = taskFactorySignature;
 
-export function TaskFactory({ item, beforeChange, onOpenDesigner }: { item: Item; beforeChange: () => Promise<void>; onOpenDesigner: (pipelineId?: string) => void }) {
+export function TaskFactory({ item, beforeChange, onOpenDesigner, onOpenRun }: { item: Item; onOpenRun: (id: string) => void; beforeChange: () => Promise<void>; onOpenDesigner: (pipelineId?: string) => void }) {
  const { refresh } = useWorkspace();
  const [saved, setSaved] = useState<TaskFactoryDetail | null>(null), [list, setList] = useState<PipelineList | null>(null), [pipeline, setPipeline] = useState<PipelineDetail | null>(null);
  const [draft, setDraft] = useState<TaskDraft | null>(null), [stepKey, setStepKey] = useState(''), [validation, setValidation] = useState<FactoryValidation | null>(null);
@@ -102,7 +102,7 @@ export function TaskFactory({ item, beforeChange, onOpenDesigner }: { item: Item
  </fieldset>
  {validation && <div className={validation.valid ? 'factory-validation valid' : 'factory-error'} aria-live="polite">{validation.valid ? 'Configuration valid. Execution readiness has not been checked.' : <ul>{validation.diagnostics.map((diagnostic, index) => <li key={index}>{diagnostic.message}</li>)}</ul>}</div>}
  <div className="factory-task-actions"><Button disabled={busy || !version || !dirty || stale || !!pipeline?.pipeline.archived} onClick={() => { void apply(); }}>{busy ? <Loader2 size={14} className="spin"/> : <Save size={14}/>}Apply configuration</Button>{saved.configuration && <Button variant="ghost" disabled={busy} onClick={() => setDetaching(true)}><Unplug size={14}/>Detach</Button>}{(dirty || draft.pipelineId !== (saved.version?.pipelineId ?? '') || stale) && <button type="button" className="text-button" disabled={busy} onClick={discard}>Discard local changes</button>}</div>
- <TaskFactoryRuns itemId={item.id} dirty={dirty || draft.pipelineId !== (saved.version?.pipelineId ?? '') || stale} beforeChange={beforeChange}/>
+ <TaskFactoryRuns itemId={item.id} onOpenRun={onOpenRun} dirty={dirty || draft.pipelineId !== (saved.version?.pipelineId ?? '') || stale} beforeChange={beforeChange}/>
  <Dialog open={!!choice} onOpenChange={open => { if (!open) setChoice(null); }} title="Reset task overrides?" description="Choosing another pipeline or version clears these task overrides in the local form. Your saved attachment stays unchanged until you apply it."><div className="dialog-footer"><Button variant="ghost" onClick={() => setChoice(null)}>Keep current selection</Button><Button onClick={() => { if (choice) applyChoice(choice); }}>Switch and clear overrides</Button></div></Dialog>
  <Dialog open={detaching} onOpenChange={setDetaching} title="Detach this pipeline?" description="The task, its status and all published pipeline versions will be retained."><div className="dialog-footer"><Button variant="ghost" disabled={busy} onClick={() => setDetaching(false)}>Keep attachment</Button><Button disabled={busy} onClick={() => { void detach(); }}>Detach pipeline</Button></div></Dialog>
  </section>;

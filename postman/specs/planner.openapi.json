@@ -2327,6 +2327,60 @@
           }
         }
       }
+    },
+    "/api/factory/projects/{id}/runs": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "description": "Read-only project run history, newest first, with captured task titles and pipeline versions.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FactoryRunSummary"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4443,7 +4497,9 @@
           "state",
           "createdAt",
           "pipelineName",
-          "versionNumber"
+          "versionNumber",
+          "title",
+          "revision"
         ],
         "type": "object",
         "properties": {
@@ -4472,6 +4528,17 @@
               "string"
             ],
             "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "revision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
           }
         }
       },

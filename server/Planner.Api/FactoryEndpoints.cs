@@ -30,6 +30,8 @@ public static class FactoryEndpoints
         group.MapGet("/tasks/{id:guid}/readiness", (Guid id, FactoryRunService service, CancellationToken ct) => service.Readiness(id, ct))
             .WithDescription("Read-only local observations for preparing an immutable work order. Does not verify credentials/model access or execute work.").ProducesProblem(403).ProducesProblem(404);
         group.MapGet("/tasks/{id:guid}/runs", (Guid id, FactoryRunService service, CancellationToken ct) => service.List(id, ct)).ProducesProblem(403).ProducesProblem(404);
+        group.MapGet("/projects/{id:guid}/runs", (Guid id, FactoryRunService service, CancellationToken ct) => service.ProjectRuns(id, ct))
+            .WithDescription("Read-only project run history, newest first, with captured task titles and pipeline versions.").ProducesProblem(403).ProducesProblem(404);
         group.MapPost("/tasks/{id:guid}/runs", async (Guid id, PrepareFactoryRun input, FactoryRunService service, CancellationToken ct) =>
         {
             var detail = await service.Prepare(id, input, ct);
