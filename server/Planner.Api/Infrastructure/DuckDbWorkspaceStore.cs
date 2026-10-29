@@ -21,11 +21,13 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             var data = await Load(db, ct);
             var projects = data.Projects.ToList(); var items = data.Items.ToList(); var statuses = data.Statuses.ToList(); var dependencies = data.Dependencies.ToList(); var people = data.People.ToList();
             var connections = data.AgentConnections.ToList(); var runs = data.AgentRuns.ToList();
+            var factoryRuns = data.FactoryRuns.ToList(); var stageRuns = data.FactoryStageRuns.ToList(); var stepRuns = data.FactoryStepRuns.ToList();
             var specFiles = data.SpecFiles.ToList();
             var pipelines = data.FactoryPipelines.ToList(); var versions = data.PipelineVersions.ToList(); var taskFactory = data.TaskFactoryConfigurations.ToList();
             change(data);
             Sync(db, projects, data.Projects); Sync(db, items, data.Items); Sync(db, statuses, data.Statuses); Sync(db, dependencies, data.Dependencies); Sync(db, people, data.People);
             Sync(db, connections, data.AgentConnections); Sync(db, runs, data.AgentRuns);
+            Sync(db, factoryRuns, data.FactoryRuns); Sync(db, stageRuns, data.FactoryStageRuns); Sync(db, stepRuns, data.FactoryStepRuns);
             Sync(db, specFiles, data.SpecFiles);
             Sync(db, pipelines, data.FactoryPipelines); Sync(db, versions, data.PipelineVersions); Sync(db, taskFactory, data.TaskFactoryConfigurations);
             await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct); return data;
@@ -36,6 +38,8 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
     { db.RemoveRange(before.Except(after)); db.AddRange(after.Except(before)); }
     private static async Task<WorkspaceData> Load(PlannerDb db, CancellationToken ct) => new()
     {
+        FactoryRuns = await db.FactoryRuns.OrderBy(x => x.CreatedAt).ToListAsync(ct),
+        FactoryStageRuns = await db.FactoryStageRuns.ToListAsync(ct), FactoryStepRuns = await db.FactoryStepRuns.ToListAsync(ct),
         Projects = await db.Projects.OrderBy(x => x.CreatedAt).ToListAsync(ct),
         SpecFiles = await db.SpecFiles.ToListAsync(ct),
         FactoryPipelines = await db.FactoryPipelines.OrderBy(x => x.CreatedAt).ToListAsync(ct),

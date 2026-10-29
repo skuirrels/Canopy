@@ -1,0 +1,15 @@
+$kind: http-request
+name: /api/factory/runs/:id
+description: ""
+url: "{{baseUrl}}/api/factory/runs/:id"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: 75d66fc6-e02c-352c-a98f-2f299fd00c34
+    disabled: false
+    description: "(Required) "
+settings: {}
+examples: ./.resources/-api-factory-runs-id.resources/examples
+order: 7000

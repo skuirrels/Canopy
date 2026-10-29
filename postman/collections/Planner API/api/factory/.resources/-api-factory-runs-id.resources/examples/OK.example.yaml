@@ -1,0 +1,193 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/runs/:id"
+  method: GET
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: id
+      value: 75d66fc6-e02c-352c-a98f-2f299fd00c34
+      disabled: false
+      description: "(Required) "
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "run": {
+          "id": "26a8daeb-78bd-bbc5-a8a7-cc2ed83faa1e",
+          "requestId": "197bb9ea-a3e4-5d01-060a-268af9cf8861",
+          "projectId": "01310b56-2ff0-489a-084d-1ae9bd418c6f",
+          "itemId": "a88c744e-30d3-57a4-69d0-2075ebce2f5a",
+          "state": "string",
+          "snapshot": {
+            "pipelineVersionId": "8b60f777-eb72-55f6-59d5-32f1d413289d",
+            "versionNumber": 0,
+            "pipelineName": "string",
+            "source": "string",
+            "title": "string",
+            "specJson": "string",
+            "projectRevision": 0,
+            "overrides": {
+              "steps": [
+                {
+                  "stageId": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "stepId": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "instructions": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "provider": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "model": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "effort": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "skills": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "command": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  }
+                },
+                {
+                  "stageId": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "stepId": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "instructions": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "provider": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "model": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "effort": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "skills": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "command": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  }
+                }
+              ]
+            },
+            "environment": {
+              "repositoryPath": "string",
+              "baseRef": "string",
+              "baseCommit": "string",
+              "projectInstructions": "string",
+              "defaultProvider": "string",
+              "definition": {
+                "stages": [
+                  {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  }
+                ],
+                "schemaVersion": 1
+              },
+              "skills": [
+                {
+                  "id": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "source": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "path": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "hash": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  }
+                },
+                {
+                  "id": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "source": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "path": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  },
+                  "hash": {
+                    "value": "<Error: Too many levels of nesting to fake this schema>"
+                  }
+                }
+              ]
+            },
+            "checks": [
+              {
+                "code": "string",
+                "severity": "string",
+                "message": "string",
+                "stageId": null,
+                "stepId": null
+              },
+              {
+                "code": "string",
+                "severity": "string",
+                "message": "string",
+                "stageId": null,
+                "stepId": null
+              }
+            ],
+            "checkedAt": "1969-09-22T11:54:03.045Z"
+          },
+          "createdAt": "1997-11-23T01:14:59.756Z"
+        },
+        "stages": [
+          {
+            "id": "79ddf054-e860-9a6d-b90a-cb181c87268c",
+            "runId": "c2dc45da-f940-d865-bef7-47d024d74f2b",
+            "stageId": "string",
+            "state": "string"
+          },
+          {
+            "id": "46120504-585f-6dc7-53f2-e083b04861cb",
+            "runId": "30337396-14ac-bf41-181c-7c34b50ca0b0",
+            "stageId": "string",
+            "state": "string"
+          }
+        ],
+        "steps": [
+          {
+            "id": "0ca9cea0-401f-b07c-c336-1bf016041ab1",
+            "runId": "2bfc46e0-e535-77dd-3e80-cc239d386dd8",
+            "stageRunId": "62128f85-4d98-ea4f-cd39-14c19e4b7afa",
+            "stepId": "string",
+            "state": "string"
+          },
+          {
+            "id": "0d4f09f5-2692-63d5-332c-25d9118ad51c",
+            "runId": "92223df8-73c7-c2d3-c3dd-41407282015b",
+            "stageRunId": "cfa2bc67-7f70-67f7-ddd9-feecf431c16b",
+            "stepId": "string",
+            "state": "string"
+          }
+        ]
+      }
+order: 1000

@@ -1,0 +1,16 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/factory/tasks/{{taskId}}/runs'
+order: 9400
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"requestId":"{{$guid}}","expectedRevision":{{revision}}}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Preparation rejects missing prerequisites',()=>pm.response.to.have.status(400));

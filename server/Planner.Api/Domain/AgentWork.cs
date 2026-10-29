@@ -109,7 +109,7 @@ public sealed class AgentRun
             SessionId = previous?.SessionId, WorkspacePath = previous?.WorkspacePath, BaseCommit = previous?.BaseCommit
         };
     }
-    private static bool HasSpec(string json)
+    internal static bool HasSpec(string json)
     {
         using var document = System.Text.Json.JsonDocument.Parse(json);
         return HasText(document.RootElement);

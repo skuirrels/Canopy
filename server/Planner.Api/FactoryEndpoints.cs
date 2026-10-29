@@ -19,6 +19,16 @@ public static class FactoryEndpoints
             http.Response.Headers.CacheControl = "no-store";
             return await next(context);
         });
+        group.MapGet("/tasks/{id:guid}/readiness", (Guid id, FactoryRunService service, CancellationToken ct) => service.Readiness(id, ct))
+            .WithDescription("Read-only local observations for preparing an immutable work order. Does not verify credentials/model access or execute work.").ProducesProblem(403).ProducesProblem(404);
+        group.MapGet("/tasks/{id:guid}/runs", (Guid id, FactoryRunService service, CancellationToken ct) => service.List(id, ct)).ProducesProblem(403).ProducesProblem(404);
+        group.MapPost("/tasks/{id:guid}/runs", async (Guid id, PrepareFactoryRun input, FactoryRunService service, CancellationToken ct) =>
+        {
+            var detail = await service.Prepare(id, input, ct);
+            return Results.Created($"/api/factory/runs/{detail.Run.Id}", detail);
+        }).WithDescription("Prepare an immutable run snapshot and pending stage/step records. Reusing a requestId for this task returns the original snapshot. Does not dispatch execution.")
+            .Produces<FactoryRunDetail>(201).ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapGet("/runs/{id:guid}", (Guid id, FactoryRunService service, CancellationToken ct) => service.Read(id, ct)).ProducesProblem(403).ProducesProblem(404);
         group.MapGet("/templates", (FactoryService service) => service.Templates()).ProducesProblem(403);
         group.MapPost("/validate", (FactoryDefinition input, FactoryService service) => service.Validate(input))
             .WithDescription("Read-only structural validation. Valid does not certify skill availability, provider access, command execution or execution readiness.")

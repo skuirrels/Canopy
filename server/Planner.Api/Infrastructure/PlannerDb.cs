@@ -4,6 +4,9 @@ namespace Planner.Api.Infrastructure;
 
 public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(options)
 {
+    public DbSet<FactoryRun> FactoryRuns => Set<FactoryRun>();
+    public DbSet<FactoryStageRun> FactoryStageRuns => Set<FactoryStageRun>();
+    public DbSet<FactoryStepRun> FactoryStepRuns => Set<FactoryStepRun>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<WorkItem> Items => Set<WorkItem>();
     public DbSet<WorkflowStatus> Statuses => Set<WorkflowStatus>();
@@ -18,6 +21,15 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<TaskFactoryConfiguration> TaskFactoryConfigurations => Set<TaskFactoryConfiguration>();
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.Entity<FactoryRun>().HasKey(x => x.Id);
+        model.Entity<FactoryRun>().Ignore(x => x.Snapshot);
+        model.Entity<FactoryRun>().Property(x => x.CreatedAt).HasConversion(value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));
+        model.Entity<FactoryRun>().HasIndex(x => x.RequestId).IsUnique();
+        model.Entity<FactoryRun>().HasIndex(x => x.ItemId);
+        model.Entity<FactoryStageRun>().HasKey(x => x.Id);
+        model.Entity<FactoryStageRun>().HasIndex(x => new { x.RunId, x.StageId }).IsUnique();
+        model.Entity<FactoryStepRun>().HasKey(x => x.Id);
+        model.Entity<FactoryStepRun>().HasIndex(x => new { x.StageRunId, x.StepId }).IsUnique();
         model.Entity<Project>().HasKey(x => x.Id);
         model.Entity<WorkItem>().HasKey(x => x.Id);
         model.Entity<WorkflowStatus>().HasKey(x => x.Id);
