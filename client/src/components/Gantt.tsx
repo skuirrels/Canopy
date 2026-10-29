@@ -23,7 +23,11 @@ const DAY_WIDTH: Record<Scale, number> = { days: 40, weeks: 22, months: 8 };
 
 export default function Gantt({ project, items, focusId, selectedId, onOpen, onAdd }: { project: Project; items: Item[]; focusId: string | null; selectedId: string | null; onOpen: (id: string) => void; onAdd: (parentId: string | null, component?: boolean) => void }) {
  const { data, pending, mutate } = useWorkspace(); const liveData = useRef(data); liveData.current = data;
- const [scale, setScale] = useState<Scale>('weeks'); const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+ const scaleKey = `sprout:gantt-scale-v1:${project.id}`;
+ const [scale, setScale] = useState<Scale>(() => {
+  try { const saved = localStorage.getItem(scaleKey); if (saved === 'weeks' || saved === 'months') return saved; } catch { /* Browser preferences may be unavailable. */ }
+  return 'days';
+ }); const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
  const [viewportWidth, setViewportWidth] = useState(0);
  const [showLinks, setShowLinks] = useState(true);
  const [preview, setPreview] = useState<{ id: string; mode: DateChange; delta: number } | null>(null);
@@ -93,6 +97,10 @@ export default function Gantt({ project, items, focusId, selectedId, onOpen, onA
   event.preventDefault(); event.stopPropagation(); void saveDates(item.id, mode, (event.key === 'ArrowRight' ? 1 : -1) * (event.shiftKey ? 7 : 1), item);
  }
  function showToday() { if (scroll.current) scroll.current.scrollLeft = Math.max(0, (today - range.start + .5) * dayWidth - viewportWidth / 2); }
+ function chooseScale(next: Scale) {
+  setScale(next);
+  try { localStorage.setItem(scaleKey, next); } catch { /* Keep zoom usable when browser preferences cannot be saved. */ }
+ }
  if (!items.length) return <div className="full-state gantt-empty"><CalendarClock size={32}/><h2>No tasks on this timeline yet</h2><p>Add a task, or clear your filters to see the project schedule.</p><div className="gantt-empty-actions"><Button onClick={() => onAdd(null, true)}><Plus size={16}/>New component</Button><Button variant="secondary" onClick={() => onAdd(focusId)}><Plus size={16}/>Add task</Button></div></div>;
  return <section className="gantt-view" aria-label="Project schedule">
   <div className="gantt-toolbar"><div className="gantt-summary"><CalendarDays size={17}/><strong>Timeline</strong><span>{scheduledCount} scheduled · {items.length - scheduledCount} unscheduled</span></div><div className="gantt-actions"><Button size="sm" disabled={pending > 0} onClick={() => onAdd(null, true)}><Plus size={15}/>New component</Button><ChartExport projectName={project.name} view="Gantt chart" detail={`${scale[0].toUpperCase() + scale.slice(1)} · ${rows.length} shown rows · ${focusId ? allItems.find(item => item.id === focusId)?.title : 'Project root'} · Dependency arrows ${showLinks ? 'on' : 'off'}`} disabled={pending > 0 || preview !== null} capture={mode => {
@@ -106,7 +114,7 @@ export default function Gantt({ project, items, focusId, selectedId, onOpen, onA
     } finally {
      if (mode === 'html') { flushSync(() => setCollapsed(collapsed)); viewport.scrollLeft = position.left; viewport.scrollTop = position.top; }
     }
-   }}/><div className="gantt-scale" role="group" aria-label="Timeline zoom">{(['days', 'weeks', 'months'] as Scale[]).map(value => <button key={value} aria-pressed={scale === value} onClick={() => setScale(value)}>{value[0].toUpperCase() + value.slice(1)}</button>)}</div><button className="gantt-today" onClick={showToday}>Today</button><button className={`icon-button ${showLinks ? 'active' : ''}`} onClick={() => setShowLinks(value => !value)} aria-label="Show Gantt dependencies" aria-pressed={showLinks}><Link2 size={16}/></button><button className="icon-button" onClick={() => setCollapsed(collapsed.size ? new Set() : new Set(allItems.filter(item => allItems.some(child => child.parentId === item.id)).map(item => item.id)))} aria-label={collapsed.size ? 'Expand all Gantt tasks' : 'Collapse all Gantt tasks'}>{collapsed.size ? <ChevronsUpDown size={17}/> : <ChevronsDownUp size={17}/>}</button></div></div>
+   }}/><div className="gantt-scale" role="group" aria-label="Timeline zoom">{(['days', 'weeks', 'months'] as Scale[]).map(value => <button key={value} aria-pressed={scale === value} onClick={() => chooseScale(value)}>{value[0].toUpperCase() + value.slice(1)}</button>)}</div><button className="gantt-today" onClick={showToday}>Today</button><button className={`icon-button ${showLinks ? 'active' : ''}`} onClick={() => setShowLinks(value => !value)} aria-label="Show Gantt dependencies" aria-pressed={showLinks}><Link2 size={16}/></button><button className="icon-button" onClick={() => setCollapsed(collapsed.size ? new Set() : new Set(allItems.filter(item => allItems.some(child => child.parentId === item.id)).map(item => item.id)))} aria-label={collapsed.size ? 'Expand all Gantt tasks' : 'Collapse all Gantt tasks'}>{collapsed.size ? <ChevronsUpDown size={17}/> : <ChevronsDownUp size={17}/>}</button></div></div>
   <div className="gantt-scroll" ref={bindScroll} data-pan-surface tabIndex={0} role="region" aria-label="Scrollable project timeline">
    <div className="gantt-grid" style={{ '--timeline-width': `${timelineWidth}px`, '--day-width': `${dayWidth}px`, '--row-height': `${ROW_HEIGHT}px` } as CSSProperties}>
     <div className="gantt-axis"><div className="gantt-list-heading"><span>Task / assignees</span><span>{rows.length} shown</span></div><div className="gantt-calendar"><div className="gantt-months">{months.map(month => <span key={month.start} style={{ left: (month.start - range.start) * dayWidth, width: month.days * dayWidth }}>{month.label}</span>)}</div><div className="gantt-ticks">{ticks.map(tick => <span key={tick.start} style={{ left: (tick.start - range.start) * dayWidth, width: tick.days * dayWidth }}>{scale === 'months' ? calendarLabel(tick.start, { day: 'numeric' }) : tick.label}</span>)}</div></div></div>
