@@ -1,5 +1,9 @@
 # Software Factory runs
 
+The [Software Factory roadmap](SOFTWARE-FACTORY-ROADMAP.md) tracks planned quality
+verdicts, review and repair loops, and controlled PR delivery beyond these run
+records.
+
 Open a task's **Factory** tab, apply a published pipeline, choose **Check
 readiness**, then **Prepare run**. These capture an immutable work order and
 pending records without execution. Select **Start run**, inspect the captured

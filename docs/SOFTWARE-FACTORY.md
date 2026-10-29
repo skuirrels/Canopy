@@ -1,5 +1,9 @@
 # Software Factory configuration — phase 1
 
+See the [Software Factory roadmap](SOFTWARE-FACTORY-ROADMAP.md) for the delivered
+foundation and planned QA gates, persistent review, repair loops, PR delivery and
+verified problem intake.
+
 This phase supplies the persistent configuration API. The [phase-2 React Flow
 designer](FACTORY-DESIGNER.md) now uses it. [Run preparation](FACTORY-RUNS.md) adds
 local readiness observations and immutable work orders, with explicit dispatch,
