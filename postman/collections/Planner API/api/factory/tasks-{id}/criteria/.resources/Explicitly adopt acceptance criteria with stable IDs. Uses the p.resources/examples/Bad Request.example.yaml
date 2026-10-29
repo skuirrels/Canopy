@@ -1,0 +1,41 @@
+$kind: http-example
+name: 'Isolated native API fixture - Bad Request'
+request:
+  url: '{{baseUrl}}/api/factory/tasks/:id/criteria'
+  method: PUT
+  body:
+    type: json
+    content: |-
+      {
+        "expectedRevision": 15,
+        "criteria": [
+          {
+            "id": "be16cda1-3831-4b28-bc9b-431e796f72ae",
+            "description": "Increment zero",
+            "expectedResult": "increment(0) == 1",
+            "verificationMethod": "Run verify.py and inspect assertion line 2",
+            "needsClarification": false
+          },
+          {
+            "id": "be16cda1-3831-4b28-bc9b-431e796f72ae",
+            "description": "Increment zero",
+            "expectedResult": "increment(0) == 1",
+            "verificationMethod": "Run verify.py and inspect assertion line 2",
+            "needsClarification": false
+          }
+        ]
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/problem+json
+    Cache-Control: no-store
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+        "title": "Supply up to 100 criteria with distinct stable IDs.",
+        "status": 400
+      }

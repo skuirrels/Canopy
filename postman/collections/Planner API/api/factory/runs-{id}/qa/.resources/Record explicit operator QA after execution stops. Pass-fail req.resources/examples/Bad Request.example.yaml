@@ -1,0 +1,31 @@
+$kind: http-example
+name: 'Isolated native API fixture - Bad Request'
+request:
+  url: '{{baseUrl}}/api/factory/runs/:id/qa'
+  method: POST
+  body:
+    type: json
+    content: |-
+      {
+        "requestId": "84fe375f-40d5-4f0e-a817-3b77c698bd3c",
+        "expectedRevision": 7,
+        "expectedContext": "8D23DB908B9B79D68CFBDD519499992FE34187D3FB3302674CAB13F93B0D87F9",
+        "criterionId": "be16cda1-3831-4b28-bc9b-431e796f72ae",
+        "verdict": "unknown",
+        "reason": "Contract fixture: operator review has not yet established acceptance.",
+        "evidence": []
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/problem+json
+    Cache-Control: no-store
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+        "title": "Choose pass, fail, unverified or notApplicable.",
+        "status": 400
+      }

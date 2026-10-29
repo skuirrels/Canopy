@@ -2381,6 +2381,225 @@
           }
         }
       }
+    },
+    "/api/factory/tasks/{id}/criteria": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptanceCriteriaDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "description": "Explicitly adopt acceptance criteria with stable IDs. Uses the project revision; captured work orders remain immutable.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditAcceptanceCriteria"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptanceCriteriaDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/runs/{id}/qa": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "description": "Criterion coverage, immutable verdict history, command receipts and current verification context. Missing inputs never imply pass.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactoryQualityDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "description": "Record explicit operator QA after execution stops. Pass/fail requires current command evidence and an asserting test reference. Idempotent request ID; expectedRevision is the run revision.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordCriterionVerdict"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactoryQualityDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4487,6 +4706,15 @@
           "checkedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "criteria": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/AcceptanceCriterion"
+            }
           }
         }
       },
@@ -4803,6 +5031,414 @@
           }
         },
         "additionalProperties": false
+      },
+      "AcceptanceCriteriaDetail": {
+        "required": [
+          "projectRevision",
+          "criteria",
+          "checks"
+        ],
+        "type": "object",
+        "properties": {
+          "projectRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "criteria": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AcceptanceCriterion"
+            }
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryReadinessCheck"
+            }
+          }
+        }
+      },
+      "AcceptanceCriterion": {
+        "required": [
+          "id",
+          "description",
+          "expectedResult",
+          "verificationMethod"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string"
+          },
+          "expectedResult": {
+            "type": "string"
+          },
+          "verificationMethod": {
+            "type": "string"
+          },
+          "needsClarification": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "CapturedCriterionEvidence": {
+        "required": [
+          "stepRunId",
+          "evidenceHash",
+          "testPath",
+          "line",
+          "fileHash",
+          "assertion",
+          "failureCase"
+        ],
+        "type": "object",
+        "properties": {
+          "stepRunId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "evidenceHash": {
+            "type": "string"
+          },
+          "testPath": {
+            "type": "string"
+          },
+          "line": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "fileHash": {
+            "type": "string"
+          },
+          "assertion": {
+            "type": "string"
+          },
+          "failureCase": {
+            "type": "string"
+          }
+        }
+      },
+      "CriterionEvidence": {
+        "required": [
+          "stepRunId",
+          "testPath",
+          "line",
+          "assertion",
+          "failureCase"
+        ],
+        "type": "object",
+        "properties": {
+          "stepRunId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "testPath": {
+            "type": "string"
+          },
+          "line": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "assertion": {
+            "type": "string"
+          },
+          "failureCase": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CriterionQuality": {
+        "required": [
+          "criterion",
+          "status",
+          "staleReason",
+          "history"
+        ],
+        "type": "object",
+        "properties": {
+          "criterion": {
+            "$ref": "#/components/schemas/AcceptanceCriterion"
+          },
+          "status": {
+            "type": "string"
+          },
+          "staleReason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryCriterionVerdict"
+            }
+          }
+        }
+      },
+      "EditAcceptanceCriteria": {
+        "required": [
+          "expectedRevision",
+          "criteria"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "criteria": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AcceptanceCriterion"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "FactoryCriterionVerdict": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "criterionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recordedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "verdict": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "inputHash": {
+            "type": "string"
+          },
+          "sourceHash": {
+            "type": "string"
+          },
+          "context": {
+            "$ref": "#/components/schemas/VerificationContext"
+          },
+          "evidence": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CapturedCriterionEvidence"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FactoryQualityDetail": {
+        "required": [
+          "runId",
+          "runRevision",
+          "context",
+          "contextError",
+          "sourceChanged",
+          "criteria",
+          "receipts"
+        ],
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "context": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VerificationContext"
+              }
+            ]
+          },
+          "contextError": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sourceChanged": {
+            "type": "boolean"
+          },
+          "criteria": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CriterionQuality"
+            }
+          },
+          "receipts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryVerificationReceipt"
+            }
+          }
+        }
+      },
+      "FactoryVerificationReceipt": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "stepRunId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "before": {
+            "$ref": "#/components/schemas/VerificationContext"
+          },
+          "after": {
+            "$ref": "#/components/schemas/VerificationContext"
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "evidenceHash": {
+            "type": "string"
+          },
+          "stable": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RecordCriterionVerdict": {
+        "required": [
+          "requestId",
+          "expectedRevision",
+          "expectedContext",
+          "criterionId",
+          "verdict",
+          "reason",
+          "evidence"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "expectedContext": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "criterionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "verdict": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CriterionEvidence"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "VerificationContext": {
+        "required": [
+          "headCommit",
+          "codeHash",
+          "configurationHash",
+          "fingerprint"
+        ],
+        "type": "object",
+        "properties": {
+          "headCommit": {
+            "type": "string"
+          },
+          "codeHash": {
+            "type": "string"
+          },
+          "configurationHash": {
+            "type": "string"
+          },
+          "fingerprint": {
+            "type": "string"
+          }
+        }
       }
     }
   },

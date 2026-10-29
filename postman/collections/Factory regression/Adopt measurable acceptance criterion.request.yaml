@@ -1,0 +1,20 @@
+$kind: http-request
+method: PUT
+url: '{{baseUrl}}/api/factory/tasks/{{taskId}}/criteria'
+order: 5200
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"expectedRevision":{{revision}},"criteria":[{"id":"{{criterionId}}","description":"Reject a cyclic dependency","expectedResult":"API returns 400 and retains the original dependency graph","verificationMethod":"Run the invalid dependency regression and compare persisted graph","needsClarification":false}]}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Criteria adopted',()=>pm.response.to.have.status(200));
+      const d=pm.response.json();
+      pm.test('Stable criterion ID',()=>pm.expect(d.criteria[0].id).to.equal(pm.collectionVariables.get('criterionId')));
+      pm.test('Observable result captured',()=>pm.expect(d.criteria[0].expectedResult).to.include('400'));
+      pm.collectionVariables.set('revision',d.projectRevision);

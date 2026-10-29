@@ -22,7 +22,7 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
     private async Task<FactoryReadiness> Inspect(WorkspaceData data, Guid itemId, CancellationToken ct)
     {
         var item = Item(data, itemId); var revision = data.Graph(item.ProjectId).Project.Revision;
-        var checks = new List<FactoryReadinessCheck>();
+        var checks = TaskAcceptanceCriteria.Check(data.AcceptanceCriteria.SingleOrDefault(x => x.Id == itemId)?.Criteria ?? []).ToList();
         var attachment = data.TaskFactoryConfigurations.SingleOrDefault(x => x.Id == itemId);
         if (attachment is null) return new(revision, false, "notEvaluated", DateTime.UtcNow,
             [new("attachment.required", "error", "Apply a published pipeline to this task first.")], null);
@@ -53,7 +53,7 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
         var attachment = before.TaskFactoryConfigurations.Single(x => x.Id == itemId);
         var version = before.PipelineVersions.Single(x => x.Id == attachment.PipelineVersionId);
         var snapshot = new FactoryRunSnapshot(version.Id, version.Number, version.Name, version.Source, item.Title, item.SpecJson,
-            input.ExpectedRevision, attachment.Overrides, readiness.Environment!, readiness.Checks, readiness.CheckedAt);
+            input.ExpectedRevision, attachment.Overrides, readiness.Environment!, readiness.Checks, readiness.CheckedAt, before.AcceptanceCriteria.SingleOrDefault(x => x.Id == itemId)?.Criteria ?? []);
         var run = FactoryRun.Prepare(input.RequestId, item, snapshot);
         var saved = await store.WriteAsync(data =>
         {

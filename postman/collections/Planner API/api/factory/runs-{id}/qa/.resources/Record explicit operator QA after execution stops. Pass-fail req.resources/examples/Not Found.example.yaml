@@ -1,0 +1,31 @@
+$kind: http-example
+name: 'Isolated native API fixture - Not Found'
+request:
+  url: '{{baseUrl}}/api/factory/runs/:id/qa'
+  method: POST
+  body:
+    type: json
+    content: |-
+      {
+        "requestId": "27714460-df99-45a0-87af-461ebef064be",
+        "expectedRevision": 6,
+        "expectedContext": "8D23DB908B9B79D68CFBDD519499992FE34187D3FB3302674CAB13F93B0D87F9",
+        "criterionId": "be16cda1-3831-4b28-bc9b-431e796f72ae",
+        "verdict": "unverified",
+        "reason": "Contract fixture: operator review has not yet established acceptance.",
+        "evidence": []
+      }
+response:
+  statusCode: 404
+  statusText: Not Found
+  headers:
+    Content-Type: application/problem+json
+    Cache-Control: no-store
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+        "title": "Factory run not found.",
+        "status": 404
+      }

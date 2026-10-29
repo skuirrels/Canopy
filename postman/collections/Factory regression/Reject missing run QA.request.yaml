@@ -1,0 +1,9 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/factory/runs/{{$guid}}/qa'
+order: 9700
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Missing run has no fabricated coverage',()=>pm.response.to.have.status(404));

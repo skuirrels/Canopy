@@ -1,0 +1,16 @@
+$kind: http-request
+method: PUT
+url: '{{baseUrl}}/api/factory/tasks/{{taskId}}/criteria'
+order: 5300
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"expectedRevision":-1,"criteria":[]}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Stale adoption cannot erase criteria',()=>pm.response.to.have.status(409));

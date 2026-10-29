@@ -4,6 +4,9 @@ namespace Planner.Api.Infrastructure;
 
 public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(options)
 {
+    public DbSet<TaskAcceptanceCriteria> AcceptanceCriteria => Set<TaskAcceptanceCriteria>();
+    public DbSet<FactoryVerificationReceipt> VerificationReceipts => Set<FactoryVerificationReceipt>();
+    public DbSet<FactoryCriterionVerdict> CriterionVerdicts => Set<FactoryCriterionVerdict>();
     public DbSet<FactoryArtifact> FactoryArtifacts => Set<FactoryArtifact>();
     public DbSet<FactoryRun> FactoryRuns => Set<FactoryRun>();
     public DbSet<FactoryStageRun> FactoryStageRuns => Set<FactoryStageRun>();
@@ -22,6 +25,17 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<TaskFactoryConfiguration> TaskFactoryConfigurations => Set<TaskFactoryConfiguration>();
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.Ignore<AcceptanceCriterion>(); model.Ignore<VerificationContext>(); model.Ignore<CapturedCriterionEvidence>();
+        model.Entity<TaskAcceptanceCriteria>().HasKey(x => x.Id);
+        model.Entity<TaskAcceptanceCriteria>().Ignore(x => x.Criteria);
+        model.Entity<FactoryVerificationReceipt>().HasKey(x => x.Id);
+        model.Entity<FactoryVerificationReceipt>().HasIndex(x => x.StepRunId).IsUnique();
+        model.Entity<FactoryVerificationReceipt>().Ignore(x => x.Before).Ignore(x => x.After).Ignore(x => x.Stable);
+        model.Entity<FactoryCriterionVerdict>().HasKey(x => x.Id);
+        model.Entity<FactoryCriterionVerdict>().HasIndex(x => x.RequestId).IsUnique();
+        model.Entity<FactoryCriterionVerdict>().HasIndex(x => new { x.RunId, x.RecordedRevision }).IsUnique();
+        model.Entity<FactoryCriterionVerdict>().Ignore(x => x.Context).Ignore(x => x.Evidence);
+        model.Entity<FactoryCriterionVerdict>().Property(x => x.CreatedAt).HasConversion(value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));
         model.Entity<FactoryArtifact>().HasKey(x => x.Id);
         model.Entity<FactoryArtifact>().HasIndex(x => new { x.RunId, x.Name }).IsUnique();
         model.Entity<FactoryRun>().Ignore(x => x.Active);

@@ -1,0 +1,27 @@
+$kind: http-example
+name: 'Isolated native API fixture - OK'
+request:
+  url: '{{baseUrl}}/api/factory/tasks/:id/criteria'
+  method: GET
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+    Cache-Control: no-store
+  body:
+    type: json
+    content: |-
+      {
+        "projectRevision": 15,
+        "criteria": [
+          {
+            "id": "be16cda1-3831-4b28-bc9b-431e796f72ae",
+            "description": "Increment zero",
+            "expectedResult": "increment(0) == 1",
+            "verificationMethod": "Run verify.py and inspect assertion line 2",
+            "needsClarification": false
+          }
+        ],
+        "checks": []
+      }

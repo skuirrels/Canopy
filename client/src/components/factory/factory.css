@@ -239,3 +239,15 @@
 .factory-runtime-back{display:none}
 @container(max-width:620px){.factory-runtime-back{display:inline-flex;font-size:10px}.factory-runtime-inspector .factory-panel-heading{flex-wrap:wrap}.factory-runtime-summary>p{flex-basis:100%}}
 .factory-execution .factory-eyebrow{color:var(--heading)}
+
+.factory-criteria { border-top: 1px solid var(--line); padding-top: 18px; margin-top: 18px; }
+.factory-criteria .factory-fieldset { display: grid; gap: 9px; }
+.factory-quality { border-block: 1px solid var(--line); padding-block: 14px; margin-block: 14px; }
+.factory-quality > summary { cursor: pointer; font-weight: 600; }
+.factory-quality-criterion { border-top: 1px solid var(--line); padding-block: 14px; overflow-wrap: anywhere; }
+.factory-quality-criterion h4 { margin: 0 0 8px; }
+.factory-quality-reference { border-left: 2px solid var(--line); padding-left: 9px; margin-block: 8px; }
+.factory-quality-reference code { display: block; font-size: 11px; }
+.factory-qa-status { display: inline-block; padding: 3px 8px; border: 1px solid currentColor; border-radius: 8px; font-size: 12px; }
+.factory-qa-status.qa-pass { color: var(--foreground); }
+.factory-qa-status.qa-fail, .factory-qa-status.qa-stale { color: var(--factory-danger); }

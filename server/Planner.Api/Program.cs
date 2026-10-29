@@ -22,6 +22,8 @@ builder.Services.AddSingleton<IReadOnlyList<FactoryTemplate>>(factoryTemplates);
 builder.Services.AddScoped<FactoryService>();
 builder.Services.AddSingleton<IFactoryEnvironment, LocalFactoryEnvironment>();
 builder.Services.AddScoped<FactoryRunService>();
+builder.Services.AddSingleton<IVerificationEnvironment, LocalVerificationEnvironment>();
+builder.Services.AddScoped<FactoryQualityService>();
 builder.Services.AddScoped<FactoryDispatchService>();
 builder.Services.AddSingleton<StartupRunRecovery>();
 var agentOptions = builder.Configuration.GetSection("Agents").Get<AgentOptions>() ?? throw new InvalidOperationException("Configure Agents.");

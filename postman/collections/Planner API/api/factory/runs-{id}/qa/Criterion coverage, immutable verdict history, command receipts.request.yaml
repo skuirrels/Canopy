@@ -1,0 +1,15 @@
+$kind: http-request
+name: Criterion coverage, immutable verdict history, command receipts and current verification context. Missing inputs never imply pass.
+description: Criterion coverage, immutable verdict history, command receipts and current verification context. Missing inputs never imply pass.
+url: "{{baseUrl}}/api/factory/runs/:id/qa"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: '{{runId}}'
+    disabled: false
+    description: "(Required) "
+settings: {}
+examples: ./.resources/Criterion coverage, immutable verdict history, command receipts.resources/examples
+order: 1000

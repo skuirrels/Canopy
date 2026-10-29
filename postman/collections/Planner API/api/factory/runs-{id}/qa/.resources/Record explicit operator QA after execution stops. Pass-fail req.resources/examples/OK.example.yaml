@@ -1,0 +1,94 @@
+$kind: http-example
+name: 'Isolated native API fixture - OK'
+request:
+  url: '{{baseUrl}}/api/factory/runs/:id/qa'
+  method: POST
+  body:
+    type: json
+    content: |-
+      {
+        "requestId": "27714460-df99-45a0-87af-461ebef064be",
+        "expectedRevision": 6,
+        "expectedContext": "8D23DB908B9B79D68CFBDD519499992FE34187D3FB3302674CAB13F93B0D87F9",
+        "criterionId": "be16cda1-3831-4b28-bc9b-431e796f72ae",
+        "verdict": "unverified",
+        "reason": "Contract fixture: operator review has not yet established acceptance.",
+        "evidence": []
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+    Cache-Control: no-store
+  body:
+    type: json
+    content: |-
+      {
+        "runId": "cee78ae3-4aa9-4a39-a135-9069519721d9",
+        "runRevision": 7,
+        "context": {
+          "headCommit": "a7ab6df12430417829355e524084edd5a7fd1a07",
+          "codeHash": "B033A2C1A6D9DED6AF5BD7AA60BA24B1A788B494865D120A2E578AFB484697F6",
+          "configurationHash": "0D4F7EB25FF051591780AB9BA961CA959B04354C9C6E62169B19522719B55DF0",
+          "fingerprint": "8D23DB908B9B79D68CFBDD519499992FE34187D3FB3302674CAB13F93B0D87F9"
+        },
+        "contextError": null,
+        "sourceChanged": false,
+        "criteria": [
+          {
+            "criterion": {
+              "id": "be16cda1-3831-4b28-bc9b-431e796f72ae",
+              "description": "Increment zero",
+              "expectedResult": "increment(0) == 1",
+              "verificationMethod": "Run verify.py and inspect assertion line 2",
+              "needsClarification": false
+            },
+            "status": "unverified",
+            "staleReason": null,
+            "history": [
+              {
+                "id": "978190ea-8483-4be3-90c9-f826b23ffd09",
+                "requestId": "27714460-df99-45a0-87af-461ebef064be",
+                "runId": "cee78ae3-4aa9-4a39-a135-9069519721d9",
+                "criterionId": "be16cda1-3831-4b28-bc9b-431e796f72ae",
+                "recordedRevision": 7,
+                "verdict": "unverified",
+                "reason": "Contract fixture: operator review has not yet established acceptance.",
+                "inputHash": "71A7B9B3E03EE77BCD915E21A456308F4C71695BB20C6435A0EBA215D7E4E625",
+                "sourceHash": "ED68698E71778A23815131EBBA4ABBC8B96704E64F46D9F04771E2ABA33ED769",
+                "context": {
+                  "headCommit": "a7ab6df12430417829355e524084edd5a7fd1a07",
+                  "codeHash": "B033A2C1A6D9DED6AF5BD7AA60BA24B1A788B494865D120A2E578AFB484697F6",
+                  "configurationHash": "0D4F7EB25FF051591780AB9BA961CA959B04354C9C6E62169B19522719B55DF0",
+                  "fingerprint": "8D23DB908B9B79D68CFBDD519499992FE34187D3FB3302674CAB13F93B0D87F9"
+                },
+                "evidence": [],
+                "createdAt": "2026-10-29T16:40:06.031642Z"
+              }
+            ]
+          }
+        ],
+        "receipts": [
+          {
+            "id": "eb817b22-5930-49eb-9faa-10e55c2b6c7b",
+            "runId": "cee78ae3-4aa9-4a39-a135-9069519721d9",
+            "stepRunId": "fa72ffef-c234-4d70-9ea9-3bec2f4c1ee8",
+            "before": {
+              "headCommit": "a7ab6df12430417829355e524084edd5a7fd1a07",
+              "codeHash": "B033A2C1A6D9DED6AF5BD7AA60BA24B1A788B494865D120A2E578AFB484697F6",
+              "configurationHash": "0D4F7EB25FF051591780AB9BA961CA959B04354C9C6E62169B19522719B55DF0",
+              "fingerprint": "8D23DB908B9B79D68CFBDD519499992FE34187D3FB3302674CAB13F93B0D87F9"
+            },
+            "after": {
+              "headCommit": "a7ab6df12430417829355e524084edd5a7fd1a07",
+              "codeHash": "B033A2C1A6D9DED6AF5BD7AA60BA24B1A788B494865D120A2E578AFB484697F6",
+              "configurationHash": "0D4F7EB25FF051591780AB9BA961CA959B04354C9C6E62169B19522719B55DF0",
+              "fingerprint": "8D23DB908B9B79D68CFBDD519499992FE34187D3FB3302674CAB13F93B0D87F9"
+            },
+            "error": null,
+            "evidenceHash": "1DE3BB136EED1C04E80D7A80FDDA51B210447DC056EECDA58DA088CB03972F8E",
+            "stable": true
+          }
+        ]
+      }

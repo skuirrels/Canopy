@@ -1,10 +1,11 @@
+import type { AcceptanceCriterion } from './factory-quality';
 import type { FactoryDefinition, FactoryOverrides } from './factory';
 
 export type FactoryRunState = 'prepared' | 'queued' | 'running' | 'waiting' | 'cancelling' | 'succeeded' | 'failed' | 'cancelled' | 'interrupted';
 export type FactoryReadinessCheck = { code: string; severity: string; message: string; stageId?: string; stepId?: string };
 export type FactoryEnvironment = { repositoryPath: string; baseRef: string; baseCommit: string; defaultProvider: string; projectInstructions: string; definition: FactoryDefinition; skills: { id: string; source: string; path: string; hash: string }[] };
 export type FactoryReadiness = { projectRevision: number; canPrepare: boolean; executionReadiness: string; checkedAt: string; checks: FactoryReadinessCheck[]; environment: FactoryEnvironment | null };
-export type FactoryRunSnapshot = { pipelineVersionId: string; versionNumber: number; pipelineName: string; source: string; title: string; specJson: string; projectRevision: number; overrides: FactoryOverrides; environment: FactoryEnvironment; checks: FactoryReadinessCheck[]; checkedAt: string };
+export type FactoryRunSnapshot = { pipelineVersionId: string; versionNumber: number; pipelineName: string; source: string; title: string; specJson: string; projectRevision: number; overrides: FactoryOverrides; environment: FactoryEnvironment; checks: FactoryReadinessCheck[]; checkedAt: string; criteria?: AcceptanceCriterion[] | null };
 export type FactoryRun = { id: string; itemId: string; projectId: string; state: FactoryRunState; revision: number; active: boolean; createdAt: string; startedAt: string | null; finishedAt: string | null; workspacePath: string | null; error: string | null; snapshot: FactoryRunSnapshot };
 export type FactoryRunSummary = { id: string; itemId: string; state: FactoryRunState; createdAt: string; pipelineName: string; versionNumber: number; title: string; revision: number };
 export type FactoryStageRun = { id: string; stageId: string; state: string; startedAt: string | null; finishedAt: string | null };

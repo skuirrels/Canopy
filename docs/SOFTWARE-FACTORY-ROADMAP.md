@@ -1,8 +1,8 @@
 # Software Factory roadmap
 
-Canopy's next Software Factory work connects acceptance criteria, verification,
-review findings and repair attempts into an optional delivery loop. Quality gates
-come first, followed by controlled PR delivery and verified problem intake.
+Canopy records acceptance criteria, revision-bound verification evidence and
+explicit operator QA verdicts. Next comes independent review and bounded repair,
+followed by controlled PR delivery and verified problem intake.
 
 ## Delivered foundation
 
@@ -19,12 +19,12 @@ come first, followed by controlled PR delivery and verified problem intake.
 
 ## Planned priorities
 
-All items below are pending. Order expresses priority and dependencies, with no
-delivery dates or estimates assigned.
+Item 1 is delivered as explicit operator QA. Items 2–5 remain pending. Order
+expresses priority and dependencies, with no delivery dates or estimates assigned.
 
 | Order | Item | Depends on | Completion outcome |
 | --- | --- | --- | --- |
-| 1 | Acceptance criteria and evidence based QA | Delivered foundation | Every criterion has an explicit verdict backed by relevant evidence |
+| 1 | [Delivered: acceptance criteria and evidence based QA](FACTORY-QUALITY.md) | Delivered foundation | Captured criteria, explicit operator verdicts, test/command references and stale-evidence detection |
 | 2 | Independent review with persistent findings | Item 1 | Review findings survive revisions and require proof of resolution |
 | 3 | Bounded repair and verification loop | Items 1 and 2 | Findings return to the responsible stage and are verified after repair |
 | 4 | Controlled PR delivery and merge verification | Items 1 and 2; item 3 for automatic repairs | Only the reviewed and verified revision can pass the configured merge policy |
@@ -32,26 +32,29 @@ delivery dates or estimates assigned.
 
 ## Acceptance criteria and evidence based QA
 
-- [ ] Give acceptance criteria stable identities within the captured work order.
+- [x] Give acceptance criteria stable identities within the captured work order.
   Flag missing, vague or unmeasurable criteria before unattended work; proposed
   clarifications require explicit adoption.
-- [ ] Link each criterion to the asserting test and relevant runtime evidence,
+- [x] Link each criterion to the asserting test and relevant runtime evidence,
   such as a command result, screenshot, log or persisted destination record.
   An uncovered criterion remains visible.
-- [ ] Record explicit pass, fail, unverified or justified not-applicable verdicts.
+- [x] Record explicit pass, fail, unverified or justified not-applicable verdicts.
   Agent process completion, a report, or a green unrelated suite cannot establish
   that a criterion passed.
-- [ ] Capture the code revision, relevant configuration and verification context
+- [x] Capture the code revision, relevant configuration and verification context
   with each verdict. Changed inputs make affected evidence stale and require
   fresh verification.
-- [ ] Check test quality: assertions must cover the requested behaviour and
+- [x] Check test quality: assertions must cover the requested behaviour and
   meaningful failure cases. Use targeted mutation checks for high-risk logic
   where they establish that the test can detect the defect.
 
-Complete when a real fixture demonstrates passing, failing, uncovered and stale
-criteria, with the React Flow inspector explaining each verdict and linking its
-evidence. Existing logical artifacts retain their meaning; physical attachments
-require explicit capture and provenance.
+Validated with an isolated real fixture demonstrating passing, failing, uncovered
+and stale criteria. The React Flow inspector explains each verdict and links its
+evidence. The operator judges semantic test relevance and assertion quality;
+nonempty fields and a green command do not automatically establish a verdict.
+See [validation evidence](FACTORY-QUALITY-VALIDATION.md). Existing logical
+artifacts retain their meaning; physical attachments require explicit capture
+and provenance.
 
 ## Independent review with persistent findings
 

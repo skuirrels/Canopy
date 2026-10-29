@@ -19,6 +19,15 @@ public static class FactoryEndpoints
             http.Response.Headers.CacheControl = "no-store";
             return await next(context);
         });
+        group.MapGet("/tasks/{id:guid}/criteria", (Guid id, FactoryQualityService service, CancellationToken ct) => service.Criteria(id, ct));
+        group.MapPut("/tasks/{id:guid}/criteria", (Guid id, EditAcceptanceCriteria input, FactoryQualityService service, CancellationToken ct) => service.Edit(id, input, ct))
+            .WithDescription("Explicitly adopt acceptance criteria with stable IDs. Uses the project revision; captured work orders remain immutable.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapGet("/runs/{id:guid}/qa", (Guid id, FactoryQualityService service, CancellationToken ct) => service.Read(id, ct))
+            .WithDescription("Criterion coverage, immutable verdict history, command receipts and current verification context. Missing inputs never imply pass.");
+        group.MapPost("/runs/{id:guid}/qa", (Guid id, RecordCriterionVerdict input, FactoryQualityService service, CancellationToken ct) => service.Record(id, input, ct))
+            .WithDescription("Record explicit operator QA after execution stops. Pass/fail requires current command evidence and an asserting test reference. Idempotent request ID; expectedRevision is the run revision.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
         group.MapPost("/runs/{id:guid}/start", (Guid id, StartFactoryRun input, FactoryDispatchService service, CancellationToken ct) => service.Start(id, input, ct))
             .WithDescription("Explicitly dispatch a prepared work order in its own worktree. expectedRevision is the run revision. Reusing the same requestId never redispatches work.")
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);

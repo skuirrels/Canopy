@@ -189,6 +189,61 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("FactoryArtifacts");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.FactoryCriterionVerdict", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ContextJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<Guid>("CriterionId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("EvidenceJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("InputHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<long>("RecordedRevision")
+                        .HasColumnType("BIGINT");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("SourceHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Verdict")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique();
+
+                    b.HasIndex("RunId", "RecordedRevision")
+                        .IsUnique();
+
+                    b.ToTable("CriterionVerdicts");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.FactoryPipeline", b =>
                 {
                     b.Property<Guid>("Id")
@@ -379,6 +434,40 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("FactoryStepRuns");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.FactoryVerificationReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("AfterJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("BeforeJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("EvidenceHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("StepRunId")
+                        .HasColumnType("UUID");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StepRunId")
+                        .IsUnique();
+
+                    b.ToTable("VerificationReceipts");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.Person", b =>
                 {
                     b.Property<Guid>("Id")
@@ -525,6 +614,23 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SpecFiles");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.TaskAcceptanceCriteria", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("CriteriaJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AcceptanceCriteria");
                 });
 
             modelBuilder.Entity("Planner.Api.Domain.TaskFactoryConfiguration", b =>
