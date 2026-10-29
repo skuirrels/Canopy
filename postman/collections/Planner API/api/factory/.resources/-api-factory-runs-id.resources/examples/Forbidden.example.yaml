@@ -6,7 +6,7 @@ request:
     Accept: application/problem+json
   pathVariables:
     - key: id
-      value: 75d66fc6-e02c-352c-a98f-2f299fd00c34
+      value: b249295b-a1a1-b9c4-0061-1757aed7b8db
       disabled: false
       description: "(Required) "
   body:
@@ -23,7 +23,7 @@ response:
       {
         "type": null,
         "title": null,
-        "status": "-916096946",
+        "status": "7",
         "detail": null,
         "instance": null
       }

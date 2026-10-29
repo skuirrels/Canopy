@@ -1,0 +1,16 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/factory/runs/{{$guid}}/steps/{{$guid}}/decision'
+order: 9600
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"requestId":"{{$guid}}","expectedRevision":1}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Manual decision requires explicit approval value',()=>pm.response.to.have.status(400));

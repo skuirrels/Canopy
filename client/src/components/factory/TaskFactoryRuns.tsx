@@ -2,17 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { ClipboardCheck, Loader2 } from 'lucide-react';
 import { factoryRequest } from '../../lib/factory';
 import { ApiError } from '../../lib/api';
-import type { FactoryDefinition, FactoryOverrides } from '../../lib/factory';
+import type { FactoryReadiness as Readiness, FactoryRunSummary as Summary, FactoryRunDetail as Detail } from '../../lib/factory-runs';
+import { FactoryRunControls } from './FactoryRunControls';
+import { useFactoryRun } from './useFactoryRun';
 import { Button } from '../ui/button';
 
-type Check = { code: string; severity: string; message: string; stageId?: string; stepId?: string };
-type Environment = { repositoryPath: string; baseRef: string; baseCommit: string; projectInstructions: string; definition: FactoryDefinition; skills: { id: string; source: string; path: string; hash: string }[] };
-type Readiness = { projectRevision: number; canPrepare: boolean; executionReadiness: string; checkedAt: string; checks: Check[]; environment: Environment | null };
-type Summary = { id: string; itemId: string; state: string; createdAt: string; pipelineName: string; versionNumber: number };
-type Detail = { run: { id: string; state: string; createdAt: string; snapshot: { pipelineVersionId: string; versionNumber: number; pipelineName: string; source: string; title: string; specJson: string; projectRevision: number; overrides: FactoryOverrides; environment: Environment; checks: Check[]; checkedAt: string } }; stages: { id: string; stageId: string; state: string }[]; steps: { id: string; stageRunId: string; stepId: string; state: string }[] };
-
 export function TaskFactoryRuns({ itemId, dirty, beforeChange }: { itemId: string; dirty: boolean; beforeChange: () => Promise<void> }) {
- const [readiness, setReadiness] = useState<Readiness | null>(null), [runs, setRuns] = useState<Summary[]>([]), [detail, setDetail] = useState<Detail | null>(null);
+ const [readiness, setReadiness] = useState<Readiness | null>(null), [runs, setRuns] = useState<Summary[]>([]), [selectedRun, setSelectedRun] = useState<string | null>(null);
+ const runtime = useFactoryRun(selectedRun); const detail = runtime.detail;
  const [error, setError] = useState(''), [busy, setBusy] = useState(false); const requestId = useRef(crypto.randomUUID());
  useEffect(() => { const controller = new AbortController(); void factoryRequest<Summary[]>(`/tasks/${itemId}/runs`, 'GET', undefined, controller.signal).then(value => { if (!controller.signal.aborted) setRuns(value); }).catch(cause => { if (!controller.signal.aborted) setError((cause as Error).message); }); return () => controller.abort(); }, [itemId]);
  useEffect(() => { setReadiness(null); }, [dirty]);
@@ -26,7 +23,7 @@ export function TaskFactoryRuns({ itemId, dirty, beforeChange }: { itemId: strin
   try {
    await beforeChange();
    const value = await factoryRequest<Detail>(`/tasks/${itemId}/runs`, 'POST', { requestId: requestId.current, expectedRevision: readiness.projectRevision });
-   setDetail(value); setReadiness(null);
+   setSelectedRun(value.run.id); runtime.seed(value); setReadiness(null);
    try { setRuns(await factoryRequest<Summary[]>(`/tasks/${itemId}/runs`)); }
    catch { setError('The work order was prepared, but run history could not be refreshed. Reopen this tab to reload it.'); }
   } catch (cause) {
@@ -34,13 +31,16 @@ export function TaskFactoryRuns({ itemId, dirty, beforeChange }: { itemId: strin
    else setError(cause instanceof ApiError && cause.status === 0 ? 'The preparation response was lost. Retry Prepare run to recover the same work order.' : (cause as Error).message);
   } finally { setBusy(false); }
  }
- async function open(id: string) { setBusy(true); setError(''); try { setDetail(await factoryRequest<Detail>(`/runs/${id}`)); } catch (cause) { setError((cause as Error).message); } finally { setBusy(false); } }
+ function open(id: string) { setSelectedRun(id); runtime.refresh(); }
+ useEffect(() => { if (detail) setRuns(current => [...current.filter(value => value.id !== detail.run.id), { id: detail.run.id, itemId: detail.run.itemId, state: detail.run.state, createdAt: detail.run.createdAt, pipelineName: detail.run.snapshot.pipelineName, versionNumber: detail.run.snapshot.versionNumber }].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))); }, [detail]);
  return <section className="factory-run-preparation" aria-label="Pipeline run preparation"><h4>Run preparation</h4><p className="factory-help">Check local prerequisites and capture an immutable work order. Preparing does not start agents or commands. Credentials and model access remain unverified.</p>
  {dirty && <p className="factory-help">Apply or discard your task configuration edits before checking readiness.</p>}
  <div className="factory-task-actions"><Button variant="secondary" disabled={busy || dirty} onClick={() => { void check(); }}>{busy ? <Loader2 size={14} className="spin"/> : <ClipboardCheck size={14}/>}Check readiness</Button>{readiness && <Button disabled={busy || dirty || !readiness.canPrepare} onClick={() => { void prepare(); }}>Prepare run</Button>}</div>
  {error && <p role="alert" className="factory-error">{error}</p>}
  {readiness && <div aria-live="polite"><p><strong>{readiness.canPrepare ? 'Work order can be prepared' : 'Resolve readiness errors'}</strong></p><ul className="factory-readiness-checks">{readiness.checks.map((check, index) => <li className={check.severity === 'error' ? 'factory-error' : 'factory-help'} key={index}><strong>{check.severity}: </strong>{check.message}</li>)}</ul>{readiness.environment && <p className="factory-help">Base commit: <code>{readiness.environment.baseCommit}</code></p>}</div>}
- {!!runs.length && <><h4>Prepared runs</h4><div className="factory-step-picker">{runs.map(run => <button type="button" disabled={busy} key={run.id} onClick={() => { void open(run.id); }}><span>{run.pipelineName} · v{run.versionNumber}<small> · {new Date(run.createdAt).toLocaleString()} · {run.state}</small></span></button>)}</div></>}
- {detail && <section aria-label="Prepared run snapshot"><h4>{detail.run.snapshot.pipelineName} · version {detail.run.snapshot.versionNumber}</h4><p className="factory-help">State: {detail.run.state}. No execution has been dispatched.</p><ol>{detail.run.snapshot.environment.definition.stages.map(stage => { const stageRun = detail.stages.find(run => run.stageId === stage.id); return <li key={stage.id}>{stage.name} · {stageRun?.state}<ul>{stage.steps.map(step => <li key={step.id}>{step.name} · {detail.steps.find(run => run.stageRunId === stageRun?.id && run.stepId === step.id)?.state}</li>)}</ul></li>; })}</ol><details className="factory-inherited"><summary>Captured work order</summary><pre>{JSON.stringify(detail.run.snapshot, null, 2)}</pre></details></section>}
+ {!!runs.length && <><h4>Pipeline runs</h4><div className="factory-step-picker">{runs.map(run => <button type="button" disabled={busy} key={run.id} onClick={() => { void open(run.id); }}><span>{run.pipelineName} · v{run.versionNumber}<small> · {new Date(run.createdAt).toLocaleString()} · {run.state}</small></span></button>)}</div></>}
+ {runtime.error && <p role="alert" className="factory-error">{runtime.error}</p>}
+ {selectedRun && <Button variant="ghost" onClick={runtime.refresh}>Refresh run</Button>}
+ {detail && <section aria-label="Prepared run snapshot"><h4>{detail.run.snapshot.pipelineName} · version {detail.run.snapshot.versionNumber}</h4><p className="factory-help">State: {detail.run.state}.{detail.run.state === 'prepared' ? ' Prepared work orders require an explicit Start run action.' : ' Runtime state and evidence are reported by the backend.'}</p>{detail.run.error && <p role="alert" className="factory-error">{detail.run.error}</p>}<FactoryRunControls key={detail.run.id} detail={detail} onChanged={runtime.update} onRefresh={runtime.refresh} beforeChange={beforeChange}/>{detail.run.workspacePath && <p className="factory-help">Retained worktree: <code>{detail.run.workspacePath}</code></p>}<ol>{detail.run.snapshot.environment.definition.stages.map(stage => { const stageRun = detail.stages.find(run => run.stageId === stage.id); return <li key={stage.id}>{stage.name} · {stageRun?.state}<ul>{stage.steps.map(step => <li key={step.id}>{step.name} · {detail.steps.find(run => run.stageRunId === stageRun?.id && run.stepId === step.id)?.state}</li>)}</ul></li>; })}</ol>{detail.steps.map(step => <details className="factory-inherited" key={step.id}><summary>{detail.run.snapshot.environment.definition.stages.find(stage => stage.id === detail.stages.find(run => run.id === step.stageRunId)?.stageId)?.steps.find(value => value.id === step.stepId)?.name || step.stepId} · {step.state}{step.exitCode !== null ? ` · exit ${step.exitCode}` : ''}</summary>{step.error && <p className="factory-error">{step.error}</p>}{step.output && <pre aria-label="Step output">{step.output}</pre>}{step.outputLimitReached && <p className="factory-help">Output reached the configured retention limit; earlier output may be unavailable. Worktree files are retained.</p>}{step.evidence && <pre aria-label="Step evidence">{step.evidence}</pre>}</details>)}{detail.artifacts.length > 0 && <details className="factory-inherited"><summary>Logical evidence artifacts</summary><p className="factory-help">These hashes identify actual step evidence; they do not imply a physical file exists.</p><pre>{JSON.stringify(detail.artifacts, null, 2)}</pre></details>}<details className="factory-inherited"><summary>Captured work order</summary><pre>{JSON.stringify(detail.run.snapshot, null, 2)}</pre></details></section>}
  </section>;
 }

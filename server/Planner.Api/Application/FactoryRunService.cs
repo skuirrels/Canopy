@@ -6,13 +6,14 @@ namespace Planner.Api.Application;
 public sealed record FactoryInspection(FactoryEnvironmentSnapshot? Environment, IReadOnlyList<FactoryReadinessCheck> Checks);
 public interface IFactoryEnvironment
 {
+    Task<FactoryInspection> InspectCaptured(FactoryEnvironmentSnapshot snapshot, CancellationToken ct);
     Task<FactoryInspection> Inspect(FactoryDefinition definition, ProjectAgentConnection? connection, CancellationToken ct);
 }
 public sealed record FactoryReadiness(long ProjectRevision, bool CanPrepare, string ExecutionReadiness,
     DateTime CheckedAt, IReadOnlyList<FactoryReadinessCheck> Checks, FactoryEnvironmentSnapshot? Environment);
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record PrepareFactoryRun(Guid RequestId, long ExpectedRevision);
-public sealed record FactoryRunDetail(FactoryRun Run, IReadOnlyList<FactoryStageRun> Stages, IReadOnlyList<FactoryStepRun> Steps);
+public sealed record FactoryRunDetail(FactoryRun Run, IReadOnlyList<FactoryStageRun> Stages, IReadOnlyList<FactoryStepRun> Steps, IReadOnlyList<FactoryArtifact> Artifacts);
 public sealed record FactoryRunSummary(Guid Id, Guid ItemId, string State, DateTime CreatedAt, string PipelineName, int VersionNumber);
 
 public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment environment)
@@ -28,7 +29,7 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
         var version = data.PipelineVersions.Single(x => x.Id == attachment.PipelineVersionId);
         if (data.FactoryPipelines.Single(x => x.Id == version.PipelineId).Archived)
             checks.Add(new("pipeline.archived", "error", "Choose an active pipeline before preparing new work."));
-        if (data.AgentRuns.Any(x => x.ItemId == itemId && x.Active)) checks.Add(new("task.busy", "error", "Wait for the task's active agent run."));
+        if ((data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) checks.Add(new("task.busy", "error", "Wait for the task's active agent run."));
         if (data.Dependencies.Where(x => x.ItemId == itemId).Any(d => !data.Statuses.Single(s => s.Id == data.Items.Single(i => i.Id == d.DependsOnId).StatusId).IsCompleted))
             checks.Add(new("task.blocked", "error", "Complete prerequisite tasks before preparing pipeline work."));
         var definition = FactoryRules.Resolve(version.Definition, attachment.Overrides);
@@ -59,7 +60,7 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
             var existing = data.FactoryRuns.SingleOrDefault(x => x.RequestId == input.RequestId);
             if (existing is not null) { Replay(data, existing, itemId); return; }
             data.ForItem(itemId, input.ExpectedRevision);
-            if (data.AgentRuns.Any(x => x.ItemId == itemId && x.Active)) throw new RuleException("Wait for the task's active agent run.", 409);
+            if ((data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) throw new RuleException("Wait for the task's active agent run.", 409);
             data.FactoryRuns.Add(run);
             foreach (var stage in snapshot.Environment.Definition.Stages)
             {
@@ -82,12 +83,12 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
     }
     private static WorkItem Item(WorkspaceData data, Guid id) => data.Items.SingleOrDefault(x => x.Id == id) ?? throw new RuleException("Task not found.", 404);
     private static FactoryRunDetail Replay(WorkspaceData data, FactoryRun run, Guid itemId) => run.ItemId == itemId ? Detail(data, run) : throw new RuleException("That request ID belongs to another task.", 409);
-    private static FactoryRunDetail Detail(WorkspaceData data, FactoryRun run)
+    public static FactoryRunDetail Detail(WorkspaceData data, FactoryRun run)
     {
         var definition = run.Snapshot.Environment.Definition;
         var stages = data.FactoryStageRuns.Where(x => x.RunId == run.Id).ToDictionary(x => x.StageId);
         var steps = data.FactoryStepRuns.Where(x => x.RunId == run.Id).ToDictionary(x => (x.StageRunId, x.StepId));
         return new(run, definition.Stages.Select(stage => stages[stage.Id]).ToList(),
-            definition.Stages.SelectMany(stage => stage.Steps.Select(step => steps[(stages[stage.Id].Id, step.Id)])).ToList());
+            definition.Stages.SelectMany(stage => stage.Steps.Select(step => steps[(stages[stage.Id].Id, step.Id)])).ToList(), data.FactoryArtifacts.Where(x => x.RunId == run.Id).OrderBy(x => x.Name).ToList());
     }
 }

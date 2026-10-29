@@ -7,9 +7,9 @@ headers:
   Accept: application/json
 pathVariables:
   - key: id
-    value: 75d66fc6-e02c-352c-a98f-2f299fd00c34
+    value: b249295b-a1a1-b9c4-0061-1757aed7b8db
     disabled: false
     description: "(Required) "
 settings: {}
 examples: ./.resources/-api-factory-runs-id.resources/examples
-order: 7000
+order: 1000

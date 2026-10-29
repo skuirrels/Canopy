@@ -1,0 +1,40 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/runs/:id/steps/:stepId/decision"
+  method: POST
+  headers:
+    Accept: application/problem+json
+  pathVariables:
+    - key: id
+      value: b249295b-a1a1-b9c4-0061-1757aed7b8db
+      disabled: false
+      description: "(Required) "
+    - key: stepId
+      value: b249295b-a1a1-b9c4-0061-1757aed7b8db
+      disabled: false
+      description: "(Required) "
+  body:
+    type: json
+    content: |-
+      {
+        "requestId": "b0f2e32b-1f49-d829-5a0b-86478d1383a8",
+        "expectedRevision": 0,
+        "approved": false,
+        "note": null
+      }
+response:
+  statusCode: 404
+  statusText: Not Found
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": null,
+        "title": null,
+        "status": "7",
+        "detail": null,
+        "instance": null
+      }
+order: 4000

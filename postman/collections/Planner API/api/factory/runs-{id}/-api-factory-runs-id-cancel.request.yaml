@@ -1,0 +1,22 @@
+$kind: http-request
+name: /api/factory/runs/:id/cancel
+description: ""
+url: "{{baseUrl}}/api/factory/runs/:id/cancel"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: b249295b-a1a1-b9c4-0061-1757aed7b8db
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "expectedRevision": 0
+    }
+settings: {}
+examples: ./.resources/-api-factory-runs-id-cancel.resources/examples
+order: 3000

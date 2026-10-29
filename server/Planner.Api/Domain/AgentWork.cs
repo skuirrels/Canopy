@@ -50,6 +50,9 @@ public sealed class AgentRun
     public Guid RequestId { get; private set; }
     public Guid ProjectId { get; private set; }
     public Guid ItemId { get; private set; }
+    public Guid? FactoryStepRunId { get; private set; }
+    public string? FactoryPermission { get; private set; }
+    public string ExecutionPermission => FactoryPermission ?? (Purpose == "implementation" ? "workspace-write" : "read-only");
     public Guid? PreviousRunId { get; private set; }
     public string Provider { get; private set; } = "";
     public string Purpose { get; private set; } = "";
@@ -90,6 +93,7 @@ public sealed class AgentRun
         RequireProvider(provider);
         if (requestId == Guid.Empty) throw new RuleException("A unique request ID is required.");
         if (purpose is not ("spec" or "documentation" or "implementation")) throw new RuleException("Choose a specification, documentation or implementation run.");
+        if (previous?.FactoryStepRunId is not null) throw new RuleException("Factory step sessions belong to their work order. Start independent work or prepare a new factory run.", 409);
         var prompt = Text(instructions, "Run instructions");
         if (purpose == "implementation" && !HasSpec(item.SpecJson)) throw new RuleException("Write a specification before running an implementation.");
         if (purpose != "implementation" && prompt.Length == 0) throw new RuleException("Describe what you want the agent to write.");
@@ -108,6 +112,20 @@ public sealed class AgentRun
             ProjectInstructions = connection.Instructions, Instructions = prompt, CreatedAt = DateTime.UtcNow,
             SessionId = previous?.SessionId, WorkspacePath = previous?.WorkspacePath, BaseCommit = previous?.BaseCommit
         };
+    }
+    public static AgentRun ForFactory(FactoryRun run, FactoryStepRun stepRun, FactoryStep step, string instructions)
+    {
+        if (step.Kind != "agent" || step.Provider is null || step.Permission is not ("read-only" or "workspace-write") || run.WorkspacePath is null)
+            throw new RuleException("The factory agent step is not ready.");
+        if (step.Role == "review" && step.Permission != "read-only") throw new RuleException("Review requires read-only permissions.");
+        RequireProvider(step.Provider);
+        var snapshot = run.Snapshot;
+        return new() { Id = Guid.NewGuid(), RequestId = Guid.NewGuid(), FactoryStepRunId = stepRun.Id, FactoryPermission = step.Permission,
+            ProjectId = run.ProjectId, ItemId = run.ItemId, Provider = step.Provider, Purpose = step.Role == "specification" ? "spec" : step.Role!,
+            Title = snapshot.Title, SpecJson = snapshot.SpecJson, ProjectRevision = snapshot.ProjectRevision,
+            RepositoryPath = snapshot.Environment.RepositoryPath, BaseRef = snapshot.Environment.BaseCommit, BaseCommit = snapshot.Environment.BaseCommit,
+            WorkspacePath = run.WorkspacePath, Model = step.Model, Effort = step.Effort,
+            ProjectInstructions = snapshot.Environment.ProjectInstructions, Instructions = instructions, CreatedAt = DateTime.UtcNow };
     }
     internal static bool HasSpec(string json)
     {
@@ -133,7 +151,7 @@ public sealed class AgentRun
     {
         if (!Active) return;
         if (state is not ("succeeded" or "failed" or "cancelled" or "interrupted")) throw new RuleException("Invalid run outcome.");
-        State = State == "cancelling" ? "cancelled" : state;
+        State = State == "cancelling" && state != "interrupted" ? "cancelled" : state;
         Result = result; Diff = diff; Error = error; FinishedAt = DateTime.UtcNow;
     }
     public static string Tail(string text, int maxCharacters) => text.Length > maxCharacters ? text[^maxCharacters..] : text;

@@ -173,3 +173,5 @@
 .factory-run-preparation code { overflow-wrap: anywhere; }
 
 .factory-attached > span { color: var(--body-text); }
+
+.factory-start-dialog code { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; line-height: 1.6; }

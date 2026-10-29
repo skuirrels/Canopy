@@ -6,7 +6,7 @@ request:
     Accept: application/json
   pathVariables:
     - key: id
-      value: 75d66fc6-e02c-352c-a98f-2f299fd00c34
+      value: b249295b-a1a1-b9c4-0061-1757aed7b8db
       disabled: false
       description: "(Required) "
   body:
@@ -22,19 +22,19 @@ response:
     content: |-
       {
         "run": {
-          "id": "26a8daeb-78bd-bbc5-a8a7-cc2ed83faa1e",
-          "requestId": "197bb9ea-a3e4-5d01-060a-268af9cf8861",
-          "projectId": "01310b56-2ff0-489a-084d-1ae9bd418c6f",
-          "itemId": "a88c744e-30d3-57a4-69d0-2075ebce2f5a",
+          "id": "8c7b3e40-a14d-a830-2c75-3b3b847d55da",
+          "requestId": "908b8497-a67a-8900-9d57-115e0bc474c9",
+          "projectId": "bc96dd83-9d80-6b58-5a74-8a332feba5ae",
+          "itemId": "b515d893-af0e-7adf-f857-7ba6cb751a66",
           "state": "string",
           "snapshot": {
-            "pipelineVersionId": "8b60f777-eb72-55f6-59d5-32f1d413289d",
-            "versionNumber": 0,
+            "pipelineVersionId": "4e5a00f9-e613-17a4-caea-659e51d2fe8d",
+            "versionNumber": 741885091,
             "pipelineName": "string",
             "source": "string",
             "title": "string",
             "specJson": "string",
-            "projectRevision": 0,
+            "projectRevision": -320809,
             "overrides": {
               "steps": [
                 {
@@ -155,38 +155,89 @@ response:
                 "stepId": null
               }
             ],
-            "checkedAt": "1969-09-22T11:54:03.045Z"
+            "checkedAt": "1948-11-06T22:55:57.155Z"
           },
-          "createdAt": "1997-11-23T01:14:59.756Z"
+          "createdAt": "1959-03-13T06:16:01.397Z",
+          "revision": -4,
+          "startRequestId": null,
+          "workspacePath": null,
+          "error": null,
+          "startedAt": null,
+          "finishedAt": null,
+          "active": true
         },
         "stages": [
           {
-            "id": "79ddf054-e860-9a6d-b90a-cb181c87268c",
-            "runId": "c2dc45da-f940-d865-bef7-47d024d74f2b",
+            "id": "2a312a3b-48d4-e5db-58fa-db044d6c504b",
+            "runId": "b6e7172c-a4bf-3fe5-435a-e1c064b33f00",
             "stageId": "string",
-            "state": "string"
+            "state": "string",
+            "startedAt": null,
+            "finishedAt": null
           },
           {
-            "id": "46120504-585f-6dc7-53f2-e083b04861cb",
-            "runId": "30337396-14ac-bf41-181c-7c34b50ca0b0",
+            "id": "317a880a-967d-ae9c-3600-7126983ccbee",
+            "runId": "d91e8e54-fd48-f66e-92d3-204b736a967e",
             "stageId": "string",
-            "state": "string"
+            "state": "string",
+            "startedAt": null,
+            "finishedAt": null
           }
         ],
         "steps": [
           {
-            "id": "0ca9cea0-401f-b07c-c336-1bf016041ab1",
-            "runId": "2bfc46e0-e535-77dd-3e80-cc239d386dd8",
-            "stageRunId": "62128f85-4d98-ea4f-cd39-14c19e4b7afa",
+            "id": "bd118b93-68fe-3062-9fac-914ac879b9b9",
+            "runId": "809d8866-48b0-6369-70ac-df2e14f32226",
+            "stageRunId": "14460920-6732-a8a3-61a5-622865133a56",
             "stepId": "string",
-            "state": "string"
+            "state": "string",
+            "startedAt": null,
+            "finishedAt": null,
+            "agentRunId": null,
+            "decisionRequestId": null,
+            "decision": null,
+            "decisionNote": null,
+            "output": "string",
+            "outputLimitReached": true,
+            "evidence": "string",
+            "error": null,
+            "exitCode": "276361971"
           },
           {
-            "id": "0d4f09f5-2692-63d5-332c-25d9118ad51c",
-            "runId": "92223df8-73c7-c2d3-c3dd-41407282015b",
-            "stageRunId": "cfa2bc67-7f70-67f7-ddd9-feecf431c16b",
+            "id": "c402ab7e-d81c-3620-d684-d1a2c54c81af",
+            "runId": "3b60b8a2-b63d-1575-2773-987119f28b2b",
+            "stageRunId": "2fcf41e9-5dc5-ac30-fb19-5e581cc2c033",
             "stepId": "string",
-            "state": "string"
+            "state": "string",
+            "startedAt": null,
+            "finishedAt": null,
+            "agentRunId": null,
+            "decisionRequestId": null,
+            "decision": null,
+            "decisionNote": null,
+            "output": "string",
+            "outputLimitReached": false,
+            "evidence": "string",
+            "error": null,
+            "exitCode": "0"
+          }
+        ],
+        "artifacts": [
+          {
+            "id": "8ac29797-6ce7-67ae-f6df-78859d2cfc75",
+            "runId": "4a38dc6f-b466-2d6c-bbed-6fcf58ac25d0",
+            "stepRunId": "82516418-e6c2-b605-e0d9-0803292c7ffd",
+            "name": "string",
+            "kind": "string",
+            "evidenceHash": "string"
+          },
+          {
+            "id": "c8809bdc-6e03-5327-a237-96b43df4bcf1",
+            "runId": "c4144246-9ab4-e4d7-9dc7-7bd60a4cbe9b",
+            "stepRunId": "7033dcf3-1c3b-84d2-e38b-86d0fd19a233",
+            "name": "string",
+            "kind": "string",
+            "evidenceHash": "string"
           }
         ]
       }

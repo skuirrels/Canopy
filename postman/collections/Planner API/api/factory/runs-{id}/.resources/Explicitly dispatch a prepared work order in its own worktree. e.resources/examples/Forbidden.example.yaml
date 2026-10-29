@@ -1,0 +1,34 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/runs/:id/start"
+  method: POST
+  headers:
+    Accept: application/problem+json
+  pathVariables:
+    - key: id
+      value: b249295b-a1a1-b9c4-0061-1757aed7b8db
+      disabled: false
+      description: "(Required) "
+  body:
+    type: json
+    content: |-
+      {
+        "requestId": "20d32d8f-1bd7-930a-9fd4-8919e728a6ed",
+        "expectedRevision": -1137666
+      }
+response:
+  statusCode: 403
+  statusText: Forbidden
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": null,
+        "title": null,
+        "status": "7",
+        "detail": null,
+        "instance": null
+      }
+order: 3000
