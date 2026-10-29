@@ -8,7 +8,7 @@ public sealed record StartFactoryRun(Guid RequestId, long ExpectedRevision);
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record CancelFactoryRun(long ExpectedRevision);
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
-public sealed record DecideFactoryStep(Guid RequestId, long ExpectedRevision, [property: JsonRequired] bool Approved, string? Note);
+public sealed record DecideFactoryStep(Guid RequestId, long ExpectedRevision, [property: JsonRequired] bool Approved, string? Note = null);
 
 public sealed class FactoryDispatchService(IWorkspaceStore store, IFactoryEnvironment environment, IAgentEnvironment agents)
 {

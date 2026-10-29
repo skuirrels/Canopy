@@ -4661,8 +4661,7 @@
         "required": [
           "requestId",
           "expectedRevision",
-          "approved",
-          "note"
+          "approved"
         ],
         "type": "object",
         "properties": {
