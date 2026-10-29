@@ -1,8 +1,9 @@
 # Software Factory configuration — phase 1
 
 This phase supplies the persistent configuration API. The [phase-2 React Flow
-designer](FACTORY-DESIGNER.md) now uses it. Skill discovery, environment readiness
-checks and execution remain later phases.
+designer](FACTORY-DESIGNER.md) now uses it. [Run preparation](FACTORY-RUNS.md) adds
+local readiness observations and immutable work orders. Execution and installed
+skill discovery remain later slices.
 Configuration endpoints never launch agents, run commands or change a task's
 hierarchy, workflow status, dates or map layout. Existing agent endpoints remain
 independent.

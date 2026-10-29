@@ -74,3 +74,6 @@ layout/camera preferences and recovery copies stay on that browser; they are not
 substitutes for database backups. The existing **Agents** actions remain
 independent. The execution dispatcher, skill discovery and runtime verification
 evidence remain later phases.
+
+The Factory tab now also offers [readiness and run preparation](FACTORY-RUNS.md).
+It captures a work order and pending stage/step records without dispatching work.

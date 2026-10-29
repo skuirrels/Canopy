@@ -20,6 +20,8 @@ var factoryTemplatePath = builder.Configuration["Factory:TemplatesPath"] ?? thro
 var factoryTemplates = FactoryTemplateLoader.Load(Path.GetFullPath(factoryTemplatePath, builder.Environment.ContentRootPath));
 builder.Services.AddSingleton<IReadOnlyList<FactoryTemplate>>(factoryTemplates);
 builder.Services.AddScoped<FactoryService>();
+builder.Services.AddSingleton<IFactoryEnvironment, LocalFactoryEnvironment>();
+builder.Services.AddScoped<FactoryRunService>();
 var agentOptions = builder.Configuration.GetSection("Agents").Get<AgentOptions>() ?? throw new InvalidOperationException("Configure Agents.");
 agentOptions.WorkspaceRoot = Path.GetFullPath(agentOptions.WorkspaceRoot, builder.Environment.ContentRootPath);
 agentOptions.Validate();

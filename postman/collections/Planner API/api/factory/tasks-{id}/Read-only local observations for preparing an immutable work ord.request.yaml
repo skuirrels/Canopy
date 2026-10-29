@@ -1,0 +1,15 @@
+$kind: http-request
+name: Read-only local observations for preparing an immutable work order. Does not verify credentials/model access or execute work.
+description: Read-only local observations for preparing an immutable work order. Does not verify credentials/model access or execute work.
+url: "{{baseUrl}}/api/factory/tasks/:id/readiness"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: 75d66fc6-e02c-352c-a98f-2f299fd00c34
+    disabled: false
+    description: "(Required) "
+settings: {}
+examples: ./.resources/Read-only local observations for preparing an immutable work ord.resources/examples
+order: 2000

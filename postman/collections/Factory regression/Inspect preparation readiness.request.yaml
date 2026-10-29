@@ -1,0 +1,12 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/factory/tasks/{{taskId}}/readiness'
+order: 9250
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Readiness is observable',()=>pm.response.to.have.status(200));
+      const r=pm.response.json();
+      pm.test('Missing repository cannot prepare',()=>pm.expect(r.canPrepare).to.equal(false));
+      pm.test('No execution readiness is fabricated',()=>pm.expect(r.executionReadiness).to.equal('notEvaluated'));

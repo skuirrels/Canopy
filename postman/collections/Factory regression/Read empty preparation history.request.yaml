@@ -1,0 +1,9 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/factory/tasks/{{taskId}}/runs'
+order: 9300
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Inspection creates no runs',()=>{pm.response.to.have.status(200);pm.expect(pm.response.json()).to.deep.equal([]);});

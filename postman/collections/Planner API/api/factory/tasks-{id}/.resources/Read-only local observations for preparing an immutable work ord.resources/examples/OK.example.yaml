@@ -1,0 +1,46 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/tasks/:id/readiness"
+  method: GET
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: id
+      value: 75d66fc6-e02c-352c-a98f-2f299fd00c34
+      disabled: false
+      description: "(Required) "
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "projectRevision": 0,
+        "canPrepare": true,
+        "executionReadiness": "string",
+        "checkedAt": "2001-08-09T18:03:49.228Z",
+        "checks": [
+          {
+            "code": "string",
+            "severity": "string",
+            "message": "string",
+            "stageId": null,
+            "stepId": null
+          },
+          {
+            "code": "string",
+            "severity": "string",
+            "message": "string",
+            "stageId": null,
+            "stepId": null
+          }
+        ],
+        "environment": null
+      }
+order: 1000

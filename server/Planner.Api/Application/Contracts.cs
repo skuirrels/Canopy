@@ -24,6 +24,9 @@ public sealed record EditPerson(string Name);
 public sealed record WorkflowDefault(string Name, string Color, bool IsCompleted);
 public sealed class WorkspaceData
 {
+    [JsonIgnore] public List<FactoryRun> FactoryRuns { get; init; } = [];
+    [JsonIgnore] public List<FactoryStageRun> FactoryStageRuns { get; init; } = [];
+    [JsonIgnore] public List<FactoryStepRun> FactoryStepRuns { get; init; } = [];
     [JsonIgnore] public List<FactoryPipeline> FactoryPipelines { get; init; } = [];
     [JsonIgnore] public List<PipelineVersion> PipelineVersions { get; init; } = [];
     [JsonIgnore] public List<TaskFactoryConfiguration> TaskFactoryConfigurations { get; init; } = [];
@@ -35,6 +38,11 @@ public sealed class WorkspaceData
     public List<WorkflowStatus> Statuses { get; init; } = [];
     public List<Dependency> Dependencies { get; init; } = [];
     public List<Person> People { get; init; } = [];
+    public void RemoveFactoryRuns(IEnumerable<Guid> runIds)
+    {
+        var ids = runIds.ToHashSet();
+        FactoryStepRuns.RemoveAll(x => ids.Contains(x.RunId)); FactoryStageRuns.RemoveAll(x => ids.Contains(x.RunId)); FactoryRuns.RemoveAll(x => ids.Contains(x.Id));
+    }
     public ProjectGraph Graph(Guid projectId, long? revision = null)
     {
         var project = Projects.SingleOrDefault(p => p.Id == projectId) ?? throw new RuleException("Project not found.", 404);

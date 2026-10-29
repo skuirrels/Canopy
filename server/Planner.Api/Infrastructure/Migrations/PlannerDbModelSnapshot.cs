@@ -192,6 +192,92 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("FactoryPipelines");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.FactoryRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("SnapshotJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique();
+
+                    b.ToTable("FactoryRuns");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.FactoryStageRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("StageId")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RunId", "StageId")
+                        .IsUnique();
+
+                    b.ToTable("FactoryStageRuns");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.FactoryStepRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("StageRunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("StepId")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StageRunId", "StepId")
+                        .IsUnique();
+
+                    b.ToTable("FactoryStepRuns");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.Person", b =>
                 {
                     b.Property<Guid>("Id")

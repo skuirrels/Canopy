@@ -1,0 +1,41 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/tasks/:id/runs"
+  method: GET
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: id
+      value: 75d66fc6-e02c-352c-a98f-2f299fd00c34
+      disabled: false
+      description: "(Required) "
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      [
+        {
+          "id": "471be9fe-013d-d058-7a73-8867101191fa",
+          "itemId": "97e3bc8b-6e25-218b-1612-875b4b748e25",
+          "state": "string",
+          "createdAt": "1978-12-04T18:05:49.304Z",
+          "pipelineName": "string",
+          "versionNumber": 0
+        },
+        {
+          "id": "6d9e60be-1246-c4c5-525b-cf1fbd3e5af9",
+          "itemId": "f6725c26-fc9e-e92c-f064-6f5eed2e2a49",
+          "state": "string",
+          "createdAt": "1979-11-09T08:29:42.633Z",
+          "pipelineName": "string",
+          "versionNumber": 2665364052
+        }
+      ]
+order: 1000

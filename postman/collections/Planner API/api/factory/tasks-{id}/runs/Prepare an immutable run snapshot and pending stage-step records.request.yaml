@@ -1,0 +1,23 @@
+$kind: http-request
+name: Prepare an immutable run snapshot and pending stage/step records. Reusing a requestId for this task returns the original snapshot. Does not dispatch execution.
+description: Prepare an immutable run snapshot and pending stage/step records. Reusing a requestId for this task returns the original snapshot. Does not dispatch execution.
+url: "{{baseUrl}}/api/factory/tasks/:id/runs"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: 75d66fc6-e02c-352c-a98f-2f299fd00c34
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "requestId": "9d8d6572-f43e-38e6-870a-680ce7587dca",
+      "expectedRevision": 146
+    }
+settings: {}
+examples: ./.resources/Prepare an immutable run snapshot and pending stage-step records.resources/examples
+order: 2000
