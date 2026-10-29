@@ -1,7 +1,8 @@
 # Software Factory configuration — phase 1
 
-This phase supplies the persistent configuration API. The React Flow editor,
-skill discovery, environment readiness checks and execution are later phases.
+This phase supplies the persistent configuration API. The [phase-2 React Flow
+designer](FACTORY-DESIGNER.md) now uses it. Skill discovery, environment readiness
+checks and execution remain later phases.
 Configuration endpoints never launch agents, run commands or change a task's
 hierarchy, workflow status, dates or map layout. Existing agent endpoints remain
 independent.
@@ -131,4 +132,4 @@ smaller reusable lifecycle check and creates/deletes its own project.
 
 OpenAPI is generated from endpoint types at `/openapi/v1.json`. Refresh the saved
 specification and regenerate only `Planner API`; preserve both regression
-collections. The next implementation phase adds the React Flow editor.
+collections. See the [designer guide](FACTORY-DESIGNER.md) for the configuration UI.
