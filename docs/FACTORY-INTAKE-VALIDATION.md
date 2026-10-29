@@ -83,7 +83,8 @@ Code review repaired explicit provider-binding adoption after deployment-setting
 changes, retry state after a successful mutation followed by refresh failure,
 empty rich-text evidence nodes, nullable provider authors/bodies, collection-wide
 bounds, form styling and light-theme contrast. GitHub transport/authentication is
-shared with delivery instead of creating a second credential path. Source domain
+shared with delivery instead of creating a second credential path. The unconfigured empty preview makes no claim of completed coverage;
+only an actual collection receipt establishes a successful empty read. Source domain
 rules protect configuration and candidate transitions; application use cases
 coordinate reads and native transactions through IWorkspaceStore. New literals
 were traced to configured deployment limits, GitHub protocol limits, domain
