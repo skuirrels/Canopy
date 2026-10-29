@@ -7,6 +7,7 @@ import { Button } from '../ui/button';
 import { FactoryCanvas } from './FactoryCanvas';
 import type { FactorySelection } from './FactoryCanvas';
 import { FactoryRunControls } from './FactoryRunControls';
+import { FactoryQualityPanel } from './FactoryQualityPanel';
 import { FactoryRunStatus } from './FactoryRunStatus';
 import { useFactoryRun } from './useFactoryRun';
 
@@ -81,6 +82,7 @@ export function FactoryRunView({ id, projectId, workspaceRevision, onChanged, on
   })}</div>}</section>
   <aside ref={inspector} className="factory-property-panel factory-runtime-inspector" aria-label="Execution inspector"><FactoryRunControls showActions={false} detail={detail} onChanged={runtime.update} onRefresh={runtime.refresh} beforeChange={noPendingTaskEdits}/><div className="factory-panel-heading"><h3>{step?.name || stage?.name || 'Run overview'}</h3><button type="button" className="text-button factory-runtime-back" onClick={() => graph.current?.scrollIntoView({ block: 'start' })}>Back to steps</button>{selection && <button type="button" className="text-button" onClick={() => select(null)}>Overview</button>}</div>
    {step ? stepRun ? <StepInspector key={stepRun.id} definition={step} step={stepRun} detail={detail}/> : <p className="factory-error">The step runtime record is unavailable.</p> : stage ? <StageInspector stage={stage} detail={detail} select={select}/> : <><FactoryRunStatus state={run.state}/><Timing startedAt={run.startedAt} finishedAt={run.finishedAt}/><p className="factory-help">Run: <code>{run.id}</code></p><dl className="factory-runtime-facts"><div><dt>Base commit</dt><dd><code>{snapshot.environment.baseCommit}</code></dd></div><div><dt>Repository</dt><dd><code>{snapshot.environment.repositoryPath}</code></dd></div><div><dt>Configuration source</dt><dd>{snapshot.source}</dd></div></dl><p className="factory-help">This graph is the immutable work order. Layout changes stay in this browser. Select a step to inspect its actual activity and evidence.</p></>}
+   <FactoryQualityPanel detail={detail} select={select} onChanged={runtime.refresh}/>
    <section className="factory-runtime-worktree"><h4>Retained worktree</h4>{run.workspacePath ? <><code>{run.workspacePath}</code><button type="button" className="text-button" onClick={() => { void navigator.clipboard.writeText(run.workspacePath!).then(() => toast.success('Worktree path copied')).catch(() => toast.error('Could not copy the path. Select and copy the displayed text.')); }}><Copy size={12}/>Copy worktree path</button></> : <p className="factory-help">No worktree recorded. An explicit start is required to create one.</p>}</section>
    <ArtifactList detail={detail} select={select}/><details className="factory-inherited"><summary>Captured work order</summary><pre tabIndex={0}>{JSON.stringify(snapshot, null, 2)}</pre></details>
   </aside></div>

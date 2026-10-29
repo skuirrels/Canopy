@@ -1,0 +1,15 @@
+$kind: http-request
+name: /api/factory/tasks/:id/criteria
+description: ""
+url: "{{baseUrl}}/api/factory/tasks/:id/criteria"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: '{{taskId}}'
+    disabled: false
+    description: "(Required) "
+settings: {}
+examples: ./.resources/-api-factory-tasks-id-criteria.resources/examples
+order: 1000

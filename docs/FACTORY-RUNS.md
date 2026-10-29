@@ -1,5 +1,8 @@
 # Software Factory runs
 
+Criterion-level verdicts and verification freshness are documented in
+[Acceptance criteria and evidence-based QA](FACTORY-QUALITY.md).
+
 The [Software Factory roadmap](SOFTWARE-FACTORY-ROADMAP.md) tracks planned quality
 verdicts, review and repair loops, and controlled PR delivery beyond these run
 records.

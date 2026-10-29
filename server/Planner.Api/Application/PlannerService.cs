@@ -21,6 +21,7 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
         data.SpecFiles.RemoveAll(x => x.ProjectId == id);
         data.TaskFactoryConfigurations.RemoveAll(x => x.ProjectId == id);
         data.PipelineVersions.RemoveAll(x => x.ProjectId == id); data.FactoryPipelines.RemoveAll(x => x.ProjectId == id);
+        data.AcceptanceCriteria.RemoveAll(x => x.ProjectId == id);
         data.Dependencies.RemoveAll(x => x.ProjectId == id); data.Items.RemoveAll(x => x.ProjectId == id);
         data.Statuses.RemoveAll(x => x.ProjectId == id); data.Projects.Remove(graph.Project);
     }, ct);
@@ -52,6 +53,7 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
         data.RemoveFactoryRuns(data.FactoryRuns.Where(x => deleted.Contains(x.ItemId)).Select(x => x.Id));
         data.AgentRuns.RemoveAll(x => deleted.Contains(x.ItemId));
         data.SpecFiles.RemoveAll(x => deleted.Contains(x.Id));
+        data.AcceptanceCriteria.RemoveAll(x => deleted.Contains(x.Id));
         data.TaskFactoryConfigurations.RemoveAll(x => deleted.Contains(x.Id));
         data.Dependencies.RemoveAll(x => deleted.Contains(x.ItemId) || deleted.Contains(x.DependsOnId)); data.Items.RemoveAll(x => deleted.Contains(x.Id)); graph.Project.Touch();
     }, ct);

@@ -1,0 +1,20 @@
+$kind: http-request
+name: Record explicit operator QA after execution stops. Pass/fail requires current command evidence and an asserting test reference. Idempotent request ID; expectedRevision is the run revision.
+description: Record explicit operator QA after execution stops. Pass/fail requires current command evidence and an asserting test reference. Idempotent request ID; expectedRevision is the run revision.
+url: "{{baseUrl}}/api/factory/runs/:id/qa"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: '{{runId}}'
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {"requestId":"{{$guid}}","expectedRevision":{{runRevision}},"expectedContext":{{verificationContextJson}},"criterionId":"{{criterionId}}","verdict":"unverified","reason":"{{verdictReason}}","evidence":[]}
+settings: {}
+examples: ./.resources/Record explicit operator QA after execution stops. Pass-fail req.resources/examples
+order: 2000

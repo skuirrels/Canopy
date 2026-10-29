@@ -1,0 +1,13 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/factory/tasks/{{taskId}}/criteria'
+order: 5100
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Criteria readable',()=>pm.response.to.have.status(200));
+      const d=pm.response.json();
+      pm.test('No invented criteria',()=>pm.expect(d.criteria).to.deep.equal([]));
+      pm.test('Missing coverage flagged',()=>pm.expect(d.checks.some(c=>c.code==='criteria.missing')).to.equal(true));
+      pm.collectionVariables.set('criterionId',pm.variables.replaceIn('{{$guid}}'));

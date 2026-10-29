@@ -1,0 +1,20 @@
+$kind: http-request
+name: Explicitly adopt acceptance criteria with stable IDs. Uses the project revision; captured work orders remain immutable.
+description: Explicitly adopt acceptance criteria with stable IDs. Uses the project revision; captured work orders remain immutable.
+url: "{{baseUrl}}/api/factory/tasks/:id/criteria"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: '{{taskId}}'
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {"expectedRevision":{{projectRevision}},"criteria":{{acceptanceCriteriaJson}}}
+settings: {}
+examples: ./.resources/Explicitly adopt acceptance criteria with stable IDs. Uses the p.resources/examples
+order: 2000
