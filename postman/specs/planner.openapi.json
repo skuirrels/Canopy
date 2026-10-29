@@ -2600,6 +2600,428 @@
           }
         }
       }
+    },
+    "/api/factory/runs/{id}/reviews": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "description": "Task-wide review rounds and persistent findings, current context and eligible independent assessments. Process completion is never approval.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactoryReviewLibrary"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "description": "Capture a raw independent review packet before builder explanations. expectedRevision is the run revision; requestId replays exactly.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BeginFactoryReview"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactoryReviewDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/reviews/{id}": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "description": "Review packet, immutable findings and freshness. Builder reports are withheld until independent assessment is recorded.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactoryReviewDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/reviews/{id}/assessment": {
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessFactoryReview"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactoryReviewDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/reviews/{id}/submit": {
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "description": "Explicit review verdict bound to code and QA. Recheck every prior finding; fixed needs current code and successful verification. Does not accept the task or merge code.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitFactoryReview"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactoryReviewDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/reviews/{id}/abandon": {
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AbandonFactoryReview"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactoryReviewDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5439,6 +5861,958 @@
             "type": "string"
           }
         }
+      },
+      "AbandonFactoryReview": {
+        "required": [
+          "requestId",
+          "expectedRevision",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AssessFactoryReview": {
+        "required": [
+          "requestId",
+          "expectedRevision",
+          "assessment",
+          "assessmentStepRunId"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "assessment": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "assessmentStepRunId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BeginFactoryReview": {
+        "required": [
+          "requestId",
+          "expectedRevision",
+          "expectedContext",
+          "reviewer"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "expectedContext": {
+            "type": "string"
+          },
+          "reviewer": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CapturedFindingRecheck": {
+        "required": [
+          "findingId",
+          "status",
+          "reason",
+          "codeReferences",
+          "evidence"
+        ],
+        "type": "object",
+        "properties": {
+          "findingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "codeReferences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapturedReviewCode"
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapturedCriterionEvidence"
+            }
+          }
+        }
+      },
+      "CapturedReviewCode": {
+        "required": [
+          "path",
+          "line",
+          "fileHash"
+        ],
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "line": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "fileHash": {
+            "type": "string"
+          }
+        }
+      },
+      "FactoryReviewDetail": {
+        "required": [
+          "round",
+          "packet",
+          "builderReports",
+          "staleReason",
+          "findings"
+        ],
+        "type": "object",
+        "properties": {
+          "round": {
+            "$ref": "#/components/schemas/FactoryReviewRound"
+          },
+          "packet": {
+            "$ref": "#/components/schemas/IndependentReviewPacket"
+          },
+          "builderReports": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ReviewBuilderReport"
+            }
+          },
+          "staleReason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewFindingView"
+            }
+          }
+        }
+      },
+      "FactoryReviewFinding": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roundId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ReviewFindingData"
+          }
+        }
+      },
+      "FactoryReviewLibrary": {
+        "required": [
+          "runId",
+          "runRevision",
+          "context",
+          "contextError",
+          "sourceChanged",
+          "rounds",
+          "findings",
+          "assessments"
+        ],
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "context": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VerificationContext"
+              }
+            ]
+          },
+          "contextError": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sourceChanged": {
+            "type": "boolean"
+          },
+          "rounds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryReviewRoundSummary"
+            }
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewFindingView"
+            }
+          },
+          "assessments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndependentAssessmentSource"
+            }
+          }
+        }
+      },
+      "FactoryReviewRound": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "revision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "reviewer": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "sourceHash": {
+            "type": "string"
+          },
+          "assessment": {
+            "type": "string"
+          },
+          "assessmentStepRunId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "assessmentEvidenceHash": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "abandonReason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "submission": {
+            "$ref": "#/components/schemas/ReviewSubmission"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "assessedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "finishedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "open": {
+            "type": "boolean"
+          }
+        }
+      },
+      "FactoryReviewRoundSummary": {
+        "required": [
+          "id",
+          "runId",
+          "number",
+          "revision",
+          "reviewer",
+          "state",
+          "open",
+          "verdict",
+          "createdAt",
+          "staleReason"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "revision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "reviewer": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "open": {
+            "type": "boolean"
+          },
+          "verdict": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "staleReason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "IndependentAssessmentSource": {
+        "required": [
+          "stepRunId",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "stepRunId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "IndependentReviewPacket": {
+        "required": [
+          "title",
+          "specJson",
+          "baseCommit",
+          "context",
+          "priorFindings",
+          "criteria",
+          "rawChange",
+          "verificationEvidence"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "specJson": {
+            "type": "string"
+          },
+          "baseCommit": {
+            "type": "string"
+          },
+          "context": {
+            "$ref": "#/components/schemas/VerificationContext"
+          },
+          "priorFindings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriorReviewFinding"
+            }
+          },
+          "criteria": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AcceptanceCriterion"
+            }
+          },
+          "rawChange": {
+            "type": "string"
+          },
+          "verificationEvidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewVerificationEvidence"
+            }
+          }
+        }
+      },
+      "NewReviewFinding": {
+        "required": [
+          "id",
+          "title",
+          "description",
+          "category",
+          "severity",
+          "owner",
+          "criterionIds",
+          "codeReferences",
+          "evidence"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "criterionIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "codeReferences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewCodeReference"
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CriterionEvidence"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriorReviewFinding": {
+        "required": [
+          "id",
+          "number",
+          "data",
+          "lastStatus",
+          "lastReason",
+          "lastContext"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ReviewFindingData"
+          },
+          "lastStatus": {
+            "type": "string"
+          },
+          "lastReason": {
+            "type": "string"
+          },
+          "lastContext": {
+            "$ref": "#/components/schemas/VerificationContext"
+          }
+        }
+      },
+      "RecheckReviewFinding": {
+        "required": [
+          "findingId",
+          "status",
+          "reason",
+          "codeReferences",
+          "evidence"
+        ],
+        "type": "object",
+        "properties": {
+          "findingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "codeReferences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewCodeReference"
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CriterionEvidence"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ReviewBuilderReport": {
+        "required": [
+          "stepRunId",
+          "stepName",
+          "report",
+          "evidenceHash"
+        ],
+        "type": "object",
+        "properties": {
+          "stepRunId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "stepName": {
+            "type": "string"
+          },
+          "report": {
+            "type": "string"
+          },
+          "evidenceHash": {
+            "type": "string"
+          }
+        }
+      },
+      "ReviewCodeReference": {
+        "required": [
+          "path",
+          "line"
+        ],
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "line": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ReviewFindingData": {
+        "required": [
+          "title",
+          "description",
+          "category",
+          "severity",
+          "owner",
+          "criterionIds",
+          "codeReferences",
+          "evidence"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "criterionIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "codeReferences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapturedReviewCode"
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapturedCriterionEvidence"
+            }
+          }
+        }
+      },
+      "ReviewFindingHistory": {
+        "required": [
+          "roundId",
+          "runId",
+          "roundNumber",
+          "reviewer",
+          "status",
+          "reason",
+          "context",
+          "codeReferences",
+          "evidence"
+        ],
+        "type": "object",
+        "properties": {
+          "roundId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roundNumber": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "reviewer": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "context": {
+            "$ref": "#/components/schemas/VerificationContext"
+          },
+          "codeReferences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapturedReviewCode"
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapturedCriterionEvidence"
+            }
+          }
+        }
+      },
+      "ReviewFindingView": {
+        "required": [
+          "finding",
+          "status",
+          "history"
+        ],
+        "type": "object",
+        "properties": {
+          "finding": {
+            "$ref": "#/components/schemas/FactoryReviewFinding"
+          },
+          "status": {
+            "type": "string"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewFindingHistory"
+            }
+          }
+        }
+      },
+      "ReviewQaReceipt": {
+        "required": [
+          "criterionId",
+          "status",
+          "verdictId"
+        ],
+        "type": "object",
+        "properties": {
+          "criterionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "verdictId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "ReviewSubmission": {
+        "required": [
+          "verdict",
+          "summary",
+          "qaHash",
+          "qaReceipts",
+          "rechecks",
+          "newFindingIds"
+        ],
+        "type": "object",
+        "properties": {
+          "verdict": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "qaHash": {
+            "type": "string"
+          },
+          "qaReceipts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewQaReceipt"
+            }
+          },
+          "rechecks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapturedFindingRecheck"
+            }
+          },
+          "newFindingIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "ReviewVerificationEvidence": {
+        "required": [
+          "stepRunId",
+          "name",
+          "evidence",
+          "current",
+          "evidenceHash"
+        ],
+        "type": "object",
+        "properties": {
+          "stepRunId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "evidenceHash": {
+            "type": "string"
+          }
+        }
+      },
+      "SubmitFactoryReview": {
+        "required": [
+          "requestId",
+          "expectedRevision",
+          "expectedContext",
+          "verdict",
+          "summary",
+          "rechecks",
+          "newFindings"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "expectedContext": {
+            "type": "string"
+          },
+          "verdict": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "rechecks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecheckReviewFinding"
+            }
+          },
+          "newFindings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewReviewFinding"
+            }
+          }
+        },
+        "additionalProperties": false
       }
     }
   },

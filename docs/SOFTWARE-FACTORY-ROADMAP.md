@@ -1,8 +1,8 @@
 # Software Factory roadmap
 
 Canopy records acceptance criteria, revision-bound verification evidence and
-explicit operator QA verdicts. Next comes independent review and bounded repair,
-followed by controlled PR delivery and verified problem intake.
+explicit operator QA verdicts, independent review rounds and persistent findings.
+Next comes bounded repair, controlled PR delivery and verified problem intake.
 
 ## Delivered foundation
 
@@ -19,13 +19,14 @@ followed by controlled PR delivery and verified problem intake.
 
 ## Planned priorities
 
-Item 1 is delivered as explicit operator QA. Items 2–5 remain pending. Order
+Items 1 and 2 are delivered with explicit operator decisions and optional
+read-only reviewer assessments. Items 3–5 remain pending. Order
 expresses priority and dependencies, with no delivery dates or estimates assigned.
 
 | Order | Item | Depends on | Completion outcome |
 | --- | --- | --- | --- |
 | 1 | [Delivered: acceptance criteria and evidence based QA](FACTORY-QUALITY.md) | Delivered foundation | Captured criteria, explicit operator verdicts, test/command references and stale-evidence detection |
-| 2 | Independent review with persistent findings | Item 1 | Review findings survive revisions and require proof of resolution |
+| 2 | [Delivered: independent review with persistent findings](FACTORY-REVIEW.md) | Item 1 | Stable finding IDs, assessment before builder comparison, verified rechecks and revision-bound approval |
 | 3 | Bounded repair and verification loop | Items 1 and 2 | Findings return to the responsible stage and are verified after repair |
 | 4 | Controlled PR delivery and merge verification | Items 1 and 2; item 3 for automatic repairs | Only the reviewed and verified revision can pass the configured merge policy |
 | 5 | Verified problem intake | Criteria and finding contracts from items 1 and 2 | Configured signals become deduplicated backlog candidates with provenance |
@@ -58,21 +59,22 @@ and provenance.
 
 ## Independent review with persistent findings
 
-- [ ] Give the reviewer the acceptance criteria and raw change before the
+- [x] Give the reviewer the acceptance criteria and raw change before the
   builder's explanation so it can form an independent assessment.
-- [ ] Persist stable finding IDs, severity, responsible role, code/evidence
+- [x] Persist stable finding IDs, severity, responsible role, code/evidence
   references and status across review rounds.
-- [ ] Recheck prior findings first. Resolution requires code and verification
+- [x] Recheck prior findings first. Resolution requires code and verification
   evidence, or an explicit reason the finding no longer applies; a resolved
   discussion or builder assertion alone is insufficient.
-- [ ] Distinguish defects, missing behaviour, verification gaps, scope drift and
+- [x] Distinguish defects, missing behaviour, verification gaps, scope drift and
   optional improvements. Unrelated refactoring becomes separate backlog work.
-- [ ] Keep review authority separate from implementation. Fixing code does not
+- [x] Keep review authority separate from implementation. Fixing code does not
   approve that code, and a completed reviewer process does not mean approval.
 
-Complete when a second review retains finding identities, detects an unfixed
-issue, verifies a repaired issue and records its verdict against the reviewed
-revision without automatically accepting the task.
+Validated with repeated reviews retaining the same finding ID, detecting an
+unfixed issue and verifying its later repair with actual code and a strengthened
+assertion. Approval binds the reviewed code and exact QA verdict identities; it
+does not accept the task. See [review validation](FACTORY-REVIEW-VALIDATION.md).
 
 ## Bounded repair and verification loop
 

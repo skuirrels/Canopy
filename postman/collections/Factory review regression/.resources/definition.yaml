@@ -1,0 +1,8 @@
+$kind: collection
+name: Factory review regression
+description: Explicitly isolated run fixture only. Captures, assesses and abandons its own review; never approves or starts execution.
+variables:
+  - key: baseUrl
+    value: 'http://127.0.0.1:5274'
+  - key: runId
+    value: ''

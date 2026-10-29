@@ -24,6 +24,8 @@ public sealed record EditPerson(string Name);
 public sealed record WorkflowDefault(string Name, string Color, bool IsCompleted);
 public sealed class WorkspaceData
 {
+    [JsonIgnore] public List<FactoryReviewRound> ReviewRounds { get; init; } = [];
+    [JsonIgnore] public List<FactoryReviewFinding> ReviewFindings { get; init; } = [];
     [JsonIgnore] public List<TaskAcceptanceCriteria> AcceptanceCriteria { get; init; } = [];
     [JsonIgnore] public List<FactoryVerificationReceipt> VerificationReceipts { get; init; } = [];
     [JsonIgnore] public List<FactoryCriterionVerdict> CriterionVerdicts { get; init; } = [];
@@ -45,6 +47,8 @@ public sealed class WorkspaceData
     public void RemoveFactoryRuns(IEnumerable<Guid> runIds)
     {
         var ids = runIds.ToHashSet();
+        var roundIds = ReviewRounds.Where(x => ids.Contains(x.RunId)).Select(x => x.Id).ToHashSet();
+        ReviewFindings.RemoveAll(x => roundIds.Contains(x.RoundId)); ReviewRounds.RemoveAll(x => roundIds.Contains(x.Id));
         VerificationReceipts.RemoveAll(x => ids.Contains(x.RunId)); CriterionVerdicts.RemoveAll(x => ids.Contains(x.RunId));
         FactoryArtifacts.RemoveAll(x => ids.Contains(x.RunId));
         FactoryStepRuns.RemoveAll(x => ids.Contains(x.RunId)); FactoryStageRuns.RemoveAll(x => ids.Contains(x.RunId)); FactoryRuns.RemoveAll(x => ids.Contains(x.Id));

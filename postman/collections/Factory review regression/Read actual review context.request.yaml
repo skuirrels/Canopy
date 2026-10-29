@@ -1,0 +1,17 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/factory/runs/{{runId}}/reviews'
+order: 1000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated' || !pm.variables.get('runId')) throw new Error('Supply the isolated fixtureMode and runId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Review context readable',()=>pm.response.to.have.status(200));
+      const d=pm.response.json();
+      pm.test('Context is available',()=>pm.expect(d.context.fingerprint).to.be.a('string'));
+      pm.collectionVariables.set('runRevision',d.runRevision);pm.collectionVariables.set('context',d.context.fingerprint);
+      pm.collectionVariables.set('findingCount',d.findings.length);

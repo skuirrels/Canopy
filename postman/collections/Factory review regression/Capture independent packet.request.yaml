@@ -1,0 +1,23 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/factory/runs/{{runId}}/reviews'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"requestId":"{{$guid}}","expectedRevision":{{runRevision}},"expectedContext":"{{context}}","reviewer":"Postman isolated contract reviewer"}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated' || !pm.variables.get('runId')) throw new Error('Supply the isolated fixtureMode and runId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Independent review captured',()=>pm.response.to.have.status(200));
+      const d=pm.response.json();pm.collectionVariables.set('roundId',d.round.id);pm.collectionVariables.set('roundRevision',d.round.revision);
+      pm.test('Builder explanation withheld',()=>pm.expect(d.builderReports).to.equal(null));
+      pm.test('Raw change is present',()=>pm.expect(d.packet.rawChange).to.be.a('string'));

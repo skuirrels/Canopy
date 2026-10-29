@@ -1,0 +1,20 @@
+$kind: http-request
+name: /api/factory/reviews/:id/assessment
+description: ""
+url: "{{baseUrl}}/api/factory/reviews/:id/assessment"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: '{{reviewId}}'
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {{independentAssessmentJson}}
+settings: {}
+examples: ./.resources/-api-factory-reviews-id-assessment.resources/examples
+order: 2000

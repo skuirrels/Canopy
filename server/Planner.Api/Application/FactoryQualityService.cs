@@ -51,6 +51,11 @@ public sealed class FactoryQualityService(IWorkspaceStore store, IVerificationEn
             catch (OperationCanceledException) when (!ct.IsCancellationRequested) { error = "Verification inspection timed out. Refresh to retry."; }
         }
         else error = "Start the captured run to obtain verification evidence.";
+        return Detail(data, run, context, error);
+    }
+    public static FactoryQualityDetail Detail(WorkspaceData data, FactoryRun run, VerificationContext? context, string? error)
+    {
+        var id = run.Id;
         var changed = Source(data, run) != CapturedSource(run);
         var criteria = (run.Snapshot.Criteria ?? []).Select(criterion =>
         {
@@ -76,22 +81,7 @@ public sealed class FactoryQualityService(IWorkspaceStore store, IVerificationEn
         var quality = await Read(id, ct);
         if (input.ExpectedContext != quality.Context?.Fingerprint) throw new RuleException("Verification inputs changed. Refresh QA before recording a verdict.", 409);
         if (quality.SourceChanged && input.Verdict != "unverified") throw new RuleException("The task inputs changed. Prepare a new captured work order before QA.", 409);
-        var evidence = new List<CapturedCriterionEvidence>();
-        foreach (var reference in input.Evidence)
-        {
-            var step = data.FactoryStepRuns.SingleOrDefault(x => x.Id == reference.StepRunId && x.RunId == id) ?? throw new RuleException("Evidence must belong to this run.");
-            var receipt = data.VerificationReceipts.SingleOrDefault(x => x.StepRunId == step.Id);
-            if (receipt?.Matches(quality.Context, step) != true || step.State is not ("succeeded" or "failed"))
-                throw new RuleException("The command evidence is missing, unstable or stale. Run fresh verification before recording this verdict.", 409);
-            if (input.Verdict == "pass" && (step.State != "succeeded" || step.ExitCode != 0)) throw new RuleException("Passing criteria require successful command evidence.");
-            var assertion = AgentRun.Text(reference.Assertion, "Assertion explanation"); var failure = AgentRun.Text(reference.FailureCase, "Failure case");
-            if (assertion.Length == 0 || failure.Length == 0) throw new RuleException("Explain the assertion and the defect or negative case it detects.");
-            string fileHash;
-            try { fileHash = await environment.TestFile(run, reference.TestPath, reference.Line, ct); }
-            catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
-            { throw new RuleException("The asserting test reference cannot be read. Choose an available text file inside this run's worktree."); }
-            evidence.Add(new(step.Id, receipt.EvidenceHash, reference.TestPath, reference.Line, fileHash, assertion, failure));
-        }
+        var evidence = await CaptureEvidence(data, run, input.Evidence, quality.Context, input.Verdict == "pass", ct);
         if (quality.Context is not null && (await environment.Observe(run, ct)).Fingerprint != quality.Context.Fingerprint)
             throw new RuleException("Verification inputs changed during QA. Refresh before recording.", 409);
         await store.WriteAsync(saved =>
@@ -104,6 +94,28 @@ public sealed class FactoryQualityService(IWorkspaceStore store, IVerificationEn
                 Source(saved, current), quality.Context, evidence)); current.Touch();
         }, ct);
         return await Read(id, ct);
+    }
+    public async Task<IReadOnlyList<CapturedCriterionEvidence>> CaptureEvidence(WorkspaceData data, FactoryRun run, IReadOnlyList<CriterionEvidence>? references,
+        VerificationContext? context, bool requireSuccess, CancellationToken ct)
+    {
+        if (references is null || references.Count > 100 || references.Any(x => x is null)) throw new RuleException("Supply up to 100 evidence references.");
+        var evidence = new List<CapturedCriterionEvidence>();
+        foreach (var reference in references)
+        {
+            var step = data.FactoryStepRuns.SingleOrDefault(x => x.Id == reference.StepRunId && x.RunId == run.Id) ?? throw new RuleException("Evidence must belong to this run.");
+            var receipt = data.VerificationReceipts.SingleOrDefault(x => x.StepRunId == step.Id);
+            if (receipt?.Matches(context, step) != true || step.State is not ("succeeded" or "failed"))
+                throw new RuleException("The command evidence is missing, unstable or stale. Run fresh verification before recording this verdict.", 409);
+            if (requireSuccess && (step.State != "succeeded" || step.ExitCode != 0)) throw new RuleException("Passing criteria require successful command evidence.");
+            var assertion = AgentRun.Text(reference.Assertion, "Assertion explanation"); var failure = AgentRun.Text(reference.FailureCase, "Failure case");
+            if (assertion.Length == 0 || failure.Length == 0) throw new RuleException("Explain the assertion and the defect or negative case it detects.");
+            string fileHash;
+            try { fileHash = await environment.TestFile(run, reference.TestPath, reference.Line, ct); }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+            { throw new RuleException("The asserting test reference cannot be read. Choose an available text file inside this run's worktree."); }
+            evidence.Add(new(step.Id, receipt.EvidenceHash, reference.TestPath, reference.Line, fileHash, assertion, failure));
+        }
+        return evidence;
     }
     private static bool EvidenceIntact(WorkspaceData data, CapturedCriterionEvidence evidence, VerificationContext context)
     {
@@ -119,8 +131,8 @@ public sealed class FactoryQualityService(IWorkspaceStore store, IVerificationEn
         var attachment = data.TaskFactoryConfigurations.SingleOrDefault(x => x.Id == run.ItemId);
         return attachment is null ? null : new { attachment.PipelineVersionId, attachment.Overrides };
     }
-    private static string Source(WorkspaceData data, FactoryRun run) => FactoryCriterionVerdict.Source(Item(data, run.ItemId).SpecJson,
+    public static string Source(WorkspaceData data, FactoryRun run) => FactoryCriterionVerdict.Source(Item(data, run.ItemId).SpecJson,
         data.AcceptanceCriteria.SingleOrDefault(x => x.Id == run.ItemId)?.Criteria ?? [], Attachment(data, run));
-    private static string CapturedSource(FactoryRun run) => FactoryCriterionVerdict.Source(run.Snapshot.SpecJson, run.Snapshot.Criteria ?? [],
+    public static string CapturedSource(FactoryRun run) => FactoryCriterionVerdict.Source(run.Snapshot.SpecJson, run.Snapshot.Criteria ?? [],
         new { run.Snapshot.PipelineVersionId, run.Snapshot.Overrides });
 }

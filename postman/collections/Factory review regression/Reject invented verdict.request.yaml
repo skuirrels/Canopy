@@ -1,0 +1,20 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/factory/reviews/{{roundId}}/submit'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"requestId":"{{$guid}}","expectedRevision":{{roundRevision}},"expectedContext":"{{context}}","verdict":"not-a-verdict","summary":"Explicit invalid contract fixture","rechecks":[],"newFindings":[]}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated' || !pm.variables.get('runId')) throw new Error('Supply the isolated fixtureMode and runId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Unknown verdict rejected',()=>pm.response.to.have.status(400));

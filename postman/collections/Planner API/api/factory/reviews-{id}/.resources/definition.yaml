@@ -1,0 +1,3 @@
+$kind: collection
+name: reviews/{id}
+order: 8000

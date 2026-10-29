@@ -1,0 +1,26 @@
+$kind: http-example
+name: 'Isolated native API fixture - Bad Request'
+request:
+  url: '{{baseUrl}}/api/factory/reviews/:id/abandon'
+  method: POST
+  body:
+    type: json
+    content: |-
+      {
+        "requestId": "0957fb81-8f88-4f80-b449-04cdecf559a1",
+        "expectedRevision": 1,
+        "reason": ""
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+        "title": "Abandon reason is required.",
+        "status": 400
+      }

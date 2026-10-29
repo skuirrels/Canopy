@@ -4,6 +4,8 @@ namespace Planner.Api.Infrastructure;
 
 public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(options)
 {
+    public DbSet<FactoryReviewRound> ReviewRounds => Set<FactoryReviewRound>();
+    public DbSet<FactoryReviewFinding> ReviewFindings => Set<FactoryReviewFinding>();
     public DbSet<TaskAcceptanceCriteria> AcceptanceCriteria => Set<TaskAcceptanceCriteria>();
     public DbSet<FactoryVerificationReceipt> VerificationReceipts => Set<FactoryVerificationReceipt>();
     public DbSet<FactoryCriterionVerdict> CriterionVerdicts => Set<FactoryCriterionVerdict>();
@@ -25,6 +27,18 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<TaskFactoryConfiguration> TaskFactoryConfigurations => Set<TaskFactoryConfiguration>();
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.Ignore<ReviewQaReceipt>(); model.Ignore<ReviewVerificationEvidence>(); model.Ignore<ReviewOperation>(); model.Ignore<ReviewBuilderReport>(); model.Ignore<CapturedFindingRecheck>(); model.Ignore<PriorReviewFinding>(); model.Ignore<CapturedReviewCode>();
+        model.Ignore<IndependentReviewPacket>(); model.Ignore<ReviewSubmission>(); model.Ignore<ReviewFindingData>();
+        model.Entity<FactoryReviewRound>().HasKey(x => x.Id);
+        model.Entity<FactoryReviewRound>().HasIndex(x => x.RequestId).IsUnique();
+        model.Entity<FactoryReviewRound>().HasIndex(x => new { x.ItemId, x.Number }).IsUnique();
+        model.Entity<FactoryReviewRound>().Ignore(x => x.Packet).Ignore(x => x.BuilderReports).Ignore(x => x.Operations).Ignore(x => x.Submission).Ignore(x => x.Open);
+        model.Entity<FactoryReviewFinding>().HasKey(x => x.Id);
+        model.Entity<FactoryReviewFinding>().HasIndex(x => new { x.ItemId, x.Number }).IsUnique();
+        model.Entity<FactoryReviewFinding>().Ignore(x => x.Data);
+        model.Entity<FactoryReviewRound>().Property(x => x.CreatedAt).HasConversion(value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));
+        foreach (var property in new[] { "AssessedAt", "FinishedAt" })
+            model.Entity<FactoryReviewRound>().Property<DateTime?>(property).HasConversion(value => value, value => value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : (DateTime?)null);
         model.Ignore<AcceptanceCriterion>(); model.Ignore<VerificationContext>(); model.Ignore<CapturedCriterionEvidence>();
         model.Entity<TaskAcceptanceCriteria>().HasKey(x => x.Id);
         model.Entity<TaskAcceptanceCriteria>().Ignore(x => x.Criteria);

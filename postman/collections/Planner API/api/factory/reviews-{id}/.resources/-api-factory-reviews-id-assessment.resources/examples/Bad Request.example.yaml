@@ -1,0 +1,27 @@
+$kind: http-example
+name: 'Isolated native API fixture - Bad Request'
+request:
+  url: '{{baseUrl}}/api/factory/reviews/:id/assessment'
+  method: POST
+  body:
+    type: json
+    content: |-
+      {
+        "requestId": "808b8e84-5388-4cee-bc6a-4ab0d761c5c0",
+        "expectedRevision": 1,
+        "assessment": "",
+        "assessmentStepRunId": null
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+        "title": "Independent assessment is required.",
+        "status": 400
+      }

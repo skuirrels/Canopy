@@ -1,0 +1,18 @@
+$kind: http-example
+name: 'Isolated native API fixture - Not Found'
+request:
+  url: '{{baseUrl}}/api/factory/reviews/:id'
+  method: GET
+response:
+  statusCode: 404
+  statusText: Not Found
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+        "title": "Review round not found.",
+        "status": 404
+      }

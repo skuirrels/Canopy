@@ -1,5 +1,8 @@
 # Software Factory runs
 
+Independent assessments, persistent findings and review approval are documented
+in [Independent review](FACTORY-REVIEW.md).
+
 Criterion-level verdicts and verification freshness are documented in
 [Acceptance criteria and evidence-based QA](FACTORY-QUALITY.md).
 

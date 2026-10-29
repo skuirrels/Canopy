@@ -1,0 +1,20 @@
+$kind: http-request
+name: Capture a raw independent review packet before builder explanations. expectedRevision is the run revision; requestId replays exactly.
+description: Capture a raw independent review packet before builder explanations. expectedRevision is the run revision; requestId replays exactly.
+url: "{{baseUrl}}/api/factory/runs/:id/reviews"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: '{{runId}}'
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {{beginReviewJson}}
+settings: {}
+examples: ./.resources/Capture a raw independent review packet before builder explanati.resources/examples
+order: 2000
