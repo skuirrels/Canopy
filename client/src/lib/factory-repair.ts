@@ -1,0 +1,8 @@
+import type { FactoryRunSummary } from './factory-runs';
+import type { VerificationContext } from './factory-quality';
+export type RepairPolicy = { enabled: boolean; implementationPlanVersionId: string | null; verificationPlanVersionId: string | null; maxAttempts: number; maxElapsedMinutes: number; maxNoProgressRounds: number; maxAgentInvocations: number; autoContinue: boolean; commandsSafeToRepeat: boolean; allowUnmeteredCost: boolean; maxCost: number | null; currency: string | null };
+export type RepairIssue = { kind: string; id: string; title: string; owner: string; reason: string; evidenceId: string };
+export type RepairLineage = { loopId: string; attemptId: string; parentRunId: string; rootRunId: string; attemptNumber: number };
+export type RepairLoop = { id: string; rootRunId: string; state: string; reason: string; revision: number; open: boolean; policy: RepairPolicy; scope: { owner: string; issues: RepairIssue[] }; reservedAgentInvocations: number; noProgressRounds: number; remainingCount: number; startedAt: string | null; finishedAt: string | null };
+export type RepairLoopDetail = { loop: RepairLoop; attempts: { attempt: { id: string; number: number; parentRunId: string; feedback: { kind: string; reason: string; remaining: RepairIssue[] } | null }; run: FactoryRunSummary; actualAgentInvocations: number }[]; canAdvance: boolean; blockedReason: string | null; costStatus: string; pollIntervalMs: number };
+export type RepairLibrary = { runId: string; runRevision: number; context: VerificationContext | null; contextError: string | null; policy: { projectRevision: number; policy: RepairPolicy | null }; issues: RepairIssue[]; loops: RepairLoopDetail[]; pollIntervalMs: number };

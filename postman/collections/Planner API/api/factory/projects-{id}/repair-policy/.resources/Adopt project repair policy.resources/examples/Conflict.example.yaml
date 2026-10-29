@@ -1,0 +1,38 @@
+$kind: http-example
+name: 'Isolated native repair fixture - Conflict'
+request:
+  method: PUT
+  url: '{{baseUrl}}/api/factory/projects/{{projectId}}/repair-policy'
+  body:
+    type: json
+    content: |-
+      {
+        "expectedRevision": -1,
+        "policy": {
+          "enabled": true,
+          "implementationPlanVersionId": "0a5d7e8e-19af-42f7-b768-847fd9ae693c",
+          "verificationPlanVersionId": null,
+          "maxAttempts": 4,
+          "maxElapsedMinutes": 5,
+          "maxNoProgressRounds": 2,
+          "maxAgentInvocations": 6,
+          "autoContinue": false,
+          "commandsSafeToRepeat": true,
+          "allowUnmeteredCost": true,
+          "maxCost": null,
+          "currency": null
+        }
+      }
+response:
+  statusCode: 409
+  statusText: Conflict
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+        "title": "This project changed since you loaded it. Your latest changes have not been saved. Refresh and try again.",
+        "status": 409
+      }

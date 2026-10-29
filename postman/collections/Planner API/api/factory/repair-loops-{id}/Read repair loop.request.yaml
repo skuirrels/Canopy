@@ -1,0 +1,6 @@
+$kind: http-request
+name: Read repair loop
+method: GET
+url: '{{baseUrl}}/api/factory/repair-loops/{{loopId}}'
+order: 5000
+examples: ./.resources/Read repair loop.resources/examples

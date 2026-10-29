@@ -1,0 +1,23 @@
+$kind: http-request
+name: Reject stale advance
+method: POST
+url: '{{baseUrl}}/api/factory/repair-loops/{{loopId}}/advance'
+order: 4000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "requestId": "{{$guid}}",
+      "expectedRevision": -1
+    }
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated' || !pm.variables.get('runId') || !pm.variables.get('projectId') || !pm.variables.get('loopId')) throw new Error('Supply the isolated fixtureMode, runId, projectId and loopId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Stale revision blocks dispatch',()=>pm.response.to.have.status(409));

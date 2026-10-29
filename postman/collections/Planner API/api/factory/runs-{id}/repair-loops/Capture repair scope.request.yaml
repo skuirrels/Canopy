@@ -1,0 +1,12 @@
+$kind: http-request
+name: Capture repair scope
+method: POST
+url: '{{baseUrl}}/api/factory/runs/{{runId}}/repair-loops'
+order: 4000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {{prepareRepairJson}}
+examples: ./.resources/Capture repair scope.resources/examples

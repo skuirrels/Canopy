@@ -1,0 +1,14 @@
+$kind: http-request
+name: Read repair history
+method: GET
+url: '{{baseUrl}}/api/factory/runs/{{runId}}/repair-loops'
+order: 2000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated' || !pm.variables.get('runId') || !pm.variables.get('projectId') || !pm.variables.get('loopId')) throw new Error('Supply the isolated fixtureMode, runId, projectId and loopId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('History readable',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('Scope evidence exists',()=>pm.expect(d.issues.length).to.be.above(0));pm.test('Configured polling',()=>pm.expect(d.pollIntervalMs).to.be.at.least(250));pm.collectionVariables.set('context',d.context.fingerprint);

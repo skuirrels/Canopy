@@ -1,0 +1,12 @@
+$kind: http-request
+name: Adopt project repair policy
+method: PUT
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/repair-policy'
+order: 2000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {{repairPolicyJson}}
+examples: ./.resources/Adopt project repair policy.resources/examples

@@ -1,0 +1,12 @@
+$kind: http-request
+name: Advance bounded repair
+method: POST
+url: '{{baseUrl}}/api/factory/repair-loops/{{loopId}}/advance'
+order: 6000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {{advanceRepairJson}}
+examples: ./.resources/Advance bounded repair.resources/examples

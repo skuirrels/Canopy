@@ -1,0 +1,12 @@
+$kind: http-request
+name: Stop bounded repair
+method: POST
+url: '{{baseUrl}}/api/factory/repair-loops/{{loopId}}/stop'
+order: 7000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {{stopRepairJson}}
+examples: ./.resources/Stop bounded repair.resources/examples

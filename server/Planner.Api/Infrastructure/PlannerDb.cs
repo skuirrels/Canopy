@@ -4,6 +4,9 @@ namespace Planner.Api.Infrastructure;
 
 public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(options)
 {
+    public DbSet<ProjectRepairPolicy> RepairPolicies => Set<ProjectRepairPolicy>();
+    public DbSet<FactoryRepairLoop> RepairLoops => Set<FactoryRepairLoop>();
+    public DbSet<FactoryRepairAttempt> RepairAttempts => Set<FactoryRepairAttempt>();
     public DbSet<FactoryReviewRound> ReviewRounds => Set<FactoryReviewRound>();
     public DbSet<FactoryReviewFinding> ReviewFindings => Set<FactoryReviewFinding>();
     public DbSet<TaskAcceptanceCriteria> AcceptanceCriteria => Set<TaskAcceptanceCriteria>();
@@ -27,6 +30,19 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<TaskFactoryConfiguration> TaskFactoryConfigurations => Set<TaskFactoryConfiguration>();
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.Ignore<RepairPolicy>(); model.Ignore<RepairScope>(); model.Ignore<RepairPlan>(); model.Ignore<RepairIssue>();
+        model.Ignore<RepairFeedback>(); model.Ignore<RepairOperation>(); model.Ignore<FactoryRepairLineage>();
+        model.Entity<ProjectRepairPolicy>().HasKey(x => x.Id); model.Entity<ProjectRepairPolicy>().Ignore(x => x.Policy);
+        model.Entity<FactoryRepairLoop>().HasKey(x => x.Id);
+        model.Entity<FactoryRepairLoop>().HasIndex(x => x.RequestId).IsUnique();
+        model.Entity<FactoryRepairLoop>().HasIndex(x => x.ItemId);
+        model.Entity<FactoryRepairLoop>().Ignore(x => x.Open).Ignore(x => x.Policy).Ignore(x => x.Scope).Ignore(x => x.Context).Ignore(x => x.Operations);
+        model.Entity<FactoryRepairAttempt>().HasKey(x => x.Id); model.Entity<FactoryRepairAttempt>().Ignore(x => x.Feedback);
+        model.Entity<FactoryRepairAttempt>().HasIndex(x => x.RunId).IsUnique();
+        model.Entity<FactoryRepairAttempt>().HasIndex(x => new { x.LoopId, x.Number }).IsUnique();
+        model.Entity<FactoryRepairLoop>().Property(x => x.CreatedAt).HasConversion(value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));
+        foreach (var property in new[] { "StartedAt", "FinishedAt" })
+            model.Entity<FactoryRepairLoop>().Property<DateTime?>(property).HasConversion(value => value, value => value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : (DateTime?)null);
         model.Ignore<ReviewQaReceipt>(); model.Ignore<ReviewVerificationEvidence>(); model.Ignore<ReviewOperation>(); model.Ignore<ReviewBuilderReport>(); model.Ignore<CapturedFindingRecheck>(); model.Ignore<PriorReviewFinding>(); model.Ignore<CapturedReviewCode>();
         model.Ignore<IndependentReviewPacket>(); model.Ignore<ReviewSubmission>(); model.Ignore<ReviewFindingData>();
         model.Entity<FactoryReviewRound>().HasKey(x => x.Id);

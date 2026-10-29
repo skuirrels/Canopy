@@ -37,6 +37,7 @@ public sealed class LocalVerificationEnvironment( IMarkdownFiles markdown, Agent
             .Select(name => new { name, value = Environment.GetEnvironmentVariable(name) ?? throw new RuleException($"Verification environment reference '{name}' is unavailable.") }).ToArray();
         // Only the composite digest is persisted, never resolved environment values.
         var configurationHash = FactoryArtifact.Hash(JsonSerializer.Serialize(new { snapshot.Environment, snapshot.SpecJson, snapshot.Criteria, skills, references }, FactoryRules.Json));
+        if (snapshot.Repair is not null) configurationHash = FactoryArtifact.Hash(configurationHash + JsonSerializer.Serialize(snapshot.Repair, FactoryRules.Json));
         if (head != (await Git(root, ["rev-parse", "HEAD"], ct)).Trim() || paths != await Git(root, ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], ct))
             throw new RuleException("Verification inputs changed during inspection. Refresh and verify again.", 409);
         return new(head, codeHash, configurationHash, FactoryArtifact.Hash(JsonSerializer.Serialize(new { head, codeHash, configurationHash }, FactoryRules.Json)));
@@ -72,7 +73,7 @@ public sealed class LocalVerificationEnvironment( IMarkdownFiles markdown, Agent
             Append(await Git(root, ["diff", "--no-index", "--no-ext-diff", "--no-textconv", "--binary", "--", "/dev/null", SafeFile(root, path)], ct, true, options.MaxOutputCharacters));
         return change.ToString();
     }
-    private string Workspace(FactoryRun run)
+    internal string Workspace(FactoryRun run)
     {
         if (run.WorkspacePath is null || !Directory.Exists(run.WorkspacePath)) throw new RuleException("The retained verification worktree is unavailable.");
         var expected = Path.GetFullPath(Path.Combine(options.WorkspaceRoot, run.Id.ToString()));
@@ -80,7 +81,7 @@ public sealed class LocalVerificationEnvironment( IMarkdownFiles markdown, Agent
         RejectLinks(expected);
         return expected;
     }
-    private static string SafeFile(string root, string path)
+    internal static string SafeFile(string root, string path)
     {
         if (string.IsNullOrWhiteSpace(path) || Path.IsPathRooted(path) || path.IndexOf('\0') >= 0 || path.Split('/', '\\').Any(part => part == ".." || part.Equals(".git", StringComparison.OrdinalIgnoreCase)))
             throw new RuleException("Use a relative test/source path inside the retained worktree.");
@@ -89,7 +90,7 @@ public sealed class LocalVerificationEnvironment( IMarkdownFiles markdown, Agent
         RejectLinks(full);
         return full;
     }
-    private static void RejectLinks(string path)
+    internal static void RejectLinks(string path)
     {
         for (FileSystemInfo? current = new FileInfo(path); current is not null; current = current is FileInfo file ? file.Directory : ((DirectoryInfo)current).Parent)
             if (current.LinkTarget is not null) throw new RuleException("Verification cannot traverse symbolic links.");
@@ -104,6 +105,7 @@ public sealed class LocalVerificationEnvironment( IMarkdownFiles markdown, Agent
         }
         return result.ToString();
     }
+    internal Task<string> ReadGit(string directory, string[] arguments, CancellationToken ct) => Git(directory, arguments, ct);
     private async Task<string> Git(string directory, string[] arguments, CancellationToken ct, bool acceptDiff = false, int? limit = null)
     {
         // Fingerprints must not use the runner's truncated human-readable Git output.

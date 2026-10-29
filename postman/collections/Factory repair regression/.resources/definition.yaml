@@ -1,0 +1,12 @@
+$kind: collection
+name: Factory repair regression
+description: Explicit isolated fixture only. Reads repair evidence and checks conflicts without starting execution or modifying task data.
+variables:
+  - key: baseUrl
+    value: 'http://127.0.0.1:5274'
+  - key: runId
+    value: ''
+  - key: projectId
+    value: ''
+  - key: loopId
+    value: ''

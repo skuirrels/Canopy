@@ -1,0 +1,14 @@
+$kind: http-request
+name: Verify unchanged loop
+method: GET
+url: '{{baseUrl}}/api/factory/repair-loops/{{loopId}}'
+order: 7000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated' || !pm.variables.get('runId') || !pm.variables.get('projectId') || !pm.variables.get('loopId')) throw new Error('Supply the isolated fixtureMode, runId, projectId and loopId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Loop remains readable',()=>pm.response.to.have.status(200));pm.test('Rejected mutations changed nothing',()=>pm.expect(pm.response.json().loop.revision).to.equal(Number(pm.collectionVariables.get('loopRevision'))));pm.test('Response not cached',()=>pm.expect(pm.response.headers.get('Cache-Control')).to.equal('no-store'));

@@ -1,0 +1,14 @@
+$kind: http-request
+name: Read immutable lineage
+method: GET
+url: '{{baseUrl}}/api/factory/repair-loops/{{loopId}}'
+order: 3000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated' || !pm.variables.get('runId') || !pm.variables.get('projectId') || !pm.variables.get('loopId')) throw new Error('Supply the isolated fixtureMode, runId, projectId and loopId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Loop readable',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('Captured issue identity',()=>pm.expect(d.loop.scope.issues[0].id).to.be.a('string'));pm.test('Money unavailable is explicit',()=>pm.expect(d.costStatus).to.equal('unavailable'));pm.collectionVariables.set('loopRevision',d.loop.revision);

@@ -1,0 +1,217 @@
+$kind: http-example
+name: 'Isolated native repair fixture - OK'
+request:
+  method: POST
+  url: '{{baseUrl}}/api/factory/repair-loops/{{loopId}}/advance'
+  body:
+    type: json
+    content: |-
+      {
+        "requestId": "a19bf2aa-ebcd-4418-a534-760f154bed34",
+        "expectedRevision": 1
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json; charset=utf-8
+  body:
+    type: json
+    content: |-
+      {
+        "loop": {
+          "id": "6a68c4be-a64d-4a69-8ac2-b8dcc525c09d",
+          "requestId": "88001a37-5af3-4382-a68d-7ba139be44b4",
+          "projectId": "0c363f22-de20-4c82-8d5e-82e9bbe3adfb",
+          "itemId": "ab80904d-39d1-413f-be26-9ebcc9fc9c00",
+          "rootRunId": "c4cc823c-14bc-471d-91b1-0e5741440548",
+          "revision": 2,
+          "state": "running",
+          "reason": "Repair and verification are executing in a separate retained worktree.",
+          "reservedAgentInvocations": 2,
+          "noProgressRounds": 0,
+          "remainingCount": 1,
+          "open": true,
+          "createdAt": "2026-10-29T20:02:21.707544Z",
+          "startedAt": "2026-10-29T20:02:22.906646Z",
+          "finishedAt": null,
+          "policy": {
+            "enabled": true,
+            "implementationPlanVersionId": "0a5d7e8e-19af-42f7-b768-847fd9ae693c",
+            "verificationPlanVersionId": null,
+            "maxAttempts": 4,
+            "maxElapsedMinutes": 5,
+            "maxNoProgressRounds": 2,
+            "maxAgentInvocations": 6,
+            "autoContinue": false,
+            "commandsSafeToRepeat": true,
+            "allowUnmeteredCost": true,
+            "maxCost": null,
+            "currency": null
+          },
+          "scope": {
+            "owner": "implementation",
+            "issues": [
+              {
+                "kind": "finding",
+                "id": "afbdad91-2ec5-4943-be59-cbd685d6107c",
+                "title": "Negative input does not increment",
+                "owner": "implementation",
+                "reason": "The negative-input branch returns unchanged input.",
+                "evidenceId": "68564f33-60cf-45e6-aeb1-4c6b5c436fe1"
+              }
+            ],
+            "sourceHash": "2D70D956AED0F0D2084DCB23AF5C7859252DAFAEBC3A421DF639BA477D3A38E4",
+            "sourcePipelineVersionId": "0a5d7e8e-19af-42f7-b768-847fd9ae693c",
+            "sourceOverrides": {
+              "steps": []
+            },
+            "plans": [
+              {
+                "owner": "implementation",
+                "pipelineVersionId": "0a5d7e8e-19af-42f7-b768-847fd9ae693c",
+                "versionNumber": 1,
+                "name": "Repair fixture",
+                "source": "Explicit regression fixture",
+                "environment": {
+                  "repositoryPath": "/private/var/folders/6k/1rn1jb9n1w38437x__4155kw0000gn/T/canopy-repair-ai7wz_6g/source",
+                  "baseRef": "4ed687e05d71527598e3684a9532d1222c7f0e0b",
+                  "baseCommit": "4ed687e05d71527598e3684a9532d1222c7f0e0b",
+                  "projectInstructions": "Explicit protocol fixture.",
+                  "defaultProvider": "codex",
+                  "definition": {
+                    "stages": [
+                      {
+                        "id": "build",
+                        "name": "Build",
+                        "group": "Build",
+                        "dependsOn": [],
+                        "steps": [
+                          {
+                            "id": "implement",
+                            "name": "Implementation",
+                            "kind": "agent",
+                            "instructions": "Implement the fixture.",
+                            "role": "implementation",
+                            "permission": "workspace-write",
+                            "provider": "codex",
+                            "model": null,
+                            "effort": null,
+                            "skills": null,
+                            "command": null,
+                            "consumes": null,
+                            "produces": [
+                              "changes"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "qa",
+                        "name": "QA",
+                        "group": "Check",
+                        "dependsOn": [
+                          "build"
+                        ],
+                        "steps": [
+                          {
+                            "id": "verify",
+                            "name": "Actual assertions",
+                            "kind": "command",
+                            "instructions": null,
+                            "role": null,
+                            "permission": null,
+                            "provider": null,
+                            "model": null,
+                            "effort": null,
+                            "skills": null,
+                            "command": {
+                              "executable": "/opt/homebrew/opt/python@3.15/bin/python3.15",
+                              "arguments": [
+                                "verify.py"
+                              ],
+                              "workingDirectory": ".",
+                              "timeoutSeconds": 10,
+                              "environmentReferences": null
+                            },
+                            "consumes": [
+                              "changes"
+                            ],
+                            "produces": [
+                              "verification"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "review",
+                        "name": "Independent reviewer",
+                        "group": "Check",
+                        "dependsOn": [
+                          "qa"
+                        ],
+                        "steps": [
+                          {
+                            "id": "review",
+                            "name": "Read-only reviewer",
+                            "kind": "agent",
+                            "instructions": "Review code independently.",
+                            "role": "review",
+                            "permission": "read-only",
+                            "provider": "codex",
+                            "model": null,
+                            "effort": null,
+                            "skills": null,
+                            "command": null,
+                            "consumes": [
+                              "changes",
+                              "verification"
+                            ],
+                            "produces": null
+                          }
+                        ]
+                      }
+                    ],
+                    "schemaVersion": 1
+                  },
+                  "skills": []
+                }
+              }
+            ]
+          },
+          "context": {
+            "headCommit": "4ed687e05d71527598e3684a9532d1222c7f0e0b",
+            "codeHash": "B841F4185F2780D484D640490DE6F8BF9DB1EB58BEC27C193284B6207E611023",
+            "configurationHash": "04981DCD8B9D7EE0F0EF79CD40EDD6C328EA70B7D68ED73036786C07D5B1FC25",
+            "fingerprint": "F97A0D2079702E1BF07A3B4BCD622FC5243766E5AD0CA9D32D128C8937289F89"
+          }
+        },
+        "attempts": [
+          {
+            "attempt": {
+              "id": "afc18bd4-3480-4746-b4ed-32dffb2f0f85",
+              "loopId": "6a68c4be-a64d-4a69-8ac2-b8dcc525c09d",
+              "runId": "b1404bb9-4984-49d2-8f36-dc6b21716125",
+              "parentRunId": "c4cc823c-14bc-471d-91b1-0e5741440548",
+              "number": 1,
+              "feedbackHash": null,
+              "feedback": null
+            },
+            "run": {
+              "id": "b1404bb9-4984-49d2-8f36-dc6b21716125",
+              "itemId": "ab80904d-39d1-413f-be26-9ebcc9fc9c00",
+              "state": "queued",
+              "createdAt": "2026-10-29T20:02:22.906341Z",
+              "pipelineName": "Repair fixture",
+              "versionNumber": 1,
+              "title": "Repair counter edge case",
+              "revision": 2
+            },
+            "actualAgentInvocations": 0
+          }
+        ],
+        "canAdvance": false,
+        "blockedReason": "Repair and verification are executing in a separate retained worktree.",
+        "costStatus": "unavailable",
+        "pollIntervalMs": 250
+      }

@@ -17,6 +17,7 @@ public sealed class FactoryDispatchService(IWorkspaceStore store, IFactoryEnviro
         if (input.RequestId == Guid.Empty) throw new RuleException("A unique request ID is required.");
         var before = await store.ReadAsync(ct); var run = Find(before, id);
         if (run.StartRequestId == input.RequestId && input.RequestId != Guid.Empty) return FactoryRunService.Detail(before, run);
+        if (run.Snapshot.Repair is not null || before.RepairLoops.Any(x => x.ItemId == run.ItemId && x.Open)) throw new RuleException("Start repair work through its loop; stop the open loop before other execution.", 409);
         Rules.Revision(input.ExpectedRevision, run.Revision);
         if (run.State != "prepared") throw new RuleException("Only prepared work orders can start. Review interrupted work before preparing a new run.", 409);
         CheckCurrent(before, run);
@@ -27,6 +28,7 @@ public sealed class FactoryDispatchService(IWorkspaceStore store, IFactoryEnviro
         {
             var current = Find(data, id);
             if (current.StartRequestId == input.RequestId && input.RequestId != Guid.Empty) return;
+            if (current.Snapshot.Repair is not null || data.RepairLoops.Any(x => x.ItemId == current.ItemId && x.Open)) throw new RuleException("Repair execution belongs to its loop.", 409);
             CheckCurrent(data, current); current.Queue(input.ExpectedRevision, input.RequestId);
         }, ct);
         return FactoryRunService.Detail(saved, Find(saved, id));

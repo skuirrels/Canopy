@@ -19,6 +19,27 @@ public static class FactoryEndpoints
             http.Response.Headers.CacheControl = "no-store";
             return await next(context);
         });
+        group.MapGet("/projects/{id:guid}/repair-policy", (Guid id, FactoryRepairService service, CancellationToken ct) => service.Policy(id, ct))
+            .WithDescription("Bounded repair policy, immutable scope and attempt lineage. Execution requires explicit advance; fresh QA and independent review remain required. Money usage is unavailable.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapPut("/projects/{id:guid}/repair-policy", (Guid id, EditRepairPolicy input, FactoryRepairService service, CancellationToken ct) => service.EditPolicy(id, input, ct))
+            .WithDescription("Bounded repair policy, immutable scope and attempt lineage. Execution requires explicit advance; fresh QA and independent review remain required. Money usage is unavailable.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapGet("/runs/{id:guid}/repair-loops", (Guid id, FactoryRepairService service, CancellationToken ct) => service.List(id, ct))
+            .WithDescription("Bounded repair policy, immutable scope and attempt lineage. Execution requires explicit advance; fresh QA and independent review remain required. Money usage is unavailable.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapPost("/runs/{id:guid}/repair-loops", (Guid id, PrepareRepairLoop input, FactoryRepairService service, CancellationToken ct) => service.Prepare(id, input, ct))
+            .WithDescription("Bounded repair policy, immutable scope and attempt lineage. Execution requires explicit advance; fresh QA and independent review remain required. Money usage is unavailable.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapGet("/repair-loops/{id:guid}", (Guid id, FactoryRepairService service, CancellationToken ct) => service.Read(id, ct))
+            .WithDescription("Bounded repair policy, immutable scope and attempt lineage. Execution requires explicit advance; fresh QA and independent review remain required. Money usage is unavailable.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapPost("/repair-loops/{id:guid}/advance", (Guid id, AdvanceRepairLoop input, FactoryRepairService service, CancellationToken ct) => service.Advance(id, input, ct))
+            .WithDescription("Bounded repair policy, immutable scope and attempt lineage. Execution requires explicit advance; fresh QA and independent review remain required. Money usage is unavailable.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapPost("/repair-loops/{id:guid}/stop", (Guid id, StopRepairLoop input, FactoryRepairService service, CancellationToken ct) => service.Stop(id, input, ct))
+            .WithDescription("Bounded repair policy, immutable scope and attempt lineage. Execution requires explicit advance; fresh QA and independent review remain required. Money usage is unavailable.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
         group.MapGet("/runs/{id:guid}/reviews", (Guid id, FactoryReviewService service, CancellationToken ct) => service.List(id, ct))
             .WithDescription("Task-wide review rounds and persistent findings, current context and eligible independent assessments. Process completion is never approval.").ProducesProblem(403).ProducesProblem(404);
         group.MapPost("/runs/{id:guid}/reviews", (Guid id, BeginFactoryReview input, FactoryReviewService service, CancellationToken ct) => service.Begin(id, input, ct))

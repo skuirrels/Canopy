@@ -1,0 +1,31 @@
+$kind: http-example
+name: 'Isolated native repair fixture - Bad Request'
+request:
+  method: POST
+  url: '{{baseUrl}}/api/factory/runs/{{runId}}/repair-loops'
+  body:
+    type: json
+    content: |-
+      {
+        "requestId": "88001a37-5af3-4382-a68d-7ba139be44b4",
+        "expectedRevision": 19,
+        "expectedContext": "F97A0D2079702E1BF07A3B4BCD622FC5243766E5AD0CA9D32D128C8937289F89",
+        "owner": "planning",
+        "findingIds": [
+          "afbdad91-2ec5-4943-be59-cbd685d6107c"
+        ],
+        "criterionIds": []
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+        "title": "Choose implementation or verification ownership.",
+        "status": 400
+      }
