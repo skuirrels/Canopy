@@ -1,0 +1,9 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/runs'
+order: 10500
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Run history reads the current project without inventing records',()=>{pm.response.to.have.status(200);pm.expect(pm.response.json()).to.eql([]);});

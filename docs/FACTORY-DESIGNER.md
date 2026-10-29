@@ -78,3 +78,8 @@ later work.
 
 The Factory tab now also offers [readiness and run preparation](FACTORY-RUNS.md).
 It captures a work order and pending stage/step records without dispatching work.
+
+For execution, open a task's prepared run with **Open execution view**, or select
+it under **Runs** in the project factory library. This opens the captured,
+read-only workflow and its actual states/evidence; the draft designer remains a
+separate configuration surface. See [execution workflow](FACTORY-RUNS.md).

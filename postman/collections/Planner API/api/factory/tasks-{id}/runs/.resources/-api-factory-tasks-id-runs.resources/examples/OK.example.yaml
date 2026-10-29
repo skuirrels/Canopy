@@ -6,7 +6,7 @@ request:
     Accept: application/json
   pathVariables:
     - key: id
-      value: 75d66fc6-e02c-352c-a98f-2f299fd00c34
+      value: 6492a522-59b0-b8d2-468f-c47a01272f88
       disabled: false
       description: "(Required) "
   body:
@@ -22,20 +22,24 @@ response:
     content: |-
       [
         {
-          "id": "471be9fe-013d-d058-7a73-8867101191fa",
-          "itemId": "97e3bc8b-6e25-218b-1612-875b4b748e25",
+          "id": "21be60cc-0764-b220-347c-0da48631f1bf",
+          "itemId": "68a160e7-9f06-532b-978c-8429b615fe5a",
           "state": "string",
-          "createdAt": "1978-12-04T18:05:49.304Z",
+          "createdAt": "2000-02-12T18:11:17.206Z",
           "pipelineName": "string",
-          "versionNumber": 0
+          "versionNumber": 0,
+          "title": "string",
+          "revision": 39
         },
         {
-          "id": "6d9e60be-1246-c4c5-525b-cf1fbd3e5af9",
-          "itemId": "f6725c26-fc9e-e92c-f064-6f5eed2e2a49",
+          "id": "da72be0b-c3af-83e8-0230-efb737d57904",
+          "itemId": "e2bbbf63-2b12-aac6-22f3-614f7318feac",
           "state": "string",
-          "createdAt": "1979-11-09T08:29:42.633Z",
+          "createdAt": "1967-03-04T13:50:53.432Z",
           "pipelineName": "string",
-          "versionNumber": 2665364052
+          "versionNumber": -1876,
+          "title": "string",
+          "revision": 0
         }
       ]
 order: 1000

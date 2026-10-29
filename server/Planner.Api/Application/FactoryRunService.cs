@@ -14,7 +14,7 @@ public sealed record FactoryReadiness(long ProjectRevision, bool CanPrepare, str
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record PrepareFactoryRun(Guid RequestId, long ExpectedRevision);
 public sealed record FactoryRunDetail(FactoryRun Run, IReadOnlyList<FactoryStageRun> Stages, IReadOnlyList<FactoryStepRun> Steps, IReadOnlyList<FactoryArtifact> Artifacts);
-public sealed record FactoryRunSummary(Guid Id, Guid ItemId, string State, DateTime CreatedAt, string PipelineName, int VersionNumber);
+public sealed record FactoryRunSummary(Guid Id, Guid ItemId, string State, DateTime CreatedAt, string PipelineName, int VersionNumber, string Title, long Revision);
 
 public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment environment)
 {
@@ -74,7 +74,17 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
     {
         var data = await store.ReadAsync(ct); Item(data, itemId);
         return data.FactoryRuns.Where(x => x.ItemId == itemId).OrderByDescending(x => x.CreatedAt)
-            .Select(x => new FactoryRunSummary(x.Id, x.ItemId, x.State, x.CreatedAt, x.Snapshot.PipelineName, x.Snapshot.VersionNumber)).ToList();
+            .Select(Summary).ToList();
+    }
+    public async Task<IReadOnlyList<FactoryRunSummary>> ProjectRuns(Guid projectId, CancellationToken ct)
+    {
+        var data = await store.ReadAsync(ct); data.Graph(projectId);
+        return data.FactoryRuns.Where(x => x.ProjectId == projectId).OrderByDescending(x => x.CreatedAt).Select(Summary).ToList();
+    }
+    private static FactoryRunSummary Summary(FactoryRun run)
+    {
+        var snapshot = run.Snapshot;
+        return new(run.Id, run.ItemId, run.State, run.CreatedAt, snapshot.PipelineName, snapshot.VersionNumber, snapshot.Title, run.Revision);
     }
     public async Task<FactoryRunDetail> Read(Guid id, CancellationToken ct)
     {

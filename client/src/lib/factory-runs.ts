@@ -6,7 +6,7 @@ export type FactoryEnvironment = { repositoryPath: string; baseRef: string; base
 export type FactoryReadiness = { projectRevision: number; canPrepare: boolean; executionReadiness: string; checkedAt: string; checks: FactoryReadinessCheck[]; environment: FactoryEnvironment | null };
 export type FactoryRunSnapshot = { pipelineVersionId: string; versionNumber: number; pipelineName: string; source: string; title: string; specJson: string; projectRevision: number; overrides: FactoryOverrides; environment: FactoryEnvironment; checks: FactoryReadinessCheck[]; checkedAt: string };
 export type FactoryRun = { id: string; itemId: string; projectId: string; state: FactoryRunState; revision: number; active: boolean; createdAt: string; startedAt: string | null; finishedAt: string | null; workspacePath: string | null; error: string | null; snapshot: FactoryRunSnapshot };
-export type FactoryRunSummary = { id: string; itemId: string; state: FactoryRunState; createdAt: string; pipelineName: string; versionNumber: number };
+export type FactoryRunSummary = { id: string; itemId: string; state: FactoryRunState; createdAt: string; pipelineName: string; versionNumber: number; title: string; revision: number };
 export type FactoryStageRun = { id: string; stageId: string; state: string; startedAt: string | null; finishedAt: string | null };
 export type FactoryStepRun = { id: string; stageRunId: string; stepId: string; state: string; startedAt: string | null; finishedAt: string | null; agentRunId: string | null; decisionRequestId: string | null; decision: boolean | null; decisionNote: string | null; output: string; outputLimitReached: boolean; evidence: string; error: string | null; exitCode: number | null };
 export type FactoryArtifact = { id: string; runId: string; stepRunId: string; name: string; kind: string; evidenceHash: string };
@@ -16,4 +16,9 @@ export function requireFactoryRunDetail(value: FactoryRunDetail): FactoryRunDeta
  if (!value?.run?.id || !Number.isSafeInteger(value.run.revision) || typeof value.run.active !== 'boolean' || !Array.isArray(value.stages) || !Array.isArray(value.steps) || !Array.isArray(value.artifacts) || !Array.isArray(value.run.snapshot?.environment?.definition?.stages))
   throw new Error('This backend cannot supply factory runtime data. Restart the updated Canopy backend and refresh the run.');
  return value;
+}
+
+export function mergeFactoryRunHistory(received: FactoryRunSummary[], known: FactoryRunSummary[]) {
+ const previous = new Map(known.map(run => [run.id, run]));
+ return received.map(run => { const saved = previous.get(run.id); return saved && saved.revision > run.revision ? saved : run; });
 }

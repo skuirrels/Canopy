@@ -1,0 +1,15 @@
+$kind: http-request
+name: Read-only project run history, newest first, with captured task titles and pipeline versions.
+description: Read-only project run history, newest first, with captured task titles and pipeline versions.
+url: "{{baseUrl}}/api/factory/projects/:id/runs"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: 6492a522-59b0-b8d2-468f-c47a01272f88
+    disabled: false
+    description: "(Required) "
+settings: {}
+examples: ./.resources/Read-only project run history, newest first, with captured task.resources/examples
+order: 1000

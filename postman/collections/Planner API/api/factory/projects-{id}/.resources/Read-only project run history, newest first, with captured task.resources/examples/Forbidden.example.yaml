@@ -1,0 +1,30 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/factory/projects/:id/runs"
+  method: GET
+  headers:
+    Accept: application/problem+json
+  pathVariables:
+    - key: id
+      value: 6492a522-59b0-b8d2-468f-c47a01272f88
+      disabled: false
+      description: "(Required) "
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 403
+  statusText: Forbidden
+  headers:
+    Content-Type: application/problem+json
+  body:
+    type: json
+    content: |-
+      {
+        "type": null,
+        "title": null,
+        "status": "519432926",
+        "detail": null,
+        "instance": null
+      }
+order: 2000
