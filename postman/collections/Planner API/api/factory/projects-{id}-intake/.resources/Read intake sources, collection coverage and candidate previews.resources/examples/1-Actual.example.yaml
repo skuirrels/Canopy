@@ -1,0 +1,615 @@
+$kind: http-example
+name: Actual isolated response
+request:
+  method: GET
+  url: "{{baseUrl}}/api/factory/projects/:id/intake"
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    - key: Content-Type
+      value: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "projectRevision": 30,
+        "sources": [
+          {
+            "id": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "revision": 5,
+            "scope": "0EC5F46F1BBFF5D093C36826C554DDEB3410C324B1B4D3CD69D30C473265520F",
+            "providerBinding": "DAF75A881F7BFB06A6DDCF229E356E160D16D1FD6AB11BF94BBA7EAFDE377A7F",
+            "configuration": {
+              "name": "GitHub bug intake",
+              "kind": "githubIssues",
+              "enabled": true,
+              "repository": "regression/intake",
+              "labels": [
+                "bug"
+              ],
+              "minimumOccurrences": 0,
+              "categories": []
+            }
+          },
+          {
+            "id": "f30557f5-69d4-4a0a-a7d5-c889df942496",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "revision": 1,
+            "scope": "842E70E336B194070445EE64094AEC0ABD0775A2657CE5652C76479C07909ED8",
+            "providerBinding": "local-review",
+            "configuration": {
+              "name": "Recurring defects",
+              "kind": "reviewFindings",
+              "enabled": true,
+              "repository": "",
+              "labels": [],
+              "minimumOccurrences": 2,
+              "categories": [
+                "defect"
+              ]
+            }
+          }
+        ],
+        "collections": [
+          {
+            "id": "e0d4bd19-2bbd-4673-9282-839a4c2b1c74",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "d1417224-5d9c-4171-b1ef-21d700644c37",
+            "requestHash": "9DE47BAB6A79C8AE28539BE2F655F6995083EB908786372D262C87D43CDF1FE1",
+            "sourceRevision": 5,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "complete",
+            "error": null,
+            "observed": 1,
+            "createdAt": "2026-10-29T22:58:44.690884Z",
+            "finishedAt": "2026-10-29T22:58:44.822545Z"
+          },
+          {
+            "id": "3034fa8c-c75f-4a8d-a7b7-9e2ce7827d5a",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "4f67e6b6-3dc0-4330-943d-1f1c56a25668",
+            "requestHash": "A1A05FA1CA3BF4B444DE59BFD5CA7E3D41C1B901C698336EDA5294AED084CF42",
+            "sourceRevision": 5,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "interrupted",
+            "error": "Backend restarted. Source coverage is unavailable; collection was not replayed.",
+            "observed": 0,
+            "createdAt": "2026-10-29T22:58:43.169132Z",
+            "finishedAt": "2026-10-29T22:58:44.180694Z"
+          },
+          {
+            "id": "12bf53c2-8990-455c-a225-88d399397bbc",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "f30557f5-69d4-4a0a-a7d5-c889df942496",
+            "requestId": "68d2edbc-9d91-4688-a84a-d53e1c2bdc5c",
+            "requestHash": "2E063A1046067D2D59E4F77F18B3FB8D16D21C82820C1B5ED660BC9EA7010930",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"Recurring defects\",\"kind\":\"reviewFindings\",\"enabled\":true,\"repository\":\"\",\"labels\":[],\"minimumOccurrences\":2,\"categories\":[\"defect\"]}",
+            "state": "complete",
+            "error": null,
+            "observed": 1,
+            "createdAt": "2026-10-29T22:58:41.6982Z",
+            "finishedAt": "2026-10-29T22:58:41.747975Z"
+          },
+          {
+            "id": "5f1167ce-f628-47ef-ae73-fc763d83d61a",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "f30557f5-69d4-4a0a-a7d5-c889df942496",
+            "requestId": "a6bdb32d-41b2-43d5-8ff4-3aa79b282940",
+            "requestHash": "A2D8705A92F06384A759B3D88BD7C8B4509AD93482E5B35FE7016032A3EDA9D0",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"Recurring defects\",\"kind\":\"reviewFindings\",\"enabled\":true,\"repository\":\"\",\"labels\":[],\"minimumOccurrences\":2,\"categories\":[\"defect\"]}",
+            "state": "complete",
+            "error": null,
+            "observed": 1,
+            "createdAt": "2026-10-29T22:58:41.489378Z",
+            "finishedAt": "2026-10-29T22:58:41.525742Z"
+          },
+          {
+            "id": "8b24d822-4e57-4923-9530-bbc3d6a9a0e4",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "f30557f5-69d4-4a0a-a7d5-c889df942496",
+            "requestId": "47ecca6c-17d2-4db4-a030-47a8aa4ec11d",
+            "requestHash": "E43368B306F2E876169DEA19467CC8CDC2122AA46F737467C4E4DB8307DAB16E",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"Recurring defects\",\"kind\":\"reviewFindings\",\"enabled\":true,\"repository\":\"\",\"labels\":[],\"minimumOccurrences\":2,\"categories\":[\"defect\"]}",
+            "state": "complete",
+            "error": null,
+            "observed": 1,
+            "createdAt": "2026-10-29T22:58:36.593184Z",
+            "finishedAt": "2026-10-29T22:58:36.656586Z"
+          },
+          {
+            "id": "c5ce1ed7-4652-4ed7-8b42-bfba36eb9afe",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "f30557f5-69d4-4a0a-a7d5-c889df942496",
+            "requestId": "6c87c740-6694-415a-97bd-25c30e227fae",
+            "requestHash": "871334984EA8FF3D6DB12662DF1773A4B3507DD8EB3AAA278B131425F2F33008",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"Recurring defects\",\"kind\":\"reviewFindings\",\"enabled\":true,\"repository\":\"\",\"labels\":[],\"minimumOccurrences\":2,\"categories\":[\"defect\"]}",
+            "state": "complete",
+            "error": null,
+            "observed": 0,
+            "createdAt": "2026-10-29T22:58:29.803146Z",
+            "finishedAt": "2026-10-29T22:58:29.838956Z"
+          },
+          {
+            "id": "4d68fde7-46d4-4867-80b2-d322c58e8856",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "f87610ce-b9e3-4c3d-abcb-0a1f99e3477b",
+            "requestHash": "59FDB19A12BA090F0557CB0C47409742ECE10CACC3F6FB1E1FA2D251954A0541",
+            "sourceRevision": 5,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "complete",
+            "error": null,
+            "observed": 1,
+            "createdAt": "2026-10-29T22:58:20.105747Z",
+            "finishedAt": "2026-10-29T22:58:20.142353Z"
+          },
+          {
+            "id": "d668c0d4-b8c2-42be-874d-5d265c6373a4",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "0f95ccfa-531b-45dc-b09e-8ddb45f3a7e6",
+            "requestHash": "8F71F9A97143E583C2DF92C5550748B7DCB59B19838E96405369C6D89EFE6B5E",
+            "sourceRevision": 3,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "failed",
+            "error": "This project changed since you loaded it. Your latest changes have not been saved. Refresh and try again.",
+            "observed": 0,
+            "createdAt": "2026-10-29T22:58:19.556166Z",
+            "finishedAt": "2026-10-29T22:58:20.014893Z"
+          },
+          {
+            "id": "10d9b85e-4394-493e-9058-ce18c2a1717e",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "3971d657-ca93-4df8-8f9c-2e945255b2c5",
+            "requestHash": "DE740934EE8F8F9A86E979DD2CCF422207F5D543B32F1F67B199DF264B08CBDC",
+            "sourceRevision": 3,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "complete",
+            "error": null,
+            "observed": 0,
+            "createdAt": "2026-10-29T22:58:19.434841Z",
+            "finishedAt": "2026-10-29T22:58:19.504913Z"
+          },
+          {
+            "id": "f99f9749-66b5-4c60-8885-8a5b432425a0",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "61388511-c8e0-49ec-99ac-13bbd2a33fbf",
+            "requestHash": "FBFA22B78351BBF537E231A966AFD24CAB77A7B945EB2125AB16221040E69A10",
+            "sourceRevision": 3,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "complete",
+            "error": null,
+            "observed": 2,
+            "createdAt": "2026-10-29T22:58:19.351811Z",
+            "finishedAt": "2026-10-29T22:58:19.38892Z"
+          },
+          {
+            "id": "f1ff095c-2e8c-4be1-9e17-2d5f9cdafc47",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "d59db2b3-3c41-403d-bacb-84f1798e81cf",
+            "requestHash": "C319BD19F656B9AF61E3BFE7A8E2DA83095A03532C36AEABA208245BB838D2C9",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "complete",
+            "error": null,
+            "observed": 2,
+            "createdAt": "2026-10-29T22:58:18.821812Z",
+            "finishedAt": "2026-10-29T22:58:18.859395Z"
+          },
+          {
+            "id": "072a728f-b5a7-42c3-b494-70bfa7d6e336",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "fe94d3c3-f8fe-4a8f-91b4-602d8b7d004e",
+            "requestHash": "135593178598CD25CAA6CD8E8EB350F0299934984332BBF9F6696354AD021C72",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "complete",
+            "error": null,
+            "observed": 2,
+            "createdAt": "2026-10-29T22:58:18.226501Z",
+            "finishedAt": "2026-10-29T22:58:18.267575Z"
+          },
+          {
+            "id": "9a4f7c70-1331-42cf-bf15-5b8caa7ad18a",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "8bee4e73-3b1c-4cf0-b5cc-a46e1e23ebc3",
+            "requestHash": "0DEECF67088CCEB8B6D6AA9C33884CF5C91CFE499980EADFEDDB7B7B4AEF7CA2",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "complete",
+            "error": null,
+            "observed": 1,
+            "createdAt": "2026-10-29T22:58:18.053998Z",
+            "finishedAt": "2026-10-29T22:58:18.087376Z"
+          },
+          {
+            "id": "e71cd8a1-d7df-4523-8b6a-0b3462b45cc0",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "ca2e6c11-4cc1-435a-ace2-bbed836cdd4a",
+            "requestHash": "3E2728025795D2AF40C63C33A10F507F7DCFE8D05F9DBCB6481D4F46A2FFA22F",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "complete",
+            "error": null,
+            "observed": 1,
+            "createdAt": "2026-10-29T22:58:17.615519Z",
+            "finishedAt": "2026-10-29T22:58:17.647625Z"
+          },
+          {
+            "id": "37ffde38-f8c6-4dbd-ba04-aaf1a1ffe90a",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "16fd040a-c3b4-4548-bb80-c67ed1a3bfa6",
+            "requestHash": "C38281B0112F9F0C6EB2B94C8C2DFFD9249B02D540911180DD6C343B1F637A6F",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "complete",
+            "error": null,
+            "observed": 2,
+            "createdAt": "2026-10-29T22:58:17.460454Z",
+            "finishedAt": "2026-10-29T22:58:17.505018Z"
+          },
+          {
+            "id": "9a583017-b388-49be-b384-270d6dd0eeb9",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "e249e864-73a3-4dc2-b5d9-0b3372accd5c",
+            "requestHash": "B81977CA7336205CA6AFBC041D1FF1D2C3046B555C5BAF7310C313F9EACAEDF7",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "failed",
+            "error": "GitHub issue pagination repeated an identity; collect again for complete coverage.",
+            "observed": 0,
+            "createdAt": "2026-10-29T22:58:17.365175Z",
+            "finishedAt": "2026-10-29T22:58:17.404837Z"
+          },
+          {
+            "id": "bff1f92a-8e6f-44b6-a861-f4640aaf073a",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "30045fac-e998-41f3-84c8-f559fefc9565",
+            "requestHash": "66CEDC73F7A07718E4B1908BBC64E577C3F2CDA2E7889382363389B1F4DB0BCB",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "failed",
+            "error": "GitHub pagination limit reached; issue coverage is incomplete. No candidates were changed.",
+            "observed": 0,
+            "createdAt": "2026-10-29T22:58:17.25413Z",
+            "finishedAt": "2026-10-29T22:58:17.298265Z"
+          },
+          {
+            "id": "a4a6fb44-6f99-421a-b552-21a7721b9ecb",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "75aff423-0097-4701-a33e-44a26cf60b83",
+            "requestHash": "3DFD86668A7A34C9348547553163F9C2EACCBDA6920453268D4FC45170054A04",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "failed",
+            "error": "GitHub issue evidence is malformed or has the wrong repository identity. No complete collection was established.",
+            "observed": 0,
+            "createdAt": "2026-10-29T22:58:17.071356Z",
+            "finishedAt": "2026-10-29T22:58:17.123271Z"
+          },
+          {
+            "id": "181e92aa-a101-4947-b1e0-385ae60661a7",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "69e76bc3-33e2-4177-a136-39f955805974",
+            "requestHash": "3D8DFC9A3AFF366698514008B3F659DE4CCBD9CD3295D06D0DECEA9428A309CA",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "failed",
+            "error": "GitHub issue coverage has an invalid shape.",
+            "observed": 0,
+            "createdAt": "2026-10-29T22:58:16.96498Z",
+            "finishedAt": "2026-10-29T22:58:17.002934Z"
+          },
+          {
+            "id": "4c69758a-62be-43d9-a909-15296458ecd5",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "8ba66e75-ccdb-4b72-b1f1-33f02be75d2e",
+            "requestHash": "C8E339C75FC46DADF8A63922F736757BFAC2741E054DC38B263D8766A7D10FCE",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "failed",
+            "error": "Provider response exceeds the configured limit; coverage is incomplete.",
+            "observed": 0,
+            "createdAt": "2026-10-29T22:58:16.868309Z",
+            "finishedAt": "2026-10-29T22:58:16.909353Z"
+          },
+          {
+            "id": "d4e55983-a683-4160-a8ac-d572b7bb42f1",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "79a1ae2c-82c3-4324-9233-e6ff969220c2",
+            "requestHash": "6014E15E3C9ED67FA7761890E7E36AE25370FFAFF5020698248829613BA78B98",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "failed",
+            "error": "GitHub request timed out. No successful provider outcome was established.",
+            "observed": 0,
+            "createdAt": "2026-10-29T22:58:15.754168Z",
+            "finishedAt": "2026-10-29T22:58:16.801693Z"
+          },
+          {
+            "id": "4e41bf56-3509-48fa-9f1e-51b4574b8415",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "43a49229-421c-47f2-8de3-2027a64fe069",
+            "requestHash": "078ECDDC2794E7699035B306218140AB9B70714B4C921933D4377F5E1B43763C",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "failed",
+            "error": "GitHub returned HTTP 502. No successful provider outcome was established.",
+            "observed": 0,
+            "createdAt": "2026-10-29T22:58:15.649157Z",
+            "finishedAt": "2026-10-29T22:58:15.691963Z"
+          },
+          {
+            "id": "c168c692-20f8-41da-ab51-e5acd1ff9b17",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "e87941d0-fe96-4808-a92c-f3f62e17d75a",
+            "requestHash": "A9D58112C9A0B9AD68C5D7B65BD2327BE5EA68766CDD1A81274004AB3BA78802",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "failed",
+            "error": "GitHub returned HTTP 403. No successful provider outcome was established.",
+            "observed": 0,
+            "createdAt": "2026-10-29T22:58:15.547394Z",
+            "finishedAt": "2026-10-29T22:58:15.586971Z"
+          },
+          {
+            "id": "fa668ab0-cc92-4523-b52c-385323a55d47",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "3deac6ba-733f-493a-ad81-2e854524930d",
+            "requestHash": "0F6B933686BE991E0EDE9F6B1F5CB2619ADE563D539772769E351DB0E1E6F030",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "failed",
+            "error": "GitHub returned HTTP 503. No successful provider outcome was established.",
+            "observed": 0,
+            "createdAt": "2026-10-29T22:58:15.456469Z",
+            "finishedAt": "2026-10-29T22:58:15.496844Z"
+          },
+          {
+            "id": "40e19578-4c99-457a-8234-bb86f62d6f7b",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "3556ab99-8ec2-40bd-bcd5-49a671e4afa5",
+            "requestHash": "E9B73E7E52C659CA83AF12AF5BEBF1EA1729226B61E1CC8DEC9C86489CB6F228",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "complete",
+            "error": null,
+            "observed": 2,
+            "createdAt": "2026-10-29T22:58:15.115527Z",
+            "finishedAt": "2026-10-29T22:58:15.155148Z"
+          },
+          {
+            "id": "d4d4bbb4-56d7-461c-a76d-78e25a57a313",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "sourceId": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+            "requestId": "95b139ff-cf9a-4506-b3d9-d2a1a8fffc4a",
+            "requestHash": "8624BA96968C566E5BC89E4A900BA4F07BC6EA3357C3D502F85F10F518A57EDF",
+            "sourceRevision": 1,
+            "configurationJson": "{\"name\":\"GitHub bug intake\",\"kind\":\"githubIssues\",\"enabled\":true,\"repository\":\"regression/intake\",\"labels\":[\"bug\"],\"minimumOccurrences\":0,\"categories\":[]}",
+            "state": "complete",
+            "error": null,
+            "observed": 2,
+            "createdAt": "2026-10-29T22:58:14.948129Z",
+            "finishedAt": "2026-10-29T22:58:15.036144Z"
+          }
+        ],
+        "candidates": [
+          {
+            "candidate": {
+              "id": "6ffe57b4-7237-465f-bf55-9175287cbfb6",
+              "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+              "fingerprint": "818DD0BF6B75695FECFC011045EBC23F5EE0EE0FF01BBC9A13BABA4AF351453D",
+              "observationId": "592ebe1d-2ccf-4943-b85b-494d015af6db",
+              "revision": 4,
+              "state": "filed",
+              "verifiedHash": "A90C5FB03024C802074FA5FB215C7DCF36857C430669BFEB705AFFC8948DFC85",
+              "taskId": "006cf46e-961c-459e-ba74-69c4b74f8660",
+              "reason": "Inspected the source reproduction and confirmed the problem needs a backlog task.",
+              "createdAt": "2026-10-29T22:58:44.822305Z"
+            },
+            "observation": {
+              "id": "592ebe1d-2ccf-4943-b85b-494d015af6db",
+              "candidateId": "6ffe57b4-7237-465f-bf55-9175287cbfb6",
+              "collectionId": "e0d4bd19-2bbd-4673-9282-839a4c2b1c74",
+              "signal": {
+                "fingerprint": "818DD0BF6B75695FECFC011045EBC23F5EE0EE0FF01BBC9A13BABA4AF351453D",
+                "title": "Browser triage example",
+                "description": "Observed failure with source evidence.",
+                "origin": "regression/intake#7",
+                "url": "http://127.0.0.1/regression/intake/issues/7",
+                "available": true,
+                "evidenceJson": "{\"id\":1007,\"nodeId\":\"Issue_7\",\"number\":7,\"repository\":\"regression/intake\",\"title\":\"Browser triage example\",\"body\":\"Observed failure with source evidence.\",\"state\":\"open\",\"labels\":[\"bug\"],\"author\":\"fixture-reporter\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"updatedAt\":\"2026-01-01T00:00:00Z\",\"url\":\"http://127.0.0.1/regression/intake/issues/7\"}"
+              }
+            },
+            "current": true,
+            "linkedTaskExists": true,
+            "matchingTaskIds": [
+              "006cf46e-961c-459e-ba74-69c4b74f8660"
+            ]
+          },
+          {
+            "candidate": {
+              "id": "2d02e4b8-d956-43fb-990e-f1ef02f399ea",
+              "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+              "fingerprint": "7BE03E5898CF14189F3C1A13111F03AB825D7D0156BC8A80A4772F445B13A24F",
+              "observationId": "96305b6e-71af-4cc0-b3da-dd06432c3eb5",
+              "revision": 5,
+              "state": "verified",
+              "verifiedHash": "E8C261B67198C4AD5D59A8319E5A84076AB476B36FFA3B6FD009719DB008C179",
+              "taskId": null,
+              "reason": "Inspected original evidence and reproduced its described behavior.",
+              "createdAt": "2026-10-29T22:58:36.656577Z"
+            },
+            "observation": {
+              "id": "96305b6e-71af-4cc0-b3da-dd06432c3eb5",
+              "candidateId": "2d02e4b8-d956-43fb-990e-f1ef02f399ea",
+              "collectionId": "12bf53c2-8990-455c-a225-88d399397bbc",
+              "signal": {
+                "fingerprint": "7BE03E5898CF14189F3C1A13111F03AB825D7D0156BC8A80A4772F445B13A24F",
+                "title": "Repeated counter edge case",
+                "description": "Repeated negative-input assertion gap.",
+                "origin": "Recurring finding across 2 tasks",
+                "url": null,
+                "available": true,
+                "evidenceJson": "[{\"findingId\":\"372d01df-2068-49f2-804a-2142b8eee4e4\",\"taskId\":\"f7f4f981-8e76-44a6-9b45-d7efa23d5949\",\"roundId\":\"8c3141d7-1a06-43d8-ac9a-24e8c228131d\",\"runId\":\"30cb8b2e-1ba1-4ee8-ba92-814d00c26492\",\"data\":{\"title\":\"Repeated counter edge case\",\"description\":\"Repeated negative-input assertion gap.\",\"category\":\"defect\",\"severity\":\"high\",\"owner\":\"verification\",\"criterionIds\":[],\"codeReferences\":[{\"path\":\"counter.py\",\"line\":2,\"fileHash\":\"833556DB828032D49EFC4C58A380411C53465C917DA89BF613A607A10CEE2BA6\"}],\"evidence\":[]},\"context\":{\"headCommit\":\"941e0c7b5b13ff5cd020d933ad788235a2a5a034\",\"codeHash\":\"78E8886D331A76FEBEB6D11AF4E63A892F61BD05EFD0335A4E7487EDD6280F00\",\"configurationHash\":\"20FB4CB248A7B81A7C14EC2AC50C90203DD2C8742188A79B615562F3CBB6CC36\",\"fingerprint\":\"EA860E255FDCAEE44F6F5DF36C293580CD9C3486F70C3BDFCED245F227F9B994\"},\"status\":\"unfixed\",\"recheckRoundId\":\"43912a6d-8504-4a1f-9882-d5b297a1d21b\",\"recheck\":{\"findingId\":\"372d01df-2068-49f2-804a-2142b8eee4e4\",\"status\":\"unfixed\",\"reason\":\"The same finding remains; this is no new occurrence.\",\"codeReferences\":[],\"evidence\":[]}},{\"findingId\":\"a44e8e19-b91e-4cef-a8e7-f16345b7e350\",\"taskId\":\"eec84e67-5c47-4bb5-8092-f64c0d5976f0\",\"roundId\":\"d04b5859-c189-4498-85a6-20d852bff6ab\",\"runId\":\"8f86248a-c320-49c3-b98f-646b5de719d8\",\"data\":{\"title\":\"Repeated counter edge case\",\"description\":\"Repeated negative-input assertion gap.\",\"category\":\"defect\",\"severity\":\"high\",\"owner\":\"verification\",\"criterionIds\":[],\"codeReferences\":[{\"path\":\"counter.py\",\"line\":2,\"fileHash\":\"833556DB828032D49EFC4C58A380411C53465C917DA89BF613A607A10CEE2BA6\"}],\"evidence\":[]},\"context\":{\"headCommit\":\"941e0c7b5b13ff5cd020d933ad788235a2a5a034\",\"codeHash\":\"78E8886D331A76FEBEB6D11AF4E63A892F61BD05EFD0335A4E7487EDD6280F00\",\"configurationHash\":\"20FB4CB248A7B81A7C14EC2AC50C90203DD2C8742188A79B615562F3CBB6CC36\",\"fingerprint\":\"EA860E255FDCAEE44F6F5DF36C293580CD9C3486F70C3BDFCED245F227F9B994\"},\"status\":\"unfixed\",\"recheckRoundId\":\"4908efef-ce45-44c6-8f77-058ca526e962\",\"recheck\":{\"findingId\":\"a44e8e19-b91e-4cef-a8e7-f16345b7e350\",\"status\":\"unfixed\",\"reason\":\"Rechecked persistent finding.\",\"codeReferences\":[],\"evidence\":[]}}]"
+              }
+            },
+            "current": true,
+            "linkedTaskExists": false,
+            "matchingTaskIds": []
+          },
+          {
+            "candidate": {
+              "id": "aec39227-eaf1-4bfb-9b46-448c31a84ba9",
+              "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+              "fingerprint": "12493C6869195ACE2087D438097A1C9EB56F206F08B5B70DAA296ED60A5C41A9",
+              "observationId": "92b851c6-ab97-4c08-b6c0-ebae90ea0b3c",
+              "revision": 5,
+              "state": "filed",
+              "verifiedHash": "CA41F22A7C07BB27162E495A1C7C197D27EECD22E3C21F08310D8FD69736534A",
+              "taskId": "86331162-135f-46fa-8215-5f986d96f8fa",
+              "reason": "Inspected original evidence and reproduced its described behavior.",
+              "createdAt": "2026-10-29T22:58:20.142316Z"
+            },
+            "observation": {
+              "id": "92b851c6-ab97-4c08-b6c0-ebae90ea0b3c",
+              "candidateId": "aec39227-eaf1-4bfb-9b46-448c31a84ba9",
+              "collectionId": "e0d4bd19-2bbd-4673-9282-839a4c2b1c74",
+              "signal": {
+                "fingerprint": "12493C6869195ACE2087D438097A1C9EB56F206F08B5B70DAA296ED60A5C41A9",
+                "title": "Null author and empty body",
+                "description": "",
+                "origin": "regression/intake#9",
+                "url": "http://127.0.0.1/regression/intake/issues/9",
+                "available": false,
+                "evidenceJson": "{\"id\":1009,\"nodeId\":\"Issue_9\",\"number\":9,\"repository\":\"regression/intake\",\"title\":\"Null author and empty body\",\"body\":\"\",\"state\":\"open\",\"labels\":[\"bug\"],\"author\":null,\"createdAt\":\"2026-01-01T00:00:00Z\",\"updatedAt\":\"2026-01-01T00:00:00Z\",\"url\":\"http://127.0.0.1/regression/intake/issues/9\"}"
+              }
+            },
+            "current": false,
+            "linkedTaskExists": true,
+            "matchingTaskIds": [
+              "86331162-135f-46fa-8215-5f986d96f8fa"
+            ]
+          },
+          {
+            "candidate": {
+              "id": "87b1f53b-2cff-4be7-9a41-bb554954d82f",
+              "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+              "fingerprint": "E8EC8DECF56A1C304F2F90555616432FA1A1070B5AB2EB581CCDBEDD5FA844F6",
+              "observationId": "c2e7827f-d1ac-4775-8bb3-332dfe54042c",
+              "revision": 10,
+              "state": "proposed",
+              "verifiedHash": null,
+              "taskId": null,
+              "reason": "Source evidence changed; verify again.",
+              "createdAt": "2026-10-29T22:58:18.267568Z"
+            },
+            "observation": {
+              "id": "c2e7827f-d1ac-4775-8bb3-332dfe54042c",
+              "candidateId": "87b1f53b-2cff-4be7-9a41-bb554954d82f",
+              "collectionId": "e0d4bd19-2bbd-4673-9282-839a4c2b1c74",
+              "signal": {
+                "fingerprint": "E8EC8DECF56A1C304F2F90555616432FA1A1070B5AB2EB581CCDBEDD5FA844F6",
+                "title": "Needs new triage",
+                "description": "Observed failure with source evidence.",
+                "origin": "regression/intake#6",
+                "url": "http://127.0.0.1/regression/intake/issues/6",
+                "available": false,
+                "evidenceJson": "{\"id\":1006,\"nodeId\":\"Issue_6\",\"number\":6,\"repository\":\"regression/intake\",\"title\":\"Needs new triage\",\"body\":\"Observed failure with source evidence.\",\"state\":\"open\",\"labels\":[\"bug\"],\"author\":\"fixture-reporter\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"updatedAt\":\"2026-01-01T00:00:00Z\",\"url\":\"http://127.0.0.1/regression/intake/issues/6\"}"
+              }
+            },
+            "current": false,
+            "linkedTaskExists": false,
+            "matchingTaskIds": []
+          },
+          {
+            "candidate": {
+              "id": "e611928e-0143-491d-a99e-99500ca3c1a3",
+              "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+              "fingerprint": "03693DBD0D741DE195C7C73776EDACF6DCE4A688EA8FDB2CB07152ED77F26A5B",
+              "observationId": "f1c6fa2d-899e-4959-9e52-661831a3cb1b",
+              "revision": 9,
+              "state": "filed",
+              "verifiedHash": "D434C8D3A541E59B64B8EC2BC74DE8CF9D933824FDCCC195032A0339F9289CE8",
+              "taskId": "70d782b8-ea60-48bf-9744-b8886cfb8bd8",
+              "reason": "Inspected original evidence and reproduced its described behavior.",
+              "createdAt": "2026-10-29T22:58:18.267542Z"
+            },
+            "observation": {
+              "id": "f1c6fa2d-899e-4959-9e52-661831a3cb1b",
+              "candidateId": "e611928e-0143-491d-a99e-99500ca3c1a3",
+              "collectionId": "e0d4bd19-2bbd-4673-9282-839a4c2b1c74",
+              "signal": {
+                "fingerprint": "03693DBD0D741DE195C7C73776EDACF6DCE4A688EA8FDB2CB07152ED77F26A5B",
+                "title": "Existing backlog item",
+                "description": "Observed failure with source evidence.",
+                "origin": "regression/intake#5",
+                "url": "http://127.0.0.1/regression/intake/issues/5",
+                "available": false,
+                "evidenceJson": "{\"id\":1005,\"nodeId\":\"Issue_5\",\"number\":5,\"repository\":\"regression/intake\",\"title\":\"Existing backlog item\",\"body\":\"Observed failure with source evidence.\",\"state\":\"open\",\"labels\":[\"bug\"],\"author\":\"fixture-reporter\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"updatedAt\":\"2026-01-01T00:00:00Z\",\"url\":\"http://127.0.0.1/regression/intake/issues/5\"}"
+              }
+            },
+            "current": false,
+            "linkedTaskExists": true,
+            "matchingTaskIds": [
+              "70d782b8-ea60-48bf-9744-b8886cfb8bd8"
+            ]
+          },
+          {
+            "candidate": {
+              "id": "4df227ea-c91a-4aac-8e31-f1178c292683",
+              "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+              "fingerprint": "ADE41E9D1EAB5541350803653095D49124CCDF3301FB1B0F5651721215404E3A",
+              "observationId": "378c5c89-08a0-4809-8d3a-a3f7e3283dce",
+              "revision": 15,
+              "state": "filed",
+              "verifiedHash": "CF6FF4F988DBE70A47A72321C622D95ABBC488945ECD2494BED019B4D91A116C",
+              "taskId": "3a894522-fc96-4a64-9e06-e5e59d80db85",
+              "reason": "Inspected original evidence and reproduced its described behavior.",
+              "createdAt": "2026-10-29T22:58:15.035411Z"
+            },
+            "observation": {
+              "id": "378c5c89-08a0-4809-8d3a-a3f7e3283dce",
+              "candidateId": "4df227ea-c91a-4aac-8e31-f1178c292683",
+              "collectionId": "e0d4bd19-2bbd-4673-9282-839a4c2b1c74",
+              "signal": {
+                "fingerprint": "ADE41E9D1EAB5541350803653095D49124CCDF3301FB1B0F5651721215404E3A",
+                "title": "Counter loses negative values",
+                "description": "Updated reproduction evidence",
+                "origin": "regression/intake#1",
+                "url": "http://127.0.0.1/regression/intake/issues/1",
+                "available": false,
+                "evidenceJson": "{\"id\":1001,\"nodeId\":\"Issue_1\",\"number\":1,\"repository\":\"regression/intake\",\"title\":\"Counter loses negative values\",\"body\":\"Updated reproduction evidence\",\"state\":\"open\",\"labels\":[\"bug\"],\"author\":\"fixture-reporter\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"updatedAt\":\"2026-01-02T00:00:00Z\",\"url\":\"http://127.0.0.1/regression/intake/issues/1\"}"
+              }
+            },
+            "current": false,
+            "linkedTaskExists": false,
+            "matchingTaskIds": []
+          }
+        ]
+      }

@@ -1,0 +1,104 @@
+$kind: http-example
+name: Actual isolated response
+request:
+  method: GET
+  url: "{{baseUrl}}/api/factory/intake/candidates/:id"
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    - key: Content-Type
+      value: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "preview": {
+          "candidate": {
+            "id": "2d02e4b8-d956-43fb-990e-f1ef02f399ea",
+            "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+            "fingerprint": "7BE03E5898CF14189F3C1A13111F03AB825D7D0156BC8A80A4772F445B13A24F",
+            "observationId": "96305b6e-71af-4cc0-b3da-dd06432c3eb5",
+            "revision": 5,
+            "state": "verified",
+            "verifiedHash": "E8C261B67198C4AD5D59A8319E5A84076AB476B36FFA3B6FD009719DB008C179",
+            "taskId": null,
+            "reason": "Inspected original evidence and reproduced its described behavior.",
+            "createdAt": "2026-10-29T22:58:36.656577Z"
+          },
+          "observation": {
+            "id": "96305b6e-71af-4cc0-b3da-dd06432c3eb5",
+            "candidateId": "2d02e4b8-d956-43fb-990e-f1ef02f399ea",
+            "collectionId": "12bf53c2-8990-455c-a225-88d399397bbc",
+            "signal": {
+              "fingerprint": "7BE03E5898CF14189F3C1A13111F03AB825D7D0156BC8A80A4772F445B13A24F",
+              "title": "Repeated counter edge case",
+              "description": "Repeated negative-input assertion gap.",
+              "origin": "Recurring finding across 2 tasks",
+              "url": null,
+              "available": true,
+              "evidenceJson": "[{\"findingId\":\"372d01df-2068-49f2-804a-2142b8eee4e4\",\"taskId\":\"f7f4f981-8e76-44a6-9b45-d7efa23d5949\",\"roundId\":\"8c3141d7-1a06-43d8-ac9a-24e8c228131d\",\"runId\":\"30cb8b2e-1ba1-4ee8-ba92-814d00c26492\",\"data\":{\"title\":\"Repeated counter edge case\",\"description\":\"Repeated negative-input assertion gap.\",\"category\":\"defect\",\"severity\":\"high\",\"owner\":\"verification\",\"criterionIds\":[],\"codeReferences\":[{\"path\":\"counter.py\",\"line\":2,\"fileHash\":\"833556DB828032D49EFC4C58A380411C53465C917DA89BF613A607A10CEE2BA6\"}],\"evidence\":[]},\"context\":{\"headCommit\":\"941e0c7b5b13ff5cd020d933ad788235a2a5a034\",\"codeHash\":\"78E8886D331A76FEBEB6D11AF4E63A892F61BD05EFD0335A4E7487EDD6280F00\",\"configurationHash\":\"20FB4CB248A7B81A7C14EC2AC50C90203DD2C8742188A79B615562F3CBB6CC36\",\"fingerprint\":\"EA860E255FDCAEE44F6F5DF36C293580CD9C3486F70C3BDFCED245F227F9B994\"},\"status\":\"unfixed\",\"recheckRoundId\":\"43912a6d-8504-4a1f-9882-d5b297a1d21b\",\"recheck\":{\"findingId\":\"372d01df-2068-49f2-804a-2142b8eee4e4\",\"status\":\"unfixed\",\"reason\":\"The same finding remains; this is no new occurrence.\",\"codeReferences\":[],\"evidence\":[]}},{\"findingId\":\"a44e8e19-b91e-4cef-a8e7-f16345b7e350\",\"taskId\":\"eec84e67-5c47-4bb5-8092-f64c0d5976f0\",\"roundId\":\"d04b5859-c189-4498-85a6-20d852bff6ab\",\"runId\":\"8f86248a-c320-49c3-b98f-646b5de719d8\",\"data\":{\"title\":\"Repeated counter edge case\",\"description\":\"Repeated negative-input assertion gap.\",\"category\":\"defect\",\"severity\":\"high\",\"owner\":\"verification\",\"criterionIds\":[],\"codeReferences\":[{\"path\":\"counter.py\",\"line\":2,\"fileHash\":\"833556DB828032D49EFC4C58A380411C53465C917DA89BF613A607A10CEE2BA6\"}],\"evidence\":[]},\"context\":{\"headCommit\":\"941e0c7b5b13ff5cd020d933ad788235a2a5a034\",\"codeHash\":\"78E8886D331A76FEBEB6D11AF4E63A892F61BD05EFD0335A4E7487EDD6280F00\",\"configurationHash\":\"20FB4CB248A7B81A7C14EC2AC50C90203DD2C8742188A79B615562F3CBB6CC36\",\"fingerprint\":\"EA860E255FDCAEE44F6F5DF36C293580CD9C3486F70C3BDFCED245F227F9B994\"},\"status\":\"unfixed\",\"recheckRoundId\":\"4908efef-ce45-44c6-8f77-058ca526e962\",\"recheck\":{\"findingId\":\"a44e8e19-b91e-4cef-a8e7-f16345b7e350\",\"status\":\"unfixed\",\"reason\":\"Rechecked persistent finding.\",\"codeReferences\":[],\"evidence\":[]}}]"
+            }
+          },
+          "current": true,
+          "linkedTaskExists": false,
+          "matchingTaskIds": []
+        },
+        "observations": [
+          {
+            "id": "6c9180a6-7701-48ee-9c59-ee83438a5ef3",
+            "candidateId": "2d02e4b8-d956-43fb-990e-f1ef02f399ea",
+            "collectionId": "8b24d822-4e57-4923-9530-bbc3d6a9a0e4",
+            "signal": {
+              "fingerprint": "7BE03E5898CF14189F3C1A13111F03AB825D7D0156BC8A80A4772F445B13A24F",
+              "title": "Repeated counter edge case",
+              "description": "Repeated negative-input assertion gap.",
+              "origin": "Recurring finding across 2 tasks",
+              "url": null,
+              "available": true,
+              "evidenceJson": "[{\"findingId\":\"372d01df-2068-49f2-804a-2142b8eee4e4\",\"taskId\":\"f7f4f981-8e76-44a6-9b45-d7efa23d5949\",\"roundId\":\"8c3141d7-1a06-43d8-ac9a-24e8c228131d\",\"runId\":\"30cb8b2e-1ba1-4ee8-ba92-814d00c26492\",\"data\":{\"title\":\"Repeated counter edge case\",\"description\":\"Repeated negative-input assertion gap.\",\"category\":\"defect\",\"severity\":\"high\",\"owner\":\"verification\",\"criterionIds\":[],\"codeReferences\":[{\"path\":\"counter.py\",\"line\":2,\"fileHash\":\"833556DB828032D49EFC4C58A380411C53465C917DA89BF613A607A10CEE2BA6\"}],\"evidence\":[]},\"context\":{\"headCommit\":\"941e0c7b5b13ff5cd020d933ad788235a2a5a034\",\"codeHash\":\"78E8886D331A76FEBEB6D11AF4E63A892F61BD05EFD0335A4E7487EDD6280F00\",\"configurationHash\":\"20FB4CB248A7B81A7C14EC2AC50C90203DD2C8742188A79B615562F3CBB6CC36\",\"fingerprint\":\"EA860E255FDCAEE44F6F5DF36C293580CD9C3486F70C3BDFCED245F227F9B994\"},\"status\":\"unfixed\",\"recheckRoundId\":\"43912a6d-8504-4a1f-9882-d5b297a1d21b\",\"recheck\":{\"findingId\":\"372d01df-2068-49f2-804a-2142b8eee4e4\",\"status\":\"unfixed\",\"reason\":\"The same finding remains; this is no new occurrence.\",\"codeReferences\":[],\"evidence\":[]}},{\"findingId\":\"a44e8e19-b91e-4cef-a8e7-f16345b7e350\",\"taskId\":\"eec84e67-5c47-4bb5-8092-f64c0d5976f0\",\"roundId\":\"d04b5859-c189-4498-85a6-20d852bff6ab\",\"runId\":\"8f86248a-c320-49c3-b98f-646b5de719d8\",\"data\":{\"title\":\"Repeated counter edge case\",\"description\":\"Repeated negative-input assertion gap.\",\"category\":\"defect\",\"severity\":\"high\",\"owner\":\"verification\",\"criterionIds\":[],\"codeReferences\":[{\"path\":\"counter.py\",\"line\":2,\"fileHash\":\"833556DB828032D49EFC4C58A380411C53465C917DA89BF613A607A10CEE2BA6\"}],\"evidence\":[]},\"context\":{\"headCommit\":\"941e0c7b5b13ff5cd020d933ad788235a2a5a034\",\"codeHash\":\"78E8886D331A76FEBEB6D11AF4E63A892F61BD05EFD0335A4E7487EDD6280F00\",\"configurationHash\":\"20FB4CB248A7B81A7C14EC2AC50C90203DD2C8742188A79B615562F3CBB6CC36\",\"fingerprint\":\"EA860E255FDCAEE44F6F5DF36C293580CD9C3486F70C3BDFCED245F227F9B994\"},\"status\":\"unfixed\",\"recheckRoundId\":null,\"recheck\":null}]"
+            }
+          },
+          {
+            "id": "b755b54b-8eff-43f8-be50-11ab3b1f21f5",
+            "candidateId": "2d02e4b8-d956-43fb-990e-f1ef02f399ea",
+            "collectionId": "5f1167ce-f628-47ef-ae73-fc763d83d61a",
+            "signal": {
+              "fingerprint": "7BE03E5898CF14189F3C1A13111F03AB825D7D0156BC8A80A4772F445B13A24F",
+              "title": "Repeated counter edge case",
+              "description": "Repeated negative-input assertion gap.",
+              "origin": "Recurring finding across 2 tasks",
+              "url": null,
+              "available": true,
+              "evidenceJson": "[{\"findingId\":\"372d01df-2068-49f2-804a-2142b8eee4e4\",\"taskId\":\"f7f4f981-8e76-44a6-9b45-d7efa23d5949\",\"roundId\":\"8c3141d7-1a06-43d8-ac9a-24e8c228131d\",\"runId\":\"30cb8b2e-1ba1-4ee8-ba92-814d00c26492\",\"data\":{\"title\":\"Repeated counter edge case\",\"description\":\"Repeated negative-input assertion gap.\",\"category\":\"defect\",\"severity\":\"high\",\"owner\":\"verification\",\"criterionIds\":[],\"codeReferences\":[{\"path\":\"counter.py\",\"line\":2,\"fileHash\":\"833556DB828032D49EFC4C58A380411C53465C917DA89BF613A607A10CEE2BA6\"}],\"evidence\":[]},\"context\":{\"headCommit\":\"941e0c7b5b13ff5cd020d933ad788235a2a5a034\",\"codeHash\":\"78E8886D331A76FEBEB6D11AF4E63A892F61BD05EFD0335A4E7487EDD6280F00\",\"configurationHash\":\"20FB4CB248A7B81A7C14EC2AC50C90203DD2C8742188A79B615562F3CBB6CC36\",\"fingerprint\":\"EA860E255FDCAEE44F6F5DF36C293580CD9C3486F70C3BDFCED245F227F9B994\"},\"status\":\"unfixed\",\"recheckRoundId\":\"43912a6d-8504-4a1f-9882-d5b297a1d21b\",\"recheck\":{\"findingId\":\"372d01df-2068-49f2-804a-2142b8eee4e4\",\"status\":\"unfixed\",\"reason\":\"The same finding remains; this is no new occurrence.\",\"codeReferences\":[],\"evidence\":[]}},{\"findingId\":\"a44e8e19-b91e-4cef-a8e7-f16345b7e350\",\"taskId\":\"eec84e67-5c47-4bb5-8092-f64c0d5976f0\",\"roundId\":\"d04b5859-c189-4498-85a6-20d852bff6ab\",\"runId\":\"8f86248a-c320-49c3-b98f-646b5de719d8\",\"data\":{\"title\":\"Repeated counter edge case\",\"description\":\"Repeated negative-input assertion gap.\",\"category\":\"defect\",\"severity\":\"high\",\"owner\":\"verification\",\"criterionIds\":[],\"codeReferences\":[{\"path\":\"counter.py\",\"line\":2,\"fileHash\":\"833556DB828032D49EFC4C58A380411C53465C917DA89BF613A607A10CEE2BA6\"}],\"evidence\":[]},\"context\":{\"headCommit\":\"941e0c7b5b13ff5cd020d933ad788235a2a5a034\",\"codeHash\":\"78E8886D331A76FEBEB6D11AF4E63A892F61BD05EFD0335A4E7487EDD6280F00\",\"configurationHash\":\"20FB4CB248A7B81A7C14EC2AC50C90203DD2C8742188A79B615562F3CBB6CC36\",\"fingerprint\":\"EA860E255FDCAEE44F6F5DF36C293580CD9C3486F70C3BDFCED245F227F9B994\"},\"status\":\"unfixed\",\"recheckRoundId\":\"4908efef-ce45-44c6-8f77-058ca526e962\",\"recheck\":{\"findingId\":\"a44e8e19-b91e-4cef-a8e7-f16345b7e350\",\"status\":\"unfixed\",\"reason\":\"Rechecked persistent finding.\",\"codeReferences\":[],\"evidence\":[]}}]"
+            }
+          },
+          {
+            "id": "96305b6e-71af-4cc0-b3da-dd06432c3eb5",
+            "candidateId": "2d02e4b8-d956-43fb-990e-f1ef02f399ea",
+            "collectionId": "12bf53c2-8990-455c-a225-88d399397bbc",
+            "signal": {
+              "fingerprint": "7BE03E5898CF14189F3C1A13111F03AB825D7D0156BC8A80A4772F445B13A24F",
+              "title": "Repeated counter edge case",
+              "description": "Repeated negative-input assertion gap.",
+              "origin": "Recurring finding across 2 tasks",
+              "url": null,
+              "available": true,
+              "evidenceJson": "[{\"findingId\":\"372d01df-2068-49f2-804a-2142b8eee4e4\",\"taskId\":\"f7f4f981-8e76-44a6-9b45-d7efa23d5949\",\"roundId\":\"8c3141d7-1a06-43d8-ac9a-24e8c228131d\",\"runId\":\"30cb8b2e-1ba1-4ee8-ba92-814d00c26492\",\"data\":{\"title\":\"Repeated counter edge case\",\"description\":\"Repeated negative-input assertion gap.\",\"category\":\"defect\",\"severity\":\"high\",\"owner\":\"verification\",\"criterionIds\":[],\"codeReferences\":[{\"path\":\"counter.py\",\"line\":2,\"fileHash\":\"833556DB828032D49EFC4C58A380411C53465C917DA89BF613A607A10CEE2BA6\"}],\"evidence\":[]},\"context\":{\"headCommit\":\"941e0c7b5b13ff5cd020d933ad788235a2a5a034\",\"codeHash\":\"78E8886D331A76FEBEB6D11AF4E63A892F61BD05EFD0335A4E7487EDD6280F00\",\"configurationHash\":\"20FB4CB248A7B81A7C14EC2AC50C90203DD2C8742188A79B615562F3CBB6CC36\",\"fingerprint\":\"EA860E255FDCAEE44F6F5DF36C293580CD9C3486F70C3BDFCED245F227F9B994\"},\"status\":\"unfixed\",\"recheckRoundId\":\"43912a6d-8504-4a1f-9882-d5b297a1d21b\",\"recheck\":{\"findingId\":\"372d01df-2068-49f2-804a-2142b8eee4e4\",\"status\":\"unfixed\",\"reason\":\"The same finding remains; this is no new occurrence.\",\"codeReferences\":[],\"evidence\":[]}},{\"findingId\":\"a44e8e19-b91e-4cef-a8e7-f16345b7e350\",\"taskId\":\"eec84e67-5c47-4bb5-8092-f64c0d5976f0\",\"roundId\":\"d04b5859-c189-4498-85a6-20d852bff6ab\",\"runId\":\"8f86248a-c320-49c3-b98f-646b5de719d8\",\"data\":{\"title\":\"Repeated counter edge case\",\"description\":\"Repeated negative-input assertion gap.\",\"category\":\"defect\",\"severity\":\"high\",\"owner\":\"verification\",\"criterionIds\":[],\"codeReferences\":[{\"path\":\"counter.py\",\"line\":2,\"fileHash\":\"833556DB828032D49EFC4C58A380411C53465C917DA89BF613A607A10CEE2BA6\"}],\"evidence\":[]},\"context\":{\"headCommit\":\"941e0c7b5b13ff5cd020d933ad788235a2a5a034\",\"codeHash\":\"78E8886D331A76FEBEB6D11AF4E63A892F61BD05EFD0335A4E7487EDD6280F00\",\"configurationHash\":\"20FB4CB248A7B81A7C14EC2AC50C90203DD2C8742188A79B615562F3CBB6CC36\",\"fingerprint\":\"EA860E255FDCAEE44F6F5DF36C293580CD9C3486F70C3BDFCED245F227F9B994\"},\"status\":\"unfixed\",\"recheckRoundId\":\"4908efef-ce45-44c6-8f77-058ca526e962\",\"recheck\":{\"findingId\":\"a44e8e19-b91e-4cef-a8e7-f16345b7e350\",\"status\":\"unfixed\",\"reason\":\"Rechecked persistent finding.\",\"codeReferences\":[],\"evidence\":[]}}]"
+            }
+          }
+        ],
+        "decisions": [
+          {
+            "id": "d90ef758-604e-4b82-a513-edca2c2dca5d",
+            "requestId": "15eab628-0d59-4160-8100-d1c67c99b64a",
+            "candidateId": "2d02e4b8-d956-43fb-990e-f1ef02f399ea",
+            "observationId": "b755b54b-8eff-43f8-be50-11ab3b1f21f5",
+            "requestHash": "69D6D29D5744970B9068C8B7C3FF24FF80C50A00C47CD00238BF690652E3EA91",
+            "action": "verify",
+            "reason": "Inspected original evidence and reproduced its described behavior.",
+            "taskId": null,
+            "createdAt": "2026-10-29T22:58:41.629874Z"
+          }
+        ]
+      }

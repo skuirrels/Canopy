@@ -1,0 +1,30 @@
+$kind: http-request
+name: Reject unknown action
+method: POST
+url: '{{baseUrl}}/api/factory/intake/candidates/{{candidateId}}/actions'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "requestId": "{{$guid}}",
+      "expectedRevision": -1,
+      "expectedProjectRevision": -1,
+      "action": "invented",
+      "reason": "Isolated contract rejection",
+      "taskId": null,
+      "statusId": null,
+      "taskTitle": null
+    }
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')||!pm.variables.get('candidateId')||!pm.variables.get('sourceId')) throw new Error('Supply explicit isolated fixture variables.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Unknown action rejected',()=>pm.response.to.have.status(400));

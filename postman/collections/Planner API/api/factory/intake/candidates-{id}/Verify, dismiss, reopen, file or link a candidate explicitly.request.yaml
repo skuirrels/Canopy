@@ -1,0 +1,26 @@
+$kind: http-request
+description: Optional configured intake. Collection success is distinct from unavailable coverage. Exact request retries never duplicate tasks. Filing requires current source evidence, an explicit verification rationale and backlog column; it grants no execution or acceptance authority.
+url: "{{baseUrl}}/api/factory/intake/candidates/:id/actions"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: '{{candidateId}}'
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "requestId": "{{$guid}}",
+      "expectedRevision": -1,
+      "expectedProjectRevision": {{projectRevision}},
+      "action": "verify",
+      "reason": "Explicit contract validation against isolated evidence.",
+      "taskId": null,
+      "statusId": null,
+      "taskTitle": null
+    }
+examples: ./.resources/Verify, dismiss, reopen, file or link a candidate explicitly.resources/examples

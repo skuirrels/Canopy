@@ -2,3 +2,9 @@ $kind: collection
 description: ""
 variables:
   baseUrl: http://127.0.0.1:5274/
+  projectId: ''
+  sourceId: ''
+  candidateId: ''
+  projectRevision: ''
+  sourceRevision: ''
+  intakeConfiguration: '{}'

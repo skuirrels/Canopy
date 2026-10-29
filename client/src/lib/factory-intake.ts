@@ -1,0 +1,11 @@
+export type IntakeConfiguration = { name: string; kind: 'githubIssues' | 'reviewFindings'; enabled: boolean; repository: string; labels: string[]; minimumOccurrences: number; categories: string[] };
+export type IntakeSource = { id: string; projectId: string; revision: number; configuration: IntakeConfiguration };
+export type IntakeCollection = { id: string; sourceId: string; sourceRevision: number; state: string; error: string | null; observed: number; createdAt: string; finishedAt: string | null };
+export type IntakeSignal = { fingerprint: string; title: string; description: string; origin: string; url: string | null; available: boolean; evidenceJson: string };
+export type IntakeObservation = { id: string; candidateId: string; collectionId: string; signal: IntakeSignal };
+export type IntakeCandidate = { id: string; projectId: string; revision: number; state: string; reason: string; taskId: string | null; verifiedHash: string | null };
+export type IntakePreview = { candidate: IntakeCandidate; observation: IntakeObservation; current: boolean; linkedTaskExists: boolean; matchingTaskIds: string[] };
+export type IntakeLibrary = { projectRevision: number; sources: IntakeSource[]; collections: IntakeCollection[]; candidates: IntakePreview[] };
+export type IntakeDetail = { preview: IntakePreview; observations: IntakeObservation[]; decisions: { id: string; action: string; reason: string; taskId: string | null; observationId: string; createdAt: string }[] };
+export type IntakeAction = 'verify' | 'dismiss' | 'reopen' | 'file' | 'link';
+export type IntakeActionRequest = { requestId: string; expectedRevision: number; expectedProjectRevision: number; action: IntakeAction; reason: string; taskId: string | null; statusId: string | null; taskTitle: string | null };

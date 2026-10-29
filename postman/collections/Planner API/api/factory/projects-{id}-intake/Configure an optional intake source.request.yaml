@@ -1,0 +1,20 @@
+$kind: http-request
+description: Optional configured intake. Collection success is distinct from unavailable coverage. Exact request retries never duplicate tasks. Filing requires current source evidence, an explicit verification rationale and backlog column; it grants no execution or acceptance authority.
+url: "{{baseUrl}}/api/factory/projects/:id/intake/sources"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: '{{projectId}}'
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "expectedRevision": {{projectRevision}},
+      "configuration": {{intakeConfiguration}}
+    }
+examples: ./.resources/Configure an optional intake source.resources/examples

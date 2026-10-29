@@ -1,5 +1,7 @@
 # Canopy API contract
 
+The optional [verified intake API](FACTORY-INTAKE.md) adds configured GitHub issue and recurring review sources, complete-coverage receipts, deduplicated candidates and explicit provenance-bound triage. It never dispatches work.
+
 The optional [Software Factory configuration API](SOFTWARE-FACTORY.md) adds versioned pipelines and task attachments. Its configuration endpoints never dispatch work or change task workflow status.
 
 Phase 1 is a local, single-user workspace. Authentication is deliberately deferred. Bind to loopback; do not expose it publicly.

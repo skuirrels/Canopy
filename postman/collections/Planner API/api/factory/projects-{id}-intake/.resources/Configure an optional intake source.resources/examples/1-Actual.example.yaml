@@ -1,0 +1,19 @@
+$kind: http-example
+name: Actual isolated response
+request:
+  method: POST
+  url: "{{baseUrl}}/api/factory/projects/:id/intake/sources"
+response:
+  statusCode: 409
+  statusText: Conflict
+  headers:
+    - key: Content-Type
+      value: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+        "title": "This source scope already exists. Edit its configuration instead.",
+        "status": 409
+      }

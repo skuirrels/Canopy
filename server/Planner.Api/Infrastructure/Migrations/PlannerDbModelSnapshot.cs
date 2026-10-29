@@ -366,6 +366,131 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("DeliveryOperations");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.FactoryIntakeCandidate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("Fingerprint")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ObservationId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<long>("Revision")
+                        .HasColumnType("BIGINT");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid?>("TaskId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("VerifiedHash")
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId", "Fingerprint")
+                        .IsUnique();
+
+                    b.ToTable("IntakeCandidates");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.FactoryIntakeCollection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ConfigurationJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<int>("Observed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("SourceId")
+                        .HasColumnType("UUID");
+
+                    b.Property<long>("SourceRevision")
+                        .HasColumnType("BIGINT");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique();
+
+                    b.HasIndex("SourceId");
+
+                    b.ToTable("IntakeCollections");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.FactoryIntakeSource", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ConfigurationJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ProviderBinding")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<long>("Revision")
+                        .HasColumnType("BIGINT");
+
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId", "Scope")
+                        .IsUnique();
+
+                    b.ToTable("IntakeSources");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.FactoryPipeline", b =>
                 {
                     b.Property<Guid>("Id")
@@ -808,6 +933,70 @@ namespace Planner.Api.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("VerificationReceipts");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.IntakeDecision", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("CandidateId")
+                        .HasColumnType("UUID");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<Guid>("ObservationId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid?>("TaskId")
+                        .HasColumnType("UUID");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CandidateId");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique();
+
+                    b.ToTable("IntakeDecisions");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.IntakeObservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("CandidateId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("CollectionId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("SignalJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CandidateId");
+
+                    b.ToTable("IntakeObservations");
                 });
 
             modelBuilder.Entity("Planner.Api.Domain.Person", b =>

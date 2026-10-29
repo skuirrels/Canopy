@@ -1,0 +1,19 @@
+$kind: http-example
+name: Actual isolated response
+request:
+  method: POST
+  url: "{{baseUrl}}/api/factory/intake/candidates/:id/actions"
+response:
+  statusCode: 409
+  statusText: Conflict
+  headers:
+    - key: Content-Type
+      value: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+        "title": "This project changed since you loaded it. Your latest changes have not been saved. Refresh and try again.",
+        "status": 409
+      }

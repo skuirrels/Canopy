@@ -4,6 +4,11 @@ namespace Planner.Api.Infrastructure;
 
 public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(options)
 {
+    public DbSet<FactoryIntakeSource> IntakeSources => Set<FactoryIntakeSource>();
+    public DbSet<FactoryIntakeCollection> IntakeCollections => Set<FactoryIntakeCollection>();
+    public DbSet<FactoryIntakeCandidate> IntakeCandidates => Set<FactoryIntakeCandidate>();
+    public DbSet<IntakeObservation> IntakeObservations => Set<IntakeObservation>();
+    public DbSet<IntakeDecision> IntakeDecisions => Set<IntakeDecision>();
     public DbSet<ProjectDeliveryPolicy> DeliveryPolicies => Set<ProjectDeliveryPolicy>();
     public DbSet<FactoryDelivery> Deliveries => Set<FactoryDelivery>();
     public DbSet<FactoryDeliveryOperation> DeliveryOperations => Set<FactoryDeliveryOperation>();
@@ -33,6 +38,18 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<TaskFactoryConfiguration> TaskFactoryConfigurations => Set<TaskFactoryConfiguration>();
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.Ignore<IntakeConfiguration>(); model.Ignore<IntakeSignal>();
+        model.Entity<FactoryIntakeSource>().HasKey(x => x.Id); model.Entity<FactoryIntakeSource>().Ignore(x => x.Configuration);
+        model.Entity<FactoryIntakeSource>().HasIndex(x => new { x.ProjectId, x.Scope }).IsUnique();
+        model.Entity<FactoryIntakeCollection>().HasKey(x => x.Id); model.Entity<FactoryIntakeCollection>().HasIndex(x => x.RequestId).IsUnique();
+        model.Entity<FactoryIntakeCollection>().HasIndex(x => x.SourceId);
+        model.Entity<FactoryIntakeCandidate>().HasKey(x => x.Id); model.Entity<FactoryIntakeCandidate>().HasIndex(x => new { x.ProjectId, x.Fingerprint }).IsUnique();
+        model.Entity<IntakeObservation>().HasKey(x => x.Id); model.Entity<IntakeObservation>().Ignore(x => x.Signal); model.Entity<IntakeObservation>().HasIndex(x => x.CandidateId);
+        model.Entity<IntakeDecision>().HasKey(x => x.Id); model.Entity<IntakeDecision>().HasIndex(x => x.RequestId).IsUnique(); model.Entity<IntakeDecision>().HasIndex(x => x.CandidateId);
+        model.Entity<FactoryIntakeCollection>().Property(x => x.CreatedAt).HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+        model.Entity<FactoryIntakeCollection>().Property(x => x.FinishedAt).HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : (DateTime?)null);
+        model.Entity<FactoryIntakeCandidate>().Property(x => x.CreatedAt).HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+        model.Entity<IntakeDecision>().Property(x => x.CreatedAt).HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
         model.Ignore<DeliveryPolicy>(); model.Ignore<DeliveryCapture>(); model.Ignore<DeliveryApproval>(); model.Ignore<DeliveryRemote>();
         model.Ignore<DeliveryProbe>(); model.Ignore<DeliveryHookReceipt>(); model.Ignore<DeliveryCheck>(); model.Ignore<DeliveryObservation>(); model.Ignore<DeliveryCheckResult>();
         model.Entity<ProjectDeliveryPolicy>().HasKey(x => x.Id); model.Entity<ProjectDeliveryPolicy>().Ignore(x => x.Policy);

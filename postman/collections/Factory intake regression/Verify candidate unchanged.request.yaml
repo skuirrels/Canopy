@@ -1,0 +1,17 @@
+$kind: http-request
+name: Verify candidate unchanged
+method: GET
+url: '{{baseUrl}}/api/factory/intake/candidates/{{candidateId}}'
+order: 7000
+headers:
+  - key: Content-Type
+    value: application/json
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')||!pm.variables.get('candidateId')||!pm.variables.get('sourceId')) throw new Error('Supply explicit isolated fixture variables.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Candidate still readable',()=>pm.response.to.have.status(200));pm.test('Rejected requests change no revision',()=>pm.expect(pm.response.json().preview.candidate.revision).to.eql(Number(pm.collectionVariables.get('candidateRevision'))));

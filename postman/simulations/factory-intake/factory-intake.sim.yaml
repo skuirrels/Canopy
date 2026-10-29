@@ -1,0 +1,8 @@
+simulation: factory-intake
+routing: path
+mocks:
+  - name: GitHub issue intake contract
+    routeKey: github
+    origin:
+      - api.github.com
+    path: postman/mocks/github-intake/config.yaml

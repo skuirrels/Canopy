@@ -19,6 +19,24 @@ public static class FactoryEndpoints
             http.Response.Headers.CacheControl = "no-store";
             return await next(context);
         });
+        group.MapGet("/projects/{id:guid}/intake", (Guid id, FactoryIntakeService service, CancellationToken ct) => service.List(id, ct))
+            .WithSummary("Read intake sources, collection coverage and candidate previews").WithDescription("Optional configured intake. Collection success is distinct from unavailable coverage. Exact request retries never duplicate tasks. Filing requires current source evidence, an explicit verification rationale and backlog column; it grants no execution or acceptance authority.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
+        group.MapPost("/projects/{id:guid}/intake/sources", (Guid id, AddIntakeSource input, FactoryIntakeService service, CancellationToken ct) => service.AddSource(id, input, ct))
+            .WithSummary("Configure an optional intake source").WithDescription("Optional configured intake. Collection success is distinct from unavailable coverage. Exact request retries never duplicate tasks. Filing requires current source evidence, an explicit verification rationale and backlog column; it grants no execution or acceptance authority.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
+        group.MapPut("/intake/sources/{id:guid}", (Guid id, EditIntakeSource input, FactoryIntakeService service, CancellationToken ct) => service.EditSource(id, input, ct))
+            .WithSummary("Edit intake source filters and authority").WithDescription("Optional configured intake. Collection success is distinct from unavailable coverage. Exact request retries never duplicate tasks. Filing requires current source evidence, an explicit verification rationale and backlog column; it grants no execution or acceptance authority.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
+        group.MapPost("/intake/sources/{id:guid}/collections", (Guid id, CollectIntake input, FactoryIntakeService service, CancellationToken ct) => service.Collect(id, input, ct))
+            .WithSummary("Collect complete source evidence without filing work").WithDescription("Optional configured intake. Collection success is distinct from unavailable coverage. Exact request retries never duplicate tasks. Filing requires current source evidence, an explicit verification rationale and backlog column; it grants no execution or acceptance authority.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
+        group.MapGet("/intake/candidates/{id:guid}", (Guid id, FactoryIntakeService service, CancellationToken ct) => service.Read(id, ct))
+            .WithSummary("Read candidate evidence and triage history").WithDescription("Optional configured intake. Collection success is distinct from unavailable coverage. Exact request retries never duplicate tasks. Filing requires current source evidence, an explicit verification rationale and backlog column; it grants no execution or acceptance authority.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
+        group.MapPost("/intake/candidates/{id:guid}/actions", (Guid id, ActOnIntake input, FactoryIntakeService service, CancellationToken ct) => service.Act(id, input, ct))
+            .WithSummary("Verify, dismiss, reopen, file or link a candidate explicitly").WithDescription("Optional configured intake. Collection success is distinct from unavailable coverage. Exact request retries never duplicate tasks. Filing requires current source evidence, an explicit verification rationale and backlog column; it grants no execution or acceptance authority.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
         group.MapGet("/projects/{id:guid}/delivery-policy", (Guid id, FactoryDeliveryService service, CancellationToken ct) => service.Policy(id, ct))
             .WithSummary("Read project delivery policy").WithDescription("Commit-bound delivery authority and persistent operation receipts. Capturing executes nothing. Mutations are asynchronous; exact retries never repeat side effects. Unknown outcomes require reconciliation.")
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);

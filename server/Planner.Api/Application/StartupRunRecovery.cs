@@ -6,6 +6,7 @@ public sealed class StartupRunRecovery(IWorkspaceStore store)
 {
     public Task Recover(CancellationToken ct) => store.WriteAsync(data =>
     {
+        foreach (var collection in data.IntakeCollections.Where(x => x.State == "running")) collection.Finish("interrupted", "Backend restarted. Source coverage is unavailable; collection was not replayed.");
         foreach (var operation in data.DeliveryOperations.Where(x => x.Pending))
         {
             operation.End("uncertain", "Backend restarted. External outcomes must be reconciled; no action was replayed.");

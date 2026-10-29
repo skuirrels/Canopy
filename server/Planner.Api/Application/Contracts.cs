@@ -24,6 +24,11 @@ public sealed record EditPerson(string Name);
 public sealed record WorkflowDefault(string Name, string Color, bool IsCompleted);
 public sealed class WorkspaceData
 {
+    [JsonIgnore] public List<FactoryIntakeSource> IntakeSources { get; init; } = [];
+    [JsonIgnore] public List<FactoryIntakeCollection> IntakeCollections { get; init; } = [];
+    [JsonIgnore] public List<FactoryIntakeCandidate> IntakeCandidates { get; init; } = [];
+    [JsonIgnore] public List<IntakeObservation> IntakeObservations { get; init; } = [];
+    [JsonIgnore] public List<IntakeDecision> IntakeDecisions { get; init; } = [];
     [JsonIgnore] public List<ProjectDeliveryPolicy> DeliveryPolicies { get; init; } = [];
     [JsonIgnore] public List<FactoryDelivery> Deliveries { get; init; } = [];
     [JsonIgnore] public List<FactoryDeliveryOperation> DeliveryOperations { get; init; } = [];
