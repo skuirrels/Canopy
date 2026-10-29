@@ -1,0 +1,12 @@
+$kind: collection
+name: Factory intake regression
+description: Isolated fixture only. Source reads and rejected triage intents; no provider writes or task filing.
+variables:
+  - key: baseUrl
+    value: 'http://127.0.0.1:5274'
+  - key: projectId
+    value: ''
+  - key: candidateId
+    value: ''
+  - key: sourceId
+    value: ''

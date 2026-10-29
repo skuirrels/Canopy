@@ -2,7 +2,7 @@
 
 Canopy records acceptance criteria, revision-bound verification evidence and
 explicit operator QA verdicts, independent review rounds and persistent findings.
-Next comes bounded repair, controlled PR delivery and verified problem intake.
+It also supports bounded repair, controlled PR delivery and verified problem intake.
 
 ## Delivered foundation
 
@@ -19,8 +19,8 @@ Next comes bounded repair, controlled PR delivery and verified problem intake.
 
 ## Planned priorities
 
-Items 1–4 are delivered with explicit operator decisions, independent review,
-bounded repair and controlled GitHub delivery. Item 5 remains pending. Order
+Items 1–5 are delivered with explicit operator decisions, independent review,
+bounded repair, controlled GitHub delivery and manual verified intake. Order
 expresses priority and dependencies, with no delivery dates or estimates assigned.
 
 | Order | Item | Depends on | Completion outcome |
@@ -29,7 +29,7 @@ expresses priority and dependencies, with no delivery dates or estimates assigne
 | 2 | [Delivered: independent review with persistent findings](FACTORY-REVIEW.md) | Item 1 | Stable finding IDs, assessment before builder comparison, verified rechecks and revision-bound approval |
 | 3 | [Delivered: bounded repair and verification loop](FACTORY-REPAIR.md) | Items 1 and 2 | Findings return to the responsible stage and are verified after repair |
 | 4 | [Delivered: controlled PR delivery and merge verification](FACTORY-DELIVERY.md) | Items 1 and 2; item 3 for automatic repairs | Only the reviewed and verified revision can pass the configured merge policy |
-| 5 | Verified problem intake | Criteria and finding contracts from items 1 and 2 | Configured signals become deduplicated backlog candidates with provenance |
+| 5 | [Delivered: verified problem intake](FACTORY-INTAKE.md) | Criteria and finding contracts from items 1 and 2 | Configured signals become deduplicated backlog candidates with provenance |
 
 ## Acceptance criteria and evidence based QA
 
@@ -122,20 +122,23 @@ and persistence. See [delivery validation](FACTORY-DELIVERY-VALIDATION.md).
 
 ## Verified problem intake
 
-- [ ] Connect explicitly configured sources such as application errors, analytics,
-  GitHub issues and recurring PR findings; retain each source's own identity and
-  evidence. Integrations remain optional.
-- [ ] Verify each candidate, assign a durable fingerprint and deduplicate against
+- [x] Connect explicitly configured GitHub issue and recurring review-finding
+  sources; retain each source's own identity and evidence. Integrations remain
+  optional. Application errors and analytics are future source adapters.
+- [x] Verify each candidate, assign a durable fingerprint and deduplicate against
   existing work. Preserve links to the original signal.
-- [ ] Distinguish a successful empty read from unavailable or truncated coverage.
+- [x] Distinguish a successful empty read from unavailable or truncated coverage.
   Failed source reads must not imply that no problems exist.
-- [ ] Preview proposed intake before filing unless the project explicitly enables
-  automatic filing. Candidates enter the backlog for triage; intake grants no
-  execution, Ready-state or merge authority.
+- [x] Preview proposed intake before explicit filing or linking. Automatic filing
+  is deferred. Candidates enter an explicitly chosen incomplete backlog column;
+  intake grants no execution, Ready-state or merge authority.
 
-Complete when repeated collection does not duplicate work, an unavailable source
-is reported accurately, and every filed candidate links to verified source
-evidence without starting implementation.
+Delivered with durable fingerprints, complete/failed/interrupted collection
+receipts, immutable observations and revision-bound triage decisions. Recurrence
+counts distinct tasks, not repeated rechecks. Current source evidence is rechecked
+before filing, and exact retries retain one task link even after deletion.
+Operator verification judges relevance and reproduction; source collection alone
+does not establish a defect. See [intake validation](FACTORY-INTAKE-VALIDATION.md).
 
 ## Operating constraints
 

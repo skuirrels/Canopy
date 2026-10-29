@@ -1,0 +1,32 @@
+$kind: http-example
+name: Actual isolated response
+request:
+  method: PUT
+  url: "{{baseUrl}}/api/factory/intake/sources/:id"
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    - key: Content-Type
+      value: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "id": "97bae145-7ef6-49fb-98f4-e73824857fbd",
+        "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+        "revision": 6,
+        "scope": "0EC5F46F1BBFF5D093C36826C554DDEB3410C324B1B4D3CD69D30C473265520F",
+        "providerBinding": "DAF75A881F7BFB06A6DDCF229E356E160D16D1FD6AB11BF94BBA7EAFDE377A7F",
+        "configuration": {
+          "name": "GitHub bug intake",
+          "kind": "githubIssues",
+          "enabled": true,
+          "repository": "regression/intake",
+          "labels": [
+            "bug"
+          ],
+          "minimumOccurrences": 0,
+          "categories": []
+        }
+      }

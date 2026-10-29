@@ -16,6 +16,10 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
     {
         var graph = data.Graph(id, revision);
         if (((data.Deliveries.Any(x => x.ProjectId == id && x.Open) || data.RepairLoops.Any(x => x.ProjectId == id && x.Open)) || data.AgentRuns.Any(x => x.ProjectId == id && x.Active) || data.FactoryRuns.Any(x => x.ProjectId == id && x.Active))) throw new RuleException("Stop active runs and repair loops, and close open deliveries before deleting this project.", 409);
+        if (data.IntakeCollections.Any(x => x.ProjectId == id && x.State == "running")) throw new RuleException("Wait for the active intake collection before deleting this project.", 409);
+        var intakeIds = data.IntakeCandidates.Where(x => x.ProjectId == id).Select(x => x.Id).ToHashSet();
+        data.IntakeDecisions.RemoveAll(x => intakeIds.Contains(x.CandidateId)); data.IntakeObservations.RemoveAll(x => intakeIds.Contains(x.CandidateId));
+        data.IntakeCandidates.RemoveAll(x => x.ProjectId == id); data.IntakeCollections.RemoveAll(x => x.ProjectId == id); data.IntakeSources.RemoveAll(x => x.ProjectId == id);
         data.RemoveFactoryRuns(data.FactoryRuns.Where(x => x.ProjectId == id).Select(x => x.Id));
         data.AgentConnections.RemoveAll(x => x.ProjectId == id); data.AgentRuns.RemoveAll(x => x.ProjectId == id);
         data.SpecFiles.RemoveAll(x => x.ProjectId == id);

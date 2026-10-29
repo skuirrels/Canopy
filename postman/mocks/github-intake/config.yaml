@@ -1,0 +1,11 @@
+version: 1
+interceptRequests: true
+id: 7dac051f-8c04-42df-97b1-5e0f95c43008
+name: GitHub issue intake consumed contract subset
+slug: github-issue-intake-consumed-con
+protocol: http
+port: 4500
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

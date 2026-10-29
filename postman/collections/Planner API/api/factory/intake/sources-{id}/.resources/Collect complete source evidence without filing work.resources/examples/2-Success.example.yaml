@@ -1,0 +1,28 @@
+$kind: http-example
+name: Actual isolated successful response
+request:
+  method: POST
+  url: "{{baseUrl}}/api/factory/intake/sources/:id/collections"
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    - key: Content-Type
+      value: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "id": "3a75f00e-a865-48fe-8da0-f879b7f3948c",
+        "projectId": "de0c4691-7623-4472-acca-8761b4cf1312",
+        "sourceId": "f30557f5-69d4-4a0a-a7d5-c889df942496",
+        "requestId": "efcde558-efa8-45be-abec-74c9eba2f5e3",
+        "requestHash": "901688CF230F81DF486666DD982E679D8379F03086E3039E7CE8AC5AA487E83F",
+        "sourceRevision": 1,
+        "configurationJson": "{\"name\":\"Recurring defects\",\"kind\":\"reviewFindings\",\"enabled\":true,\"repository\":\"\",\"labels\":[],\"minimumOccurrences\":2,\"categories\":[\"defect\"]}",
+        "state": "complete",
+        "error": null,
+        "observed": 1,
+        "createdAt": "2026-10-29T23:06:05.101471Z",
+        "finishedAt": "2026-10-29T23:06:05.149337Z"
+      }
