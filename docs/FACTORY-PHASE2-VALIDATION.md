@@ -74,3 +74,31 @@ unsaved recovery remain browser preferences; the saved configuration stays in
 native DuckDB. No backend contract, migration, provider path or execution policy
 changed in this phase. Skill availability and execution readiness remain
 explicitly unverified; execution is a later phase.
+
+## Release review — 29 October 2026
+
+PR #11 was already merged when the follow-up review began. Review found one
+configuration defect: the valid configured template ID `custom` collided with
+the UI's custom-pipeline action. Template options now use a separate UI namespace
+while the API receives the original configured ID. No catalogue entries or
+backend validation rules were changed.
+
+Real Chromium verified that selecting that configured template opens the
+template flow, posts `templateId: "custom"` without a caller-supplied definition
+or source, and persists the authoritative definition and source. The separate
+custom-pipeline action still opens its explicit fields. The test catalogue and
+database were temporary, and the browser reported no runtime errors.
+
+Fresh checks passed: 93 client tests, production frontend build, Debug and Release
+backend builds (zero warnings/errors), 50 factory persistence checks, 57 planning
+checks, 18 linked-specification checks, 6 MCP tests and 20 maintained Postman
+assertions. The planning suite was rerun serially after an initial
+whole-workspace snapshot was disturbed by concurrent browser fixture edits.
+MCP tests passed after installing their unchanged lockfile dependencies.
+
+The Release backend also passed the full 15 designer workflow checks, 14 extended
+canvas/concurrency/responsive/accessibility checks and 11 restart/adoption/cleanup
+checks again. The pipeline created from configured template ID `custom` matched
+its original persisted snapshot exactly after restart. Automated accessibility
+scans cover the tested workspace; viewport emulation does not establish physical
+tablet/phone support.
