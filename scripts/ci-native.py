@@ -71,6 +71,8 @@ def workspace_regression():
 
 
 if __name__ == '__main__':
+    run('dotnet', 'run', '--project', ROOT / 'tests/Planner.StoreRegression', '--',
+        API / 'factory-templates.json')
     workspace_regression()
     for name in (
         'spec-file', 'agent', 'factory', 'factory-run', 'factory-execution',

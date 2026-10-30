@@ -13,6 +13,7 @@ credentials and pins actions to verified upstream commit IDs.
 
 - `Client verification`: locked dependency installation, client tests and build.
 - `Native API verification`: pinned public EFCoreProvider/native DuckDB build,
+  deterministic timestamp write/read and rollback checks,
   isolated workspace/spec/agent/factory/QA/review/repair/skills regressions,
   real adapters against local Postman delivery/intake simulations, and local
   collection structural lint. Simulation passes do not prove real GitHub delivery.
