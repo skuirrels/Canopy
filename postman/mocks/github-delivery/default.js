@@ -59,14 +59,17 @@ http.createServer(async (req,res)=>{
     if(f.mode==='protectionRace')return answer(403,{message:'Concurrent server protection rejected merge'});
     const uuid=crypto.randomUUID();state.writes.push({kind:'merge',number:p.number,sha:b.sha});
     if(f.mode==='enqueued'){state.requests[uuid]={number:p.number,enqueued:true};await save(state);return answer(200,{status:'enqueued',details:{uuid}});}
-    if(f.mode==='pending'){state.requests[uuid]={number:p.number,head:b.sha};await save(state);return answer(202,{status:'pending',details:{uuid,expected_head_sha:b.sha,merge_method:'merge',merge_action:'direct_merge',bypass_rules:false}});}
+    if(['pending','pendingWrongHead','pendingBypass'].includes(f.mode)){
+     state.requests[uuid]={number:p.number,head:b.sha};await save(state);
+     return answer(202,{status:'pending',details:{uuid,expected_head_sha:f.mode==='pendingWrongHead'?ref(p.base):b.sha,merge_method:'merge',merge_action:'direct_merge',bypass_rules:f.mode==='pendingBypass'}});
+    }
     const sha=merge(p,f);state.requests[uuid]={number:p.number,sha};await save(state);
     if(f.mode==='lostMerge')return res.destroy();return answer(200,{status:'merged',details:{sha}});
    }
    if(match[2].startsWith('/merge-async/')&&req.method==='GET'){
     const uuid=match[2].slice('/merge-async/'.length), r=state.requests[uuid];if(!r||f.mode==='expired')return answer(404,{message:'Not found'});
     if(f.mode==='failedResult'||r.failed){r.failed=true;await save(state);return answer(200,{status:'failed',details:{message:'Explicit terminal merge rejection'}});}
-    if(!r.sha&&f.mode!=='pending'){r.sha=merge(p,f);await save(state);}
+    if(!r.sha&&!['pending','pendingWrongHead','pendingBypass'].includes(f.mode)){r.sha=merge(p,f);await save(state);}
     return answer(200,r.sha?{status:'merged',details:{sha:r.sha}}:{status:'pending',details:{uuid,expected_head_sha:r.head,merge_method:'merge',merge_action:'direct_merge',bypass_rules:false}});
    }
   }

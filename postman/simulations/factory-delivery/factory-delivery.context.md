@@ -14,9 +14,11 @@ probes against it. No real GitHub mutations or paid model calls occur.
 
 The fixture controls provider outages, HTML failures, request hangs, missing and
 failed checks, App identity, truncated coverage, strict-protection gaps, lost
-create/merge responses and asynchronous merge outcomes. Unhandled routes return
+create/merge responses, asynchronous merge outcomes, and pending responses with
+a mismatched real target/base Git object or claimed rules bypass. Unhandled routes return
 501. SHA/tree/parent values come from real Git objects. `__state` is a local-only
-inspection route for checking mutation counts; it is not a GitHub API contract.
+inspection route for checking mutation counts and unmerged fixture state; it is
+not a GitHub API contract.
 
 No remote Postman workspace push or mock deployment is needed. Inspect the
 simulation NDJSON request events to establish that the actual adapter used this
