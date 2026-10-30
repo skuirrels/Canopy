@@ -1,0 +1,19 @@
+$kind: http-example
+name: 4-Missing project
+request:
+  method: GET
+  url: '{{baseUrl}}/api/factory/projects/{{projectId}}/skills'
+response:
+  statusCode: 404
+  statusText: Not Found
+  headers:
+    - key: Content-Type
+      value: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+        "title": "Project not found.",
+        "status": 404
+      }

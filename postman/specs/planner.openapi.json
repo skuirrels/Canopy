@@ -4607,6 +4607,68 @@
           }
         }
       }
+    },
+    "/api/factory/projects/{id}/skills": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Observe configured installed skills",
+        "description": "Read-only bounded catalogue for this project's explicit skill files and discovery roots. Entries retain exact IDs/sources, paths and byte hashes. Source coverage and unavailable/ambiguous references remain visible. Reading or selecting never installs, executes or verifies provider compatibility.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactorySkillCatalogue"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -10472,6 +10534,124 @@
           },
           "evidenceJson": {
             "type": "string"
+          }
+        }
+      },
+      "FactorySkillCatalogue": {
+        "required": [
+          "observedAt",
+          "fingerprint",
+          "complete",
+          "entries",
+          "scopes"
+        ],
+        "type": "object",
+        "properties": {
+          "observedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fingerprint": {
+            "type": "string"
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactorySkillEntry"
+            }
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactorySkillScope"
+            }
+          }
+        }
+      },
+      "FactorySkillEntry": {
+        "required": [
+          "id",
+          "source",
+          "paths",
+          "hash",
+          "title",
+          "state",
+          "error",
+          "origins"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "hash": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": "string"
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "origins": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "FactorySkillScope": {
+        "required": [
+          "source",
+          "path",
+          "kind",
+          "complete",
+          "error"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       }

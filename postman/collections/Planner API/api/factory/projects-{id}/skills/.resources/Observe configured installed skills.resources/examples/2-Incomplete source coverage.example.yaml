@@ -1,0 +1,29 @@
+$kind: http-example
+name: 2-Incomplete source coverage
+request:
+  method: GET
+  url: '{{baseUrl}}/api/factory/projects/{{projectId}}/skills'
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    - key: Content-Type
+      value: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "observedAt": "2026-10-30T11:52:30.050014Z",
+        "fingerprint": "B380C16DD00C9671098C01A10C08487AC42CD90142DE4BF824D45D9A94703C58",
+        "complete": false,
+        "entries": [],
+        "scopes": [
+          {
+            "source": "Project skill library",
+            "path": "skills",
+            "kind": "root",
+            "complete": false,
+            "error": "Skill discovery does not follow symbolic links or reparse points. Configure real directories."
+          }
+        ]
+      }

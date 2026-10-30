@@ -1,0 +1,14 @@
+$kind: http-request
+name: Verify workspace unchanged
+method: GET
+url: '{{baseUrl}}/api/workspace'
+order: 5000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')) throw new Error('Supply explicit isolated fixtureMode and projectId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Workspace readable',()=>pm.response.to.have.status(200));pm.test('Observation changes no project or task state',()=>pm.expect(pm.response.json()).to.deep.eql(JSON.parse(pm.collectionVariables.get('workspaceBefore'))));

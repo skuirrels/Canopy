@@ -66,19 +66,22 @@ JSON fields are rejected.
 
 ## Skill resolution
 
-`Factory:Skills` is the deployment's authoritative mapping from a recorded skill's
-exact `(id, source)` pair to its actual Markdown file. It is separate from the
-template catalogue because it describes this machine's installation paths.
-The default is empty. Each configured entry is `{Id, Source, Path}`; paths may
-be absolute or relative to the connected repository root. Environment overrides
-use the ordinary configuration index syntax, e.g. `Factory__Skills__0__Path`.
+`Factory:Skills` remains the deployment's exact explicit-file mapping. Optional
+`Factory:SkillDiscovery:Roots` add bounded directory observations through the same
+catalogue/resolver; see [installed skills](FACTORY-SKILLS.md). The default mapping
+and roots are empty. No home/plugin locations or skill contents are guessed.
 
-Unmapped or ambiguous pairs block preparation. Files use the existing local
-Markdown reader: readable UTF-8, at most 2 MB, with symbolic links rejected in
-every path component. Snapshots record the resolved path and SHA-256 hash, not
-assumed installation or compatibility. The dispatcher rechecks the hash before use, includes the selected Markdown in
-the step instructions, and supplies the resolved file/directory so supporting
-references can be resolved against their actual source. No fallback skill contents or guessed package locations exist.
+Every reference keeps its exact `(id, source)` identity. Explicit/discovered paths
+to the same exact file deduplicate; conflicting files are ambiguous. Incomplete
+coverage for the selected source, unresolved pairs, unreadable/non-UTF-8/oversized
+files and symbolic links block preparation. Displaying a readable installed file
+does not establish provider compatibility or successful execution.
+
+Snapshots record the resolved path and actual SHA-256 byte hash. The dispatcher
+rechecks current resolution and hash before use, includes the selected Markdown in
+step instructions and supplies its actual directory for supporting references.
+Changed installation contents or mappings require a new work order; refresh and
+selection never rewrite previous snapshots, execute agents or accept tasks.
 
 ## Dispatch and evidence
 

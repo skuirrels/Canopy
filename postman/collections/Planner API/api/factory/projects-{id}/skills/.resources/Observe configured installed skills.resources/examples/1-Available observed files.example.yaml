@@ -1,0 +1,58 @@
+$kind: http-example
+name: 1-Available observed files
+request:
+  method: GET
+  url: '{{baseUrl}}/api/factory/projects/{{projectId}}/skills'
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    - key: Content-Type
+      value: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "observedAt": "2026-10-30T11:52:30.032798Z",
+        "fingerprint": "42AC73DCAE7A8A414089BE7F7581505F9C3FC1379353A73C242083A7518CE8CF",
+        "complete": true,
+        "entries": [
+          {
+            "id": "counter-style",
+            "source": "Project skill library",
+            "paths": [
+              "/private/var/folders/6k/1rn1jb9n1w38437x__4155kw0000gn/T/canopy-skills-zvdnobcj/repo/skills/counter-style/SKILL.md"
+            ],
+            "hash": "2AA30362858273183654368FA1B1FECEDE30BE40BFFC7B8444FF1A419C600C51",
+            "title": "Restored skill",
+            "state": "available",
+            "error": null,
+            "origins": [
+              "root:skills"
+            ]
+          },
+          {
+            "id": "second",
+            "source": "Project skill library",
+            "paths": [
+              "/private/var/folders/6k/1rn1jb9n1w38437x__4155kw0000gn/T/canopy-skills-zvdnobcj/repo/skills/second/SKILL.md"
+            ],
+            "hash": "29C7F78BE8F0EAD9B0E7C00A8D4C995034E38FCCCEC94AF4000EAE83E72EC810",
+            "title": "Second skill",
+            "state": "available",
+            "error": null,
+            "origins": [
+              "root:skills"
+            ]
+          }
+        ],
+        "scopes": [
+          {
+            "source": "Project skill library",
+            "path": "skills",
+            "kind": "root",
+            "complete": true,
+            "error": null
+          }
+        ]
+      }

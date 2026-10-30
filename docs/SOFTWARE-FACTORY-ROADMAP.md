@@ -153,8 +153,11 @@ or reset production users, or commit directly to a protected branch. Local comma
 execution retains its documented account permissions; guard hooks do not replace
 an OS security boundary.
 
-Installed-skill discovery and live-provider end-to-end validation remain existing
-follow-up work. Authentication and team access remain a separate deployment
+Installed-skill discovery and a bounded real-provider implementation/check/review
+pilot are delivered. Discovery uses explicitly configured roots, a searchable
+picker and the same canonical file/hash resolver as execution. See
+[skills](FACTORY-SKILLS.md) and [validation](FACTORY-SKILLS-VALIDATION.md). Broader
+live-provider delivery/deployment validation remains follow-up work. Authentication and team access remain a separate deployment
 track. Model routing, parallel dispatch and automatic skill calibration are
 deferred behind the quality and delivery priorities above.
 
