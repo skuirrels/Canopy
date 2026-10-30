@@ -21,25 +21,30 @@ public sealed class LocalFactoryRunner(IWorkspaceStore store, LocalAgentEnvironm
     private async Task Advance(Guid id, CancellationToken stoppingToken)
     {
         using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+        var activeDeadline = DateTime.UtcNow.AddMinutes(options.MaxRunMinutes);
         lifetime.CancelAfter(TimeSpan.FromMinutes(options.MaxRunMinutes)); agents.Register(id, lifetime);
         try
         {
             var ct = lifetime.Token; var data = await store.ReadAsync(ct); var run = FactoryDispatchService.Find(data, id);
             if (run.State == "cancelling") { await StopChildren(data, id); await End(id, "cancelled", null); return; }
+            FactoryExecutionPolicyService.Require(data, run);
             if (run.State == "queued")
             {
                 var workspace = Path.Combine(options.WorkspaceRoot, run.Id.ToString());
                 var begun = await store.WriteAsync(current =>
                 {
                     var saved = FactoryDispatchService.Find(current, id);
-                    if (saved.State == "queued") saved.Begin(workspace);
+                    if (saved.State == "queued") { FactoryExecutionPolicyService.Require(current, saved); saved.Begin(workspace); }
                 }, ct);
                 if (FactoryDispatchService.Find(begun, id).State != "running") return;
+                ApplyDeadline(begun, FactoryDispatchService.Find(begun, id), lifetime, activeDeadline);
                 Directory.CreateDirectory(options.WorkspaceRoot);
                 await agents.Git(run.Snapshot.Environment.RepositoryPath, ["worktree", "add", "--detach", workspace, run.Snapshot.Environment.BaseCommit], ct);
                 if (run.Snapshot.Repair is { } lineage)
                     await repairWorkspace.Fork(FactoryDispatchService.Find(begun, lineage.ParentRunId), FactoryDispatchService.Find(begun, id), lineage.ParentContext, ct);
             }
+            var budgetData = await store.ReadAsync(ct);
+            ApplyDeadline(budgetData, FactoryDispatchService.Find(budgetData, id), lifetime, activeDeadline);
             data = await store.WriteAsync(current =>
             {
                 var saved = FactoryDispatchService.Find(current, id);
@@ -60,6 +65,7 @@ public sealed class LocalFactoryRunner(IWorkspaceStore store, LocalAgentEnvironm
                 {
                     var saved = FactoryDispatchService.Find(current, id); if (saved.State != "running") return;
                     var stage = current.FactoryStageRuns.Single(x => x.Id == next.StageRun.Id); var step = current.FactoryStepRuns.Single(x => x.Id == next.StepRun.Id);
+                    FactoryExecutionPolicyService.Require(current, saved);
                     stage.Begin(); step.Begin(); step.Wait(); stage.Wait(); saved.Wait();
                 }, ct);
                 return;
@@ -78,7 +84,7 @@ public sealed class LocalFactoryRunner(IWorkspaceStore store, LocalAgentEnvironm
             var data = await store.ReadAsync(CancellationToken.None); var run = FactoryDispatchService.Find(data, id);
             await StopChildren(data, id);
             await End(id, stoppingToken.IsCancellationRequested ? "interrupted" : run.State == "cancelling" ? "cancelled" : "failed",
-                stoppingToken.IsCancellationRequested ? "Canopy stopped during the run. The worktree and evidence are retained." : run.State == "cancelling" ? null : "The configured active-step time limit was reached.");
+                stoppingToken.IsCancellationRequested ? "Canopy stopped during the run. The worktree and evidence are retained." : run.State == "cancelling" ? null : FactoryExecutionPolicyService.Failure(data, run) ?? "The configured active-step time limit was reached.");
         }
         catch (Exception error)
         {
@@ -87,6 +93,12 @@ public sealed class LocalFactoryRunner(IWorkspaceStore store, LocalAgentEnvironm
             await End(id, "failed", error.Message);
         }
         finally { agents.Unregister(id); }
+    }
+    private static void ApplyDeadline(WorkspaceData data, FactoryRun run, CancellationTokenSource lifetime, DateTime activeDeadline)
+    {
+        var deadline = FactoryExecutionPolicyService.Budget(data, run).Deadline;
+        var limit = deadline.HasValue && deadline.Value < activeDeadline ? deadline.Value : activeDeadline;
+        lifetime.CancelAfter(TimeSpan.FromMilliseconds(Math.Max(0, (limit - DateTime.UtcNow).TotalMilliseconds)));
     }
     private sealed record Input(string Name, string Hash, string Evidence);
     private static IReadOnlyList<Input> Inputs(WorkspaceData data, Guid runId, FactoryStep step)
@@ -129,12 +141,14 @@ public sealed class LocalFactoryRunner(IWorkspaceStore store, LocalAgentEnvironm
         {
             var parent = FactoryDispatchService.Find(data, run.Id); if (parent.State != "running") return;
             var stage = data.FactoryStageRuns.Single(x => x.Id == next.StageRun.Id); var step = data.FactoryStepRuns.Single(x => x.Id == next.StepRun.Id);
+            FactoryExecutionPolicyService.Require(data, parent, "agent");
             stage.Begin(); step.QueueAgent(child.Id); data.AgentRuns.Add(child); parent.Touch();
         }, ct);
         if (!queued.AgentRuns.Any(x => x.Id == child.Id)) return;
         while (true)
         {
             var data = await store.ReadAsync(ct); var current = AgentService.Find(data, child.Id);
+            FactoryExecutionPolicyService.Require(data, FactoryDispatchService.Find(data, run.Id));
             await store.WriteAsync(saved =>
             {
                 var step = saved.FactoryStepRuns.Single(x => x.Id == next.StepRun.Id); var before = step.State;
@@ -145,7 +159,7 @@ public sealed class LocalFactoryRunner(IWorkspaceStore store, LocalAgentEnvironm
             {
                 var reviewAfter = reviewInput is null ? ((VerificationContext? Context, string? Error)?)null : await Observe(run, ct);
                 var evidence = JsonSerializer.Serialize(new { reviewInput, reviewContextStable = reviewInput is not null && reviewAfter?.Context?.Fingerprint == reviewInput.Context.Fingerprint,
-                    reviewContextError = reviewAfter?.Error, agentRunId = current.Id, current.Result, current.Diff, current.Error, current.SessionId, current.Provider, current.Model, current.Effort }, FactoryRules.Json);
+                    reviewContextError = reviewAfter?.Error, agentRunId = current.Id, current.Result, current.Diff, current.Error, current.SessionId, current.Provider, current.Model, current.Effort, current.Usage }, FactoryRules.Json);
                 await Complete(run.Id, next, current.State == "succeeded" ? "succeeded" : current.State == "cancelled" ? "cancelled" : current.State == "interrupted" ? "interrupted" : "failed", evidence, current.Error, null);
                 return;
             }
@@ -187,6 +201,7 @@ public sealed class LocalFactoryRunner(IWorkspaceStore store, LocalAgentEnvironm
     private Task Begin(Guid id, FactoryScheduledStep next, CancellationToken ct) => store.WriteAsync(data =>
     {
         var run = FactoryDispatchService.Find(data, id); if (run.State != "running") throw new OperationCanceledException(ct);
+        FactoryExecutionPolicyService.Require(data, run, next.Step.Kind);
         data.FactoryStageRuns.Single(x => x.Id == next.StageRun.Id).Begin(); data.FactoryStepRuns.Single(x => x.Id == next.StepRun.Id).Begin(); run.Touch();
     }, ct);
     private Task Progress(Guid id, string line) => store.WriteAsync(data => data.FactoryStepRuns.Single(x => x.Id == id).Progress(line + "\n", options.MaxOutputCharacters), CancellationToken.None);

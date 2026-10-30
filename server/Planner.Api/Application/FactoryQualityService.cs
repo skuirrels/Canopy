@@ -131,8 +131,9 @@ public sealed class FactoryQualityService(IWorkspaceStore store, IVerificationEn
         var attachment = data.TaskFactoryConfigurations.SingleOrDefault(x => x.Id == run.ItemId);
         return attachment is null ? null : new { attachment.PipelineVersionId, attachment.Overrides };
     }
-    public static string Source(WorkspaceData data, FactoryRun run) => FactoryCriterionVerdict.Source(Item(data, run.ItemId).SpecJson,
-        data.AcceptanceCriteria.SingleOrDefault(x => x.Id == run.ItemId)?.Criteria ?? [], Attachment(data, run));
-    public static string CapturedSource(FactoryRun run) => FactoryCriterionVerdict.Source(run.Snapshot.SpecJson, run.Snapshot.Criteria ?? [],
-        new { PipelineVersionId = run.Snapshot.Repair?.SourcePipelineVersionId ?? run.Snapshot.PipelineVersionId, Overrides = run.Snapshot.Repair?.SourceOverrides ?? run.Snapshot.Overrides });
+    private static string WithExecution(string source, string? policyHash) => policyHash is null ? source : FactoryArtifact.Hash(source + policyHash);
+    public static string Source(WorkspaceData data, FactoryRun run) => WithExecution(FactoryCriterionVerdict.Source(Item(data, run.ItemId).SpecJson,
+        data.AcceptanceCriteria.SingleOrDefault(x => x.Id == run.ItemId)?.Criteria ?? [], Attachment(data, run)), FactoryExecutionPolicyService.CurrentHash(data, run.ProjectId));
+    public static string CapturedSource(FactoryRun run) => WithExecution(FactoryCriterionVerdict.Source(run.Snapshot.SpecJson, run.Snapshot.Criteria ?? [],
+        new { PipelineVersionId = run.Snapshot.Repair?.SourcePipelineVersionId ?? run.Snapshot.PipelineVersionId, Overrides = run.Snapshot.Repair?.SourceOverrides ?? run.Snapshot.Overrides }), run.Snapshot.Execution?.PolicyHash);
 }

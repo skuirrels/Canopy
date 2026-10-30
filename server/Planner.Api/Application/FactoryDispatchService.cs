@@ -56,6 +56,7 @@ public sealed class FactoryDispatchService(IWorkspaceStore store, IFactoryEnviro
                 return;
             }
             Rules.Revision(input.ExpectedRevision, run.Revision);
+            FactoryExecutionPolicyService.Require(data, run);
             if (run.State != "waiting") throw new RuleException("The factory run is not waiting for approval.", 409);
             var stage = data.FactoryStageRuns.Single(x => x.Id == step.StageRunId);
             var definition = run.Snapshot.Environment.Definition.Stages.Single(x => x.Id == stage.StageId).Steps.Single(x => x.Id == step.StepId);
@@ -68,6 +69,7 @@ public sealed class FactoryDispatchService(IWorkspaceStore store, IFactoryEnviro
     }
     private static void CheckCurrent(WorkspaceData data, FactoryRun run)
     {
+        FactoryExecutionPolicyService.Require(data, run);
         if (!data.Items.Any(x => x.Id == run.ItemId)) throw new RuleException("Task not found.", 404);
         var connection = data.AgentConnections.SingleOrDefault(x => x.ProjectId == run.ProjectId);
         if (connection is null || connection.RepositoryPath != run.Snapshot.Environment.RepositoryPath) throw new RuleException("Connect the project to the captured repository before starting.");

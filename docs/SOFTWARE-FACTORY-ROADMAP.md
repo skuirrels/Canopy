@@ -140,6 +140,24 @@ before filing, and exact retries retain one task link even after deletion.
 Operator verification judges relevance and reproduction; source collection alone
 does not establish a defect. See [intake validation](FACTORY-INTAKE-VALIDATION.md).
 
+## Model routing and execution budgets
+
+- [x] Opt-in project routes for existing agent roles, with explicit provider,
+  model and optional effort. Task and step choices retain precedence/provenance.
+- [x] Immutable resolved settings, policy hashes, CLI invocation reservations
+  and elapsed deadlines, including manual waits and owned process cancellation.
+- [x] Apply the same captured policy to repair plans alongside loop-wide limits;
+  policy changes revoke old dispatch and invalidate QA/review/delivery authority.
+- [x] Retain provider completion observations without fabricating missing usage,
+  cache equivalence or billing. Unsupported token/currency caps block execution.
+- [x] Persist policy, reservations and observations across native restart, with
+  no implicit reroute or replay. Inspect settings and evidence in the running UI.
+
+See [execution policy](FACTORY-EXECUTION-POLICY.md) and its
+[validation](FACTORY-EXECUTION-POLICY-VALIDATION.md). This controls CLI invocations;
+provider-internal calls and hard spend enforcement remain outside its guarantees.
+Application-error intake is the next selected roadmap extension.
+
 ## Operating constraints
 
 Planning, specification assistance and factory execution remain independent
@@ -164,8 +182,7 @@ Named deployment targets, separate revision-bound approvals and explicit recover
 are delivered as an extension of controlled delivery. See
 [deployment environments](FACTORY-DEPLOYMENTS.md) and
 [validation](FACTORY-DEPLOYMENTS-VALIDATION.md). Authentication and team access remain a separate deployment
-track. Model routing, parallel dispatch and automatic skill calibration are
-deferred behind the quality and delivery priorities above.
+track. Parallel dispatch and automatic skill calibration remain deferred.
 
 ## Design references
 

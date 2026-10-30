@@ -4913,6 +4913,137 @@
           }
         }
       }
+    },
+    "/api/factory/projects/{id}/execution-policy": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Read model routes, invocation limits and enforcement capabilities",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactoryExecutionPolicyDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Adopt explicit project model routes and work-order budgets",
+        "description": "Optimistic project revision. Preparation executes nothing. Enabled policy pins requested models and requires explicit unmetered-cost consent for agents. Invocation reservations and elapsed time are enforced; hard token or currency caps block dispatch. Changed policy revokes pending work and cancels owned processes, retaining evidence.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditFactoryExecutionPolicy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactoryExecutionPolicyDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5095,6 +5226,9 @@
               "null",
               "string"
             ]
+          },
+          "usage": {
+            "$ref": "#/components/schemas/AgentUsage"
           }
         }
       },
@@ -6815,6 +6949,16 @@
                 "$ref": "#/components/schemas/FactoryEnvironmentSnapshot"
               }
             ]
+          },
+          "execution": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/FactoryExecutionSnapshot"
+              }
+            ]
           }
         }
       },
@@ -6929,7 +7073,8 @@
           "run",
           "stages",
           "steps",
-          "artifacts"
+          "artifacts",
+          "budget"
         ],
         "type": "object",
         "properties": {
@@ -6953,6 +7098,9 @@
             "items": {
               "$ref": "#/components/schemas/FactoryArtifact"
             }
+          },
+          "budget": {
+            "$ref": "#/components/schemas/FactoryBudgetView"
           }
         }
       },
@@ -7036,6 +7184,16 @@
               },
               {
                 "$ref": "#/components/schemas/FactoryRepairLineage"
+              }
+            ]
+          },
+          "execution": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/FactoryExecutionSnapshot"
               }
             ]
           }
@@ -9221,6 +9379,16 @@
           },
           "environment": {
             "$ref": "#/components/schemas/FactoryEnvironmentSnapshot"
+          },
+          "execution": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/FactoryExecutionSnapshot"
+              }
+            ]
           }
         }
       },
@@ -11265,6 +11433,408 @@
             "type": "boolean"
           },
           "error": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "AgentUsage": {
+        "required": [
+          "observations",
+          "retentionLimitReached"
+        ],
+        "type": "object",
+        "properties": {
+          "observations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentUsageObservation"
+            }
+          },
+          "retentionLimitReached": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "FactoryExecutionPolicyDetail": {
+        "required": [
+          "projectRevision",
+          "policy",
+          "roles",
+          "providers",
+          "capabilities"
+        ],
+        "type": "object",
+        "properties": {
+          "projectRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "policy": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/FactoryExecutionPolicy"
+              }
+            ]
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentProvider"
+            }
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/FactoryExecutionCapabilities"
+          }
+        }
+      },
+      "FactoryExecutionPolicy": {
+        "required": [
+          "enabled",
+          "routes",
+          "maxAgentInvocations",
+          "maxCommandInvocations",
+          "maxElapsedSeconds",
+          "allowUnmeteredCost"
+        ],
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "routes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryModelRoute"
+            }
+          },
+          "maxAgentInvocations": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "maxCommandInvocations": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "maxElapsedSeconds": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "allowUnmeteredCost": {
+            "type": "boolean"
+          },
+          "maxTokens": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "maxCost": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "currency": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "FactoryModelRoute": {
+        "required": [
+          "role",
+          "provider",
+          "model"
+        ],
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "effort": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "FactoryExecutionSnapshot": {
+        "required": [
+          "policy",
+          "policyHash",
+          "routes"
+        ],
+        "type": "object",
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/FactoryExecutionPolicy"
+          },
+          "policyHash": {
+            "type": "string"
+          },
+          "routes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryResolvedRoute"
+            }
+          }
+        }
+      },
+      "FactoryResolvedRoute": {
+        "required": [
+          "stageId",
+          "stepId",
+          "role",
+          "provider",
+          "model",
+          "effort",
+          "selectionSource",
+          "effortSource"
+        ],
+        "type": "object",
+        "properties": {
+          "stageId": {
+            "type": "string"
+          },
+          "stepId": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "model": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "effort": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "selectionSource": {
+            "type": "string"
+          },
+          "effortSource": {
+            "type": "string"
+          }
+        }
+      },
+      "AgentProvider": {
+        "required": [
+          "id",
+          "name",
+          "available",
+          "effortLevels"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "effortLevels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "FactoryExecutionCapabilities": {
+        "required": [
+          "invocationLimits",
+          "elapsedTimeLimit",
+          "hardTokenCap",
+          "hardCurrencyCap",
+          "usageSemantics"
+        ],
+        "type": "object",
+        "properties": {
+          "invocationLimits": {
+            "type": "boolean"
+          },
+          "elapsedTimeLimit": {
+            "type": "boolean"
+          },
+          "hardTokenCap": {
+            "type": "boolean"
+          },
+          "hardCurrencyCap": {
+            "type": "boolean"
+          },
+          "usageSemantics": {
+            "type": "string"
+          }
+        }
+      },
+      "EditFactoryExecutionPolicy": {
+        "required": [
+          "expectedRevision",
+          "policy"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/FactoryExecutionPolicy"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AgentUsageObservation": {
+        "required": [
+          "provider",
+          "eventType",
+          "observedAt",
+          "status",
+          "inputTokens",
+          "outputTokens",
+          "payload",
+          "hash"
+        ],
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "observedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string"
+          },
+          "inputTokens": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "outputTokens": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "payload": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string"
+          }
+        }
+      },
+      "FactoryBudgetView": {
+        "required": [
+          "reservedAgentInvocations",
+          "reservedCommandInvocations",
+          "deadline",
+          "blockedReason"
+        ],
+        "type": "object",
+        "properties": {
+          "reservedAgentInvocations": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "reservedCommandInvocations": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "deadline": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "blockedReason": {
             "type": [
               "null",
               "string"

@@ -16,12 +16,13 @@ public sealed class AgentOptions
     public int PollIntervalMs { get; set; }
     public int MaxRunMinutes { get; set; }
     public int MaxOutputCharacters { get; set; }
+    public int MaxUsageEvents { get; set; }
     public int GitTimeoutSeconds { get; set; }
     public Dictionary<string, List<string>> EffortLevels { get; set; } = [];
     public void Validate()
     {
-        if (PollIntervalMs < 250 || MaxRunMinutes < 1 || MaxOutputCharacters < 1000 || GitTimeoutSeconds < 1 || string.IsNullOrWhiteSpace(WorkspaceRoot))
-            throw new InvalidOperationException("Configure Agents polling, run timeout, output limit, Git timeout and workspace root.");
+        if (MaxUsageEvents < 1 || PollIntervalMs < 250 || MaxRunMinutes < 1 || MaxOutputCharacters < 1000 || GitTimeoutSeconds < 1 || string.IsNullOrWhiteSpace(WorkspaceRoot))
+            throw new InvalidOperationException("Configure Agents polling, run timeout, output and usage retention limits, Git timeout and workspace root.");
         if (new[] { "codex", "claude" }.Any(provider => !EffortLevels.TryGetValue(provider, out var levels) || levels.Count == 0 || levels.Any(string.IsNullOrWhiteSpace) || levels.Count != levels.Distinct().Count()))
             throw new InvalidOperationException("Configure the supported effort levels for Codex and Claude.");
     }
@@ -75,6 +76,7 @@ internal static class AgentProcess
         if (environment is not null) foreach (var entry in environment) start.Environment[entry.Key] = entry.Value;
         if (agentClient) start.Environment.Remove("CLAUDECODE"); // The worker is a separate CLI client, not a nested Claude tool call.
         using var process = new Process { StartInfo = start };
+        ct.ThrowIfCancellationRequested();
         process.Start();
         using var registration = ct.Register(() => { try { if (!process.HasExited) process.Kill(entireProcessTree: true); } catch (InvalidOperationException) { } });
         var readOut = Read(process.StandardOutput, stdout); var readError = Read(process.StandardError, stderr);
@@ -122,7 +124,11 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
             var updated = await store.WriteAsync(data =>
             {
                 var current = data.AgentRuns.SingleOrDefault(x => x.Id == run.Id);
-                if (current?.State == "queued") current.Start(workspace, commit);
+                if (current?.State == "queued")
+                {
+                    if (current.FactoryStepRunId is { } stepId) FactoryExecutionPolicyService.Require(data, FactoryDispatchService.Find(data, data.FactoryStepRuns.Single(x => x.Id == stepId).RunId));
+                    current.Start(workspace, commit);
+                }
             }, ct);
             if (updated.AgentRuns.SingleOrDefault(x => x.Id == run.Id)?.State != "running") return;
             if (run.ExecutionPermission == "workspace-write" && run.PreviousRunId is null && run.FactoryStepRunId is null)
@@ -135,10 +141,11 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
             var code = await AgentProcess.Run(environment.Executable(run.Provider), workspace, arguments, Prompt(run),
                 async line =>
                 {
-                    string? session = null; var progress = line;
+                    string? session = null; var progress = line; AgentUsageObservation? usage = null;
                     try
                     {
                         using var document = JsonDocument.Parse(line); var root = document.RootElement;
+                        usage = LocalAgentUsage.Read(run.Provider, root);
                         if (root.TryGetProperty("thread_id", out var thread)) session = thread.GetString();
                         if (root.TryGetProperty("session_id", out var sessionValue)) session = sessionValue.GetString();
                         var type = root.TryGetProperty("type", out var typeValue) ? typeValue.GetString() : "event";
@@ -161,7 +168,7 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
                         if (type is "turn.failed" or "error") { providerError = line; progress = line; }
                     }
                     catch (Exception error) when (error is JsonException or InvalidOperationException) { /* Preserve unrecognized protocol diagnostics. */ }
-                    await store.WriteAsync(data => { var current = AgentService.Find(data, run.Id); if (session is not null) current.RecordSession(session); current.Progress(progress + "\n", options.MaxOutputCharacters); }, CancellationToken.None);
+                    await store.WriteAsync(data => { var current = AgentService.Find(data, run.Id); current.ObserveUsage(usage, options.MaxUsageEvents, options.MaxOutputCharacters); if (session is not null) current.RecordSession(session); current.Progress(progress + "\n", options.MaxOutputCharacters); }, CancellationToken.None);
                 },
                 line => Append(run.Id, line), ct, agentClient: true);
             if (run.ExecutionPermission == "workspace-write") diff = await CaptureDiff(workspace, commit, ct);

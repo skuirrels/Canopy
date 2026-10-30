@@ -152,6 +152,9 @@ print(json.dumps({'type':'item.completed','item':{'type':'agent_message','text':
     try:
         start();pid=call('/api/projects','POST',dict(name='Bounded repair regression',description='Isolated test only',color='#477fa1'))['projects'][0]['id']
         call(f'/api/agents/projects/{pid}/connection','PUT',dict(expectedRevision=revision(),repositoryPath=str(repo),baseRef='HEAD',provider='codex',instructions='Explicit protocol fixture.'))
+        if '--execution-policy' in sys.argv:
+            execution_policy=dict(enabled=True,routes=[dict(role=role,provider='codex',model='fixture-repair-model',effort='high') for role in ['implementation','review','verification']],maxAgentInvocations=2,maxCommandInvocations=1,maxElapsedSeconds=120,allowUnmeteredCost=True)
+            call(f'/api/factory/projects/{pid}/execution-policy','PUT',dict(expectedRevision=revision(),policy=execution_policy))
         definition={'stages':[dict(id='build',name='Build',group='Build',dependsOn=[],steps=[dict(id='implement',name='Implementation',kind='agent',role='implementation',permission='workspace-write',instructions='Implement the fixture.',produces=['changes'])]),dict(id='qa',name='QA',group='Check',dependsOn=['build'],steps=[dict(id='verify',name='Actual assertions',kind='command',command=dict(executable=sys.executable,arguments=['verify.py'],workingDirectory='.',timeoutSeconds=10),consumes=['changes'],produces=['verification'])]),dict(id='review',name='Independent reviewer',group='Check',dependsOn=['qa'],steps=[dict(id='review',name='Read-only reviewer',kind='agent',role='review',permission='read-only',instructions='Review code independently.',consumes=['changes','verification'])])]}
         version=publish(definition,'Repair fixture');run=source()
         check(repair_library(run)['policy']['policy'] is None,'no repair policy or limits are fabricated for a new project')
@@ -183,6 +186,17 @@ print(json.dumps({'type':'item.completed','item':{'type':'agent_message','text':
         loop=finish(loop,True);check(loop['loop']['state']=='completed' and library(repaired)['findings'][0]['finding']['id']==fid,'current asserting QA plus independent recheck resolves the same original finding and completes the loop')
         check(call('/api/workspace')['items'][0]['statusId']==task['statusId'],'completed repair does not accept the task or change workflow status')
         snapshot=loop_read(loop);process.terminate();process.wait(timeout=25);start();check(loop_read(loop)==snapshot,'completed policy, attempt lineage and feedback persist across native DuckDB restart')
+        if '--execution-policy' in sys.argv:
+            check(repaired['run']['snapshot']['execution']['policy']['maxAgentInvocations']==2 and repaired['budget']['reservedAgentInvocations']==2,'repair plans capture project routes and retain per-work-order invocation reservations')
+            check(all('--model' in row['args'] and row['args'][row['args'].index('--model')+1]=='fixture-repair-model' for row in [json.loads(line) for line in trace.read_text().splitlines()]),'repair and source runners dispatch the same captured role model')
+            run=source();adopt();loop=capture(run);count=len(trace.read_text().splitlines())
+            call(f'/api/factory/projects/{pid}/execution-policy','PUT',dict(expectedRevision=revision(),policy=execution_policy|dict(maxCommandInvocations=2)))
+            call('/api/factory/repair-loops/'+loop['loop']['id']+'/advance','POST',advance_body(loop),409)
+            check(not loop_read(loop)['attempts'] and len(trace.read_text().splitlines())==count,'execution-policy drift cannot dispatch an old captured repair plan')
+            stop(loop)
+            call(f'/api/projects/{pid}?expectedRevision={revision()}','DELETE')
+            print(f'{checks} execution-policy repair checks passed')
+            sys.exit(0)
         if '--serve' in sys.argv:
             mode.write_text('good');run=source();adopt();loop=capture(run)
             print(json.dumps(dict(baseUrl=base,runId=run['run']['id'],projectId=pid,itemId=tid,criterionId=cid,findingId=fid,loopId=loop['loop']['id'],scratch=str(scratch))),flush=True)

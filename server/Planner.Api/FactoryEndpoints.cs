@@ -19,6 +19,12 @@ public static class FactoryEndpoints
             http.Response.Headers.CacheControl = "no-store";
             return await next(context);
         });
+        group.MapGet("/projects/{id:guid}/execution-policy", (Guid id, FactoryExecutionPolicyService service, CancellationToken ct) => service.Read(id, ct))
+            .WithSummary("Read model routes, invocation limits and enforcement capabilities").ProducesProblem(403).ProducesProblem(404);
+        group.MapPut("/projects/{id:guid}/execution-policy", (Guid id, EditFactoryExecutionPolicy input, FactoryExecutionPolicyService service, CancellationToken ct) => service.Edit(id, input, ct))
+            .WithSummary("Adopt explicit project model routes and work-order budgets")
+            .WithDescription("Optimistic project revision. Preparation executes nothing. Enabled policy pins requested models and requires explicit unmetered-cost consent for agents. Invocation reservations and elapsed time are enforced; hard token or currency caps block dispatch. Changed policy revokes pending work and cancels owned processes, retaining evidence.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
         group.MapGet("/projects/{id:guid}/skills", (Guid id, FactorySkillService service, CancellationToken ct) => service.Read(id, ct))
             .WithSummary("Observe configured installed skills").WithDescription("Read-only bounded catalogue for this project's explicit skill files and discovery roots. Entries retain exact IDs/sources, paths and byte hashes. Source coverage and unavailable/ambiguous references remain visible. Reading or selecting never installs, executes or verifies provider compatibility.")
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404);

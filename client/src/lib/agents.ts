@@ -1,3 +1,4 @@
+import type { AgentUsage } from './factory-execution';
 export type AgentId = 'codex' | 'claude';
 export type AgentPurpose = 'spec' | 'documentation' | 'implementation';
 export type AgentExecutionSettings = { model: string | null; effort: string | null };
@@ -9,7 +10,7 @@ export type AgentRun = {
  title: string; specJson: string; projectRevision: number; repositoryPath: string; baseRef: string; model: string | null;
  effort: string | null; requestedModel: string | null; requestedEffort: string | null;
  projectInstructions: string; instructions: string; sessionId: string | null; workspacePath: string | null; baseCommit: string | null;
- output: string; result: string; diff: string; error: string | null; createdAt: string; startedAt: string | null; finishedAt: string | null;
+ usage?: AgentUsage; output: string; result: string; diff: string; error: string | null; createdAt: string; startedAt: string | null; finishedAt: string | null;
 };
 export type AgentProviders = { providers: { id: AgentId; name: string; available: boolean; effortLevels: string[] }[]; pollIntervalMs: number };
 export async function agentRequest<T>(path: string, method = 'GET', body?: unknown, signal?: AbortSignal): Promise<T> {

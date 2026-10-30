@@ -28,6 +28,8 @@ builder.Services.AddSingleton<IReadOnlyList<FactoryTemplate>>(factoryTemplates);
 builder.Services.AddScoped<FactoryService>();
 builder.Services.AddSingleton<IFactoryEnvironment, LocalFactoryEnvironment>();
 builder.Services.AddScoped<FactoryRunService>();
+builder.Services.AddSingleton<FactoryExecutionPolicyService>();
+builder.Services.AddHostedService<LocalFactoryPolicyMonitor>();
 builder.Services.AddSingleton<LocalVerificationEnvironment>();
 builder.Services.AddSingleton<IVerificationEnvironment>(services => services.GetRequiredService<LocalVerificationEnvironment>());
 builder.Services.AddSingleton<IReviewChanges>(services => services.GetRequiredService<LocalVerificationEnvironment>());

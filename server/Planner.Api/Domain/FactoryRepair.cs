@@ -29,7 +29,8 @@ public sealed class ProjectRepairPolicy
     public void Replace(RepairPolicy policy) { policy.Validate(); PolicyJson = JsonSerializer.Serialize(policy, FactoryRules.Json); }
 }
 public sealed record RepairIssue(string Kind, Guid Id, string Title, string Owner, string Reason, Guid EvidenceId);
-public sealed record RepairPlan(string Owner, Guid PipelineVersionId, int VersionNumber, string Name, string Source, FactoryEnvironmentSnapshot Environment);
+public sealed record RepairPlan(string Owner, Guid PipelineVersionId, int VersionNumber, string Name, string Source, FactoryEnvironmentSnapshot Environment,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] FactoryExecutionSnapshot? Execution = null);
 public sealed record RepairScope(string Owner, IReadOnlyList<RepairIssue> Issues, string SourceHash, Guid SourcePipelineVersionId, FactoryOverrides SourceOverrides,
     IReadOnlyList<RepairPlan> Plans);
 public sealed record RepairOperation(Guid RequestId, string Kind, string Hash);

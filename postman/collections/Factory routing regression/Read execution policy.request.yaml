@@ -1,0 +1,17 @@
+$kind: http-request
+name: Read execution policy
+method: GET
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/execution-policy'
+order: 1000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')||!pm.variables.get('baseUrl')) throw new Error('Supply isolated fixtureMode, baseUrl and projectId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Policy readable',()=>pm.response.to.have.status(200)); const d=pm.response.json();
+      pm.test('Capabilities are honest',()=>{pm.expect(d.capabilities.invocationLimits).to.eql(true);pm.expect(d.capabilities.elapsedTimeLimit).to.eql(true);pm.expect(d.capabilities.hardTokenCap).to.eql(false);pm.expect(d.capabilities.hardCurrencyCap).to.eql(false)});
+      pm.test('Explicit routes retained',()=>{pm.expect(d.policy.enabled).to.eql(true);pm.expect(d.policy.routes.length).to.be.above(0);d.policy.routes.forEach(r=>pm.expect(r.model).to.be.a('string').and.not.empty)});
+      pm.collectionVariables.set('policyJson',JSON.stringify(d.policy)); pm.collectionVariables.set('revision',d.projectRevision);

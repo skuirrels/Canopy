@@ -71,6 +71,10 @@ public sealed class AgentRun
     public string? SessionId { get; private set; }
     public string? WorkspacePath { get; private set; }
     public string? BaseCommit { get; private set; }
+    [System.Text.Json.Serialization.JsonIgnore] public string UsageJson { get; private set; } = "";
+    public AgentUsage Usage => UsageJson.Length == 0 ? AgentUsage.Empty : System.Text.Json.JsonSerializer.Deserialize<AgentUsage>(UsageJson, FactoryRules.Json)!;
+    public void ObserveUsage(AgentUsageObservation? observation, int maxEvents, int maxCharacters)
+    { var before = Usage; var after = before.Append(observation, maxEvents, maxCharacters); if (!ReferenceEquals(before, after)) UsageJson = FactoryRules.Serialize(after); }
     public string Output { get; private set; } = "";
     public string Result { get; private set; } = "";
     public string Diff { get; private set; } = "";

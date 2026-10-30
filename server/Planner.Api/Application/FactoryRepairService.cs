@@ -67,8 +67,9 @@ public sealed class FactoryRepairService(IWorkspaceStore store, IFactoryEnvironm
         foreach (var (owner, versionId) in PlanIds(policy))
         {
             var version = ValidatePlan(data, run.ProjectId, owner, versionId);
-            var inspected = await environment.Inspect(version.Definition, pinned, ct); RequireInspection(inspected);
-            plans.Add(new(owner, version.Id, version.Number, version.Name, version.Source, inspected.Environment!));
+            var routed = await FactoryExecutionPolicyService.Inspect(data, run.ProjectId, version.Definition, pinned, environment, ct);
+            var inspected = routed.Inspection; RequireInspection(inspected);
+            plans.Add(new(owner, version.Id, version.Number, version.Name, version.Source, inspected.Environment!, routed.Execution));
         }
         if (!plans.Any(x => x.Owner == input.Owner)) throw new RuleException("Configure a published repair plan for the selected responsible role.");
         if ((await verification.Observe(run, ct)).Fingerprint != q.Context.Fingerprint) throw new RuleException("Source worktree changed while capturing repair.", 409);
@@ -81,7 +82,7 @@ public sealed class FactoryRepairService(IWorkspaceStore store, IFactoryEnvironm
             var source = FactoryDispatchService.Find(current, runId); RequireSelectedBlockers(current, source, FactoryQualityService.Detail(current, source, q.Context, null), input.FindingIds); Rules.Revision(input.ExpectedRevision, source.Revision); Idle(current, source.ItemId);
             if (current.RepairLoops.Any(x => x.ItemId == run.ItemId && x.Open)) throw new RuleException("Stop the task's open repair loop first.", 409);
             if (FactoryQualityService.Source(current, source) != scope.SourceHash || Hash(Policy(current, run.ProjectId).Policy) != Hash(policy)) throw new RuleException("Task inputs or policy changed during preparation.", 409);
-            foreach (var plan in plans) ValidatePlan(current, run.ProjectId, plan.Owner, plan.PipelineVersionId);
+            foreach (var plan in plans) { ValidatePlan(current, run.ProjectId, plan.Owner, plan.PipelineVersionId); FactoryExecutionPolicyService.RequireCurrent(current, run.ProjectId, plan.Execution); }
             if (Hash(Select(Issues(current, source, FactoryQualityService.Detail(current, source, q.Context, null), input.Owner), input)) != Hash(selected)) throw new RuleException("Repair causes changed. Refresh before capturing.", 409);
             var loop = FactoryRepairLoop.Prepare(input.RequestId, source, policy, scope, q.Context, hash); current.RepairLoops.Add(loop); id = loop.Id;
         }, ct);
@@ -151,6 +152,7 @@ public sealed class FactoryRepairService(IWorkspaceStore store, IFactoryEnvironm
             var captured = Find(current, id); Rules.Revision(input.ExpectedRevision, captured.Revision);
             var source = Candidate(current, captured); Rules.Revision(parent.Revision, source.Revision); Idle(current, source.ItemId);
             ValidateCurrent(current, captured, source); ValidatePlan(current, loop.ProjectId, plan.Owner, plan.PipelineVersionId);
+            FactoryExecutionPolicyService.RequireCurrent(current, loop.ProjectId, plan.Execution);
             var count = current.RepairAttempts.Count(x => x.LoopId == id); var calls = FactoryRepairRules.AgentCalls(env.Definition);
             if (captured.Budget(count, calls, DateTime.UtcNow) is { } reason) throw new RuleException(reason, 409);
             if (captured.State is not ("prepared" or "needsDecision")) throw new RuleException("The loop is not ready for dispatch.", 409);
@@ -164,7 +166,7 @@ public sealed class FactoryRepairService(IWorkspaceStore store, IFactoryEnvironm
             var attemptId = Guid.NewGuid(); var feedback = Latest(current, captured)?.Feedback ?? new RepairFeedback("initial", "Explicitly selected repair scope.", captured.Scope.Issues, null, context.Fingerprint);
             var lineage = new FactoryRepairLineage(id, attemptId, source.Id, captured.RootRunId, count + 1, captured.Scope.SourcePipelineVersionId, captured.Scope.SourceOverrides, context, feedback);
             var snapshot = new FactoryRunSnapshot(plan.PipelineVersionId, plan.VersionNumber, plan.Name, plan.Source, source.Snapshot.Title, source.Snapshot.SpecJson,
-                current.Graph(loop.ProjectId).Project.Revision, new FactoryOverrides([]), env, [], DateTime.UtcNow, source.Snapshot.Criteria ?? [], lineage);
+                current.Graph(loop.ProjectId).Project.Revision, new FactoryOverrides([]), env, [], DateTime.UtcNow, source.Snapshot.Criteria ?? [], lineage, plan.Execution);
             if (current.FactoryRuns.Any(x => x.RequestId == input.RequestId)) throw new RuleException("That request ID belongs to an existing work order.", 409);
             var item = current.Items.Single(x => x.Id == source.ItemId); var child = FactoryRun.Prepare(input.RequestId, item, snapshot);
             child.Queue(child.Revision, input.RequestId); current.FactoryRuns.Add(child);

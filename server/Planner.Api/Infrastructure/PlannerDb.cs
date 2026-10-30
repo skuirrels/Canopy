@@ -23,6 +23,7 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<FactoryVerificationReceipt> VerificationReceipts => Set<FactoryVerificationReceipt>();
     public DbSet<FactoryCriterionVerdict> CriterionVerdicts => Set<FactoryCriterionVerdict>();
     public DbSet<FactoryArtifact> FactoryArtifacts => Set<FactoryArtifact>();
+    public DbSet<ProjectFactoryExecutionPolicy> ExecutionPolicies => Set<ProjectFactoryExecutionPolicy>();
     public DbSet<FactoryRun> FactoryRuns => Set<FactoryRun>();
     public DbSet<FactoryStageRun> FactoryStageRuns => Set<FactoryStageRun>();
     public DbSet<FactoryStepRun> FactoryStepRuns => Set<FactoryStepRun>();
@@ -110,13 +111,16 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
         model.Entity<FactoryArtifact>().HasIndex(x => new { x.RunId, x.Name }).IsUnique();
         model.Entity<FactoryRun>().Ignore(x => x.Active);
         model.Entity<FactoryRun>().Property(x => x.Revision).HasDefaultValue(1L);
-        model.Entity<AgentRun>().Ignore(x => x.ExecutionPermission);
+        model.Entity<AgentRun>().Ignore(x => x.ExecutionPermission).Ignore(x => x.Usage);
+        model.Entity<AgentRun>().Property(x => x.UsageJson).HasDefaultValue("");
         model.Entity<AgentRun>().HasIndex(x => x.FactoryStepRunId).IsUnique();
         foreach (var type in new[] { typeof(FactoryRun), typeof(FactoryStageRun), typeof(FactoryStepRun) })
         {
             model.Entity(type).Property<DateTime?>("StartedAt").HasConversion(value => value, value => value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : (DateTime?)null);
             model.Entity(type).Property<DateTime?>("FinishedAt").HasConversion(value => value, value => value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : (DateTime?)null);
         }
+        model.Entity<ProjectFactoryExecutionPolicy>().HasKey(x => x.Id);
+        model.Entity<ProjectFactoryExecutionPolicy>().Ignore(x => x.Policy);
         model.Entity<FactoryRun>().HasKey(x => x.Id);
         model.Entity<FactoryRun>().Ignore(x => x.Snapshot);
         model.Entity<FactoryRun>().Property(x => x.CreatedAt).HasConversion(value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));
