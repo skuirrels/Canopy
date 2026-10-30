@@ -34,7 +34,7 @@ public sealed class LocalDeliveryHooks(DeliveryOptions options, IHttpClientFacto
         var revision = health;
         foreach (var part in hook.RevisionJsonPointer[1..].Split('/').Select(x => x.Replace("~1", "/").Replace("~0", "~")))
             if (!revision.TryGetProperty(part, out revision)) throw new RuleException("The running application revision is unavailable.", 503);
-        if (revision.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(revision.GetString())) throw new RuleException("The running application must report its actual deployed commit revision.", 503);
+        if (revision.ValueKind != JsonValueKind.String || !System.Text.RegularExpressions.Regex.IsMatch(revision.GetString() ?? "", "^[a-f0-9]{40}$")) throw new RuleException("The running application must report its actual immutable Git commit ID; version labels and mutable refs cannot authorize recovery.", 503);
         var snapshot = await Read(hook.SnapshotUrl, ct);
         return new(identity.ToString(), revision.GetString()!, Hash(snapshot), Hash(health));
     }

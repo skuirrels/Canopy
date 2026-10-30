@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Planner.Api.Domain;
 
-public sealed record DeploymentTarget(string Id, string Name, string Environment, string DeployHookId, string? RecoveryHookId);
+public sealed record DeploymentTarget(string Id, string Name, string Environment, string DeployHookId, string? RecoveryHookId = null);
 public sealed record DeploymentCapture(DeploymentTarget Target, string ResourceKey, string ConfigurationHash, string ProviderBinding, string MergeSha, string PolicyHash);
 
 public sealed class FactoryDeployment

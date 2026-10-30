@@ -10920,8 +10920,7 @@
           "id",
           "name",
           "environment",
-          "deployHookId",
-          "recoveryHookId"
+          "deployHookId"
         ],
         "type": "object",
         "properties": {

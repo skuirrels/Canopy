@@ -33,7 +33,9 @@ applicable. Approval does not execute a command.
 ## Execution and recovery
 
 Before deployment, Canopy reads the actual target's health, process identity,
-running commit and canonical persistence snapshot. It persists a command intent
+running immutable Git commit ID and canonical persistence snapshot. Version
+labels and mutable refs are rejected before dispatch because they cannot bind
+recovery to an immutable prior revision. It persists a command intent
 before dispatch. Command input includes `CANOPY_DELIVERY_ID`,
 `CANOPY_DEPLOYMENT_ID`, `CANOPY_REPOSITORY`, `CANOPY_MERGE_SHA`, `CANOPY_REVISION`,
 `CANOPY_TARGET_ID`, `CANOPY_ENVIRONMENT` and `CANOPY_RECOVERY`. `CANOPY_REVISION`

@@ -196,6 +196,13 @@ if mode=='badExit':sys.exit(7)
     for index,target_id in enumerate(['fixture-target','fixture-alias']):
         for k,v in dict(id=target_id,name='Isolated target' if index==0 else 'Alias of isolated target',environment='Local regression',deployHookId='fixture-restart',recoveryHookId='fixture-recovery').items():env[f'Delivery__Targets__{index}__{k}']=v
     with sqlite3.connect(app_db) as original,sqlite3.connect(str(app_db)+'.backup') as backup:original.backup(backup)
+    # A deliberately malformed target contract reports status as revision. No
+    # command may run when the observed baseline is a mutable/non-commit label.
+    for k,v in (hook_configuration[0]|dict(id='fixture-invalid-revision',name='Invalid revision contract',revisionJsonPointer='/status')).items():
+        if isinstance(v,list):
+            for i,entry in enumerate(v):env[f'Delivery__Hooks__2__{k}__{i}']=str(entry)
+        else:env[f'Delivery__Hooks__2__{k}']=str(v)
+    for k,v in dict(id='fixture-invalid-revision',name='Invalid revision contract',environment='Malformed fixture contract',deployHookId='fixture-invalid-revision').items():env[f'Delivery__Targets__2__{k}']=v
     def provider_call(path):return json.load(urllib.request.urlopen(provider_base+path,timeout=10))
     def reset_target():subprocess.run(['git','--git-dir='+str(bare),'update-ref','refs/heads/main',baseline_sha],check=True)
     def source(without_checks=False):
@@ -254,6 +261,9 @@ if mode=='badExit':sys.exit(7)
         if serve:
             print(json.dumps(dict(baseUrl=base,runId=x['delivery']['runId'],projectId=pid,itemId=tid,deliveryId=x['delivery']['id'],providerBase=provider_base,scratch=str(scratch),providerFixture=str(fixture_path),appConfig=str(app_config),appUrl=f'http://127.0.0.1:{app_port}')),flush=True)
             while True:time.sleep(1)
+        adopt(deploymentTargetIds=targets+['fixture-invalid-revision']);invalid=d_capture(x,target='fixture-invalid-revision');invalid=d_settle(d_act(invalid,'approveDeploy'));count=json.loads(app_config.read_text())['count'];invalid=d_settle(d_act(invalid,'deploy'))
+        check(invalid['deployment']['state']=='needsAttention' and invalid['deployment']['deployment'] is None and 'immutable Git commit' in invalid['operations'][-1]['error'] and json.loads(app_config.read_text())['count']==count,'a mutable/non-commit target revision blocks dispatch before a command intent or side effect')
+        d_settle(d_act(invalid,'close'))
         adopt();call(path,'POST',dict(requestId=str(uuid.uuid4()),expectedRevision=read(x)['delivery']['revision'],targetId=targets[0]),409)
         check(not any(t['allowed'] for t in call(path)['targets']),'deployment targets require separate explicit project adoption')
         adopt(deploymentTargetIds=targets);body=dict(requestId=str(uuid.uuid4()),expectedRevision=read(x)['delivery']['revision'],targetId=targets[0]);count=json.loads(app_config.read_text())['count'];writes=len(provider_call('/__state')['writes'])

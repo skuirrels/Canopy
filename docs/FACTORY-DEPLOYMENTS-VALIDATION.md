@@ -12,7 +12,7 @@ deployment, production credentials or paid model invocation occurs in this suite
 | Capture and approval execute nothing | Concurrent exact capture retries retain one record; missing approval creates no command intent; browser cancellation leaves revision 1 and an empty journal |
 | Approval binds environment, revision and configuration | Changed script and project policy block execution; actual source merge identity/tree/parents/ancestry are checked before deployment |
 | Deploy the actual merged artifact | The target checks out the actual merged Git commit, imports and runs its changed `increment` implementation, and reports the checkout's real commit identity |
-| Verify health and persistence | Real process identity, actual revision and canonical SQLite snapshot; no-op, wrong revision, changed data, nonzero exit and offline target scenarios remain visible |
+| Verify health and persistence | Real process identity, actual revision and canonical SQLite snapshot; no-op, wrong revision, changed data, nonzero exit and offline target scenarios remain visible; mutable revision labels block dispatch before a command intent |
 | Recovery is separate and preserves failures | An explicit recovery approval restores the observed prior commit and original SQLite backup; original deployment failures and failed recovery receipts are unchanged |
 | Lost responses/restarts never replay commands | Exact completed request retries cause no restart/merge; interrupted commands retain intents and reconcile through observation only |
 | Target aliases cannot deploy concurrently | A second profile with the same health/snapshot endpoints conflicts; UI disables a reserved target and explains the reservation |
