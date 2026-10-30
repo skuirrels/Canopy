@@ -136,32 +136,41 @@ print(json.dumps({'type':'item.completed','item':{'type':'agent_message','text':
     app_script=scratch/'application.py';app_config=scratch/'application.json';app_db=scratch/'application.sqlite'
     with sqlite3.connect(app_db) as db:db.execute('create table records(id text primary key, value text)');db.execute('insert into records values (?,?)',('fixture-record','persisted input'))
     with socket.socket() as sock:sock.bind(('127.0.0.1',0));app_port=sock.getsockname()[1]
-    app_script.write_text('''import http.server,json,os,sqlite3,sys,uuid
-config=json.load(open(sys.argv[1]));instance=str(uuid.uuid4())
+    app_script.write_text('''import http.server,json,os,sqlite3,subprocess,sys,uuid
+config=json.load(open(sys.argv[1]));instance=str(uuid.uuid4());sys.path.insert(0,config['deployment']);from counter import increment
+revision=subprocess.check_output(['git','-C',config['deployment'],'rev-parse','HEAD'],text=True).strip()
 class Handler(http.server.BaseHTTPRequestHandler):
  def log_message(self,*args):pass
  def do_GET(self):
-  if self.path=='/health':value=dict(status='ready',instance=instance,revision=os.environ['APP_REVISION'],pid=os.getpid())
+  if self.path=='/health':value=dict(status='ready',instance=instance,revision=revision,pid=os.getpid(),incrementedZero=increment(0))
   elif self.path=='/snapshot':
    with sqlite3.connect(config['database']) as db:value=dict(records=[dict(id=id,value=value) for id,value in db.execute('select id,value from records')])
   else:self.send_response(404);self.end_headers();return
   self.send_response(200);self.send_header('Content-Type','application/json');self.end_headers();self.wfile.write(json.dumps(value).encode())
 http.server.HTTPServer(('127.0.0.1',config['port']),Handler).serve_forever()
 ''')
-    app_configuration={'port':app_port,'database':str(app_db),'script':str(app_script),'count':0,'mode':'normal','baseline':baseline_sha};app_config.write_text(json.dumps(app_configuration))
+    deployment_repo=scratch/'deployed-source';subprocess.run(['git','clone','-q',str(bare),str(deployment_repo)],check=True)
+    app_configuration={'deployment':str(deployment_repo),'port':app_port,'database':str(app_db),'script':str(app_script),'count':0,'mode':'normal','baseline':baseline_sha};app_config.write_text(json.dumps(app_configuration))
     app_log=(scratch/'application.log').open('a');application=subprocess.Popen([sys.executable,str(app_script),str(app_config)],env=os.environ|{'APP_REVISION':baseline_sha},stdout=app_log,stderr=app_log)
     app_configuration['pid']=application.pid;app_config.write_text(json.dumps(app_configuration))
     hook=scratch/'restart.py';hook.write_text('''import json,os,signal,subprocess,sys,time,urllib.request,sqlite3
 from pathlib import Path
 p=Path(sys.argv[1]);c=json.loads(p.read_text());c['count']+=1;p.write_text(json.dumps(c))
-if c['mode']=='noop':sys.exit(0)
-os.kill(c['pid'],signal.SIGTERM)
+mode=c.get('recoveryMode','normal') if os.environ.get('CANOPY_RECOVERY')=='true' else c['mode']
+if mode=='noop':sys.exit(0)
+try:os.kill(c['pid'],signal.SIGTERM)
+except ProcessLookupError:pass
 for _ in range(100):
  try:urllib.request.urlopen('http://127.0.0.1:'+str(c['port'])+'/health',timeout=.1);time.sleep(.05)
  except OSError:break
-if c['mode']=='persistenceDrift':
+if mode=='crash':sys.exit(7)
+if os.environ.get('CANOPY_RECOVERY')=='true' and c.get('restorePersistence'):
+ with sqlite3.connect(c['database']+'.backup') as source,sqlite3.connect(c['database']) as destination:source.backup(destination)
+if mode=='persistenceDrift':
  with sqlite3.connect(c['database']) as db:db.execute("update records set value='explicit restart defect'")
-revision=c['baseline'] if c['mode']=='wrongRevision' else os.environ['CANOPY_MERGE_SHA']
+revision=c['baseline'] if mode=='wrongRevision' else os.environ.get('CANOPY_REVISION',os.environ['CANOPY_MERGE_SHA'])
+subprocess.run(['git','-C',c['deployment'],'fetch','-q','origin',revision],check=True)
+subprocess.run(['git','-C',c['deployment'],'checkout','-q','--detach',revision],check=True)
 # A detached launcher exits, reparenting the new application before this hook waits.
 launch='import subprocess,sys,os;subprocess.Popen([sys.executable,sys.argv[1],sys.argv[2]],env=os.environ,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,start_new_session=True)'
 subprocess.run([sys.executable,'-c',launch,c['script'],str(p)],env=os.environ|{'APP_REVISION':revision},check=True)
@@ -172,12 +181,21 @@ for _ in range(200):
 else:raise RuntimeError('Application restart timeout')
 time.sleep(c.get('afterRestartWait',0))
 print('Actual fixture application restarted',flush=True)
+if mode=='badExit':sys.exit(7)
 ''')
     hook_configuration=[dict(id='fixture-restart',name='Restart isolated application',executable=sys.executable,arguments=[str(hook),str(app_config)],workingDirectory=str(scratch),timeoutSeconds=15,integrityFiles=[str(hook)],healthUrl=f'http://127.0.0.1:{app_port}/health',expectedHealthJson=json.dumps({'status':'ready'}),instanceJsonPointer='/instance',revisionJsonPointer='/revision',snapshotUrl=f'http://127.0.0.1:{app_port}/snapshot')]
     for k,v in hook_configuration[0].items():
         if isinstance(v,list):
             for i,entry in enumerate(v):env[f'Delivery__Hooks__0__{k}__{i}']=str(entry)
         else:env[f'Delivery__Hooks__0__{k}']=str(v)
+    # Same probe contract, distinct configured recovery command identity.
+    for k,v in (hook_configuration[0]|dict(id='fixture-recovery',name='Recover isolated application')).items():
+        if isinstance(v,list):
+            for i,entry in enumerate(v):env[f'Delivery__Hooks__1__{k}__{i}']=str(entry)
+        else:env[f'Delivery__Hooks__1__{k}']=str(v)
+    for index,target_id in enumerate(['fixture-target','fixture-alias']):
+        for k,v in dict(id=target_id,name='Isolated target' if index==0 else 'Alias of isolated target',environment='Local regression',deployHookId='fixture-restart',recoveryHookId='fixture-recovery').items():env[f'Delivery__Targets__{index}__{k}']=v
+    with sqlite3.connect(app_db) as original,sqlite3.connect(str(app_db)+'.backup') as backup:original.backup(backup)
     def provider_call(path):return json.load(urllib.request.urlopen(provider_base+path,timeout=10))
     def reset_target():subprocess.run(['git','--git-dir='+str(bare),'update-ref','refs/heads/main',baseline_sha],check=True)
     def source(without_checks=False):
@@ -214,6 +232,76 @@ print('Actual fixture application restarted',flush=True)
     def merge(d):return settled(act(read(d),'merge'))
     def hook_mode(mode='normal',**values):
         c=json.loads(app_config.read_text());c.update(mode=mode,**values);app_config.write_text(json.dumps(c));return c
+    def verify_deployments(serve=False):
+        targets=['fixture-target','fixture-alias'];retained=[]
+        def d_read(d):return call('/api/factory/deployments/'+d['deployment']['id'])
+        def d_body(d,kind):return dict(requestId=str(uuid.uuid4()),expectedRevision=d['deployment']['revision'],action=kind,approvalNote='Explicit isolated environment approval; restore original data and prior observed revision on recovery.')
+        def d_act(d,kind,body=None):return call('/api/factory/deployments/'+d['deployment']['id']+'/actions','POST',body or d_body(d,kind))
+        def d_settle(d):
+            for _ in range(300):
+                d=d_read(d)
+                if d['deployment']['currentOperationId'] is None:return d
+                time.sleep(.1)
+            raise AssertionError(d)
+        def reset_app():
+            hook_mode('normal',afterRestartWait=0,recoveryMode='normal',restorePersistence=True)
+            subprocess.run([sys.executable,str(hook),str(app_config)],env=os.environ|{'CANOPY_REVISION':baseline_sha,'CANOPY_MERGE_SHA':baseline_sha,'CANOPY_RECOVERY':'true'},check=True,stdout=subprocess.DEVNULL)
+        def merged_source():
+            reset_app();run=source();adopt(deploymentTargetIds=targets);return merge(approve(publish(capture(run))))
+        def d_capture(x,body=None,target='fixture-target'):
+            x=read(x);result=call('/api/factory/deliveries/'+x['delivery']['id']+'/deployments','POST',body or dict(requestId=str(uuid.uuid4()),expectedRevision=x['delivery']['revision'],targetId=target));retained.append(result);return result
+        x=merged_source();path='/api/factory/deliveries/'+x['delivery']['id']+'/deployments'
+        if serve:
+            print(json.dumps(dict(baseUrl=base,runId=x['delivery']['runId'],projectId=pid,itemId=tid,deliveryId=x['delivery']['id'],providerBase=provider_base,scratch=str(scratch),providerFixture=str(fixture_path),appConfig=str(app_config),appUrl=f'http://127.0.0.1:{app_port}')),flush=True)
+            while True:time.sleep(1)
+        adopt();call(path,'POST',dict(requestId=str(uuid.uuid4()),expectedRevision=read(x)['delivery']['revision'],targetId=targets[0]),409)
+        check(not any(t['allowed'] for t in call(path)['targets']),'deployment targets require separate explicit project adoption')
+        adopt(deploymentTargetIds=targets);body=dict(requestId=str(uuid.uuid4()),expectedRevision=read(x)['delivery']['revision'],targetId=targets[0]);count=json.loads(app_config.read_text())['count'];writes=len(provider_call('/__state')['writes'])
+        call(path,'POST',body|dict(unexpected=True),400);call(path,'POST',body,403,{'Origin':'https://example.invalid'});call(path,'POST',body|dict(targetId='missing'),400)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:records=list(pool.map(lambda _:call(path,'POST',body),range(2)))
+        d=records[0];retained.append(d);check(records[1]['deployment']['id']==d['deployment']['id'] and json.loads(app_config.read_text())['count']==count,'concurrent capture retries persist one record and execute nothing')
+        inputs=scratch/'deployment-collection-inputs.json';inputs.write_text(json.dumps([dict(baseUrl=base,deliveryId=x['delivery']['id'],deploymentId=d['deployment']['id'],fixtureMode='isolated')]))
+        subprocess.run(['postman','collection','run',str(ROOT/'postman/collections/Factory deployment regression'),'--iteration-data',str(inputs),'--no-report-events'],cwd=ROOT,check=True)
+        check(True,'saved Postman deployment assertions run against the actual native application')
+        call(path,'POST',body|dict(targetId=targets[1]),409);d_capture_alias=dict(requestId=str(uuid.uuid4()),expectedRevision=read(x)['delivery']['revision'],targetId=targets[1]);call(path,'POST',d_capture_alias,409)
+        check(True,'request identity conflicts and target aliases sharing probe endpoints cannot bypass reservations')
+        call(f'/api/projects/{pid}?expectedRevision={revision()}','DELETE',None,409);call(f'/api/items/{tid}?expectedRevision={revision()}','DELETE',None,409)
+        check(True,'open deployments protect their source task and persistent evidence from deletion')
+        call('/api/factory/deployments/'+d['deployment']['id']+'/actions','POST',d_body(d,'deploy'),409)
+        check(not d_read(d)['operations'] and json.loads(app_config.read_text())['count']==count,'execution without target-and-revision-bound approval creates no command intent')
+        d=d_settle(d_act(d,'approveDeploy'));original=hook.read_text();hook.write_text(original+'\n# Changed deployment integrity source\n')
+        call('/api/factory/deployments/'+d['deployment']['id']+'/actions','POST',d_body(d,'deploy'),409);check(bool(d_read(d)['authorityErrors']),'changed target script revokes deployment approval before command execution');hook.write_text(original)
+        adopt(deploymentTargetIds=targets,environment='Explicit policy drift');call('/api/factory/deployments/'+d['deployment']['id']+'/actions','POST',d_body(d,'deploy'),409);adopt(deploymentTargetIds=targets)
+        check(True,'changed project policy revokes existing deployment authority')
+        d=d_read(d);snapshot=d;process.terminate();process.wait(timeout=25);start();d=d_read(d);check(d==snapshot,'native restart preserves captured environment, approval and deployment journal exactly')
+        command=d_body(d,'deploy');d=d_settle(d_act(d,'deploy',command));check(d['deployment']['state']=='deployed' and d['deployment']['deployment']['after']['revision']==x['delivery']['remote']['mergeSha'] and json.load(urllib.request.urlopen(f'http://127.0.0.1:{app_port}/health'))['incrementedZero']==1 and json.loads(app_config.read_text())['count']==count+1,'actual deployed Git checkout runs the changed increment function at the merged revision with unchanged SQLite persistence')
+        replay=call('/api/factory/deployments/'+d['deployment']['id']+'/actions','POST',command);check(replay==d and len(provider_call('/__state')['writes'])==writes,'exact completed command retry performs no restart and no GitHub merge')
+        call('/api/factory/deployments/'+d['deployment']['id']+'/actions','POST',d_body(d,'deploy'),409)
+        for mode in ['noop','wrongRevision','persistenceDrift','badExit','crash']:
+            x=merged_source();d=d_capture(x);d=d_settle(d_act(d,'approveDeploy'));hook_mode(mode);count=json.loads(app_config.read_text())['count'];d=d_settle(d_act(d,'deploy'));receipt=copy.deepcopy(d['deployment']['deployment'])
+            check(d['deployment']['state']=='needsAttention' and receipt['error'] and json.loads(app_config.read_text())['count']==count+1,'target '+mode+' remains a visible failed or uncertain deployment')
+            call('/api/factory/deployments/'+d['deployment']['id']+'/actions','POST',d_body(d,'deploy'),409)
+            d=d_settle(d_act(d,'reconcile'));check(d['deployment']['state']=='needsAttention' and d['deployment']['deployment']==receipt and json.loads(app_config.read_text())['count']==count+1,'observation of '+mode+' never repeats a command or erases its failure')
+            call('/api/factory/deployments/'+d['deployment']['id']+'/actions','POST',d_body(d,'recover'),409)
+            d=d_settle(d_act(d,'approveRecovery'));d=d_settle(d_act(d,'recover'))
+            check(d['deployment']['state']=='recovered' and d['deployment']['recovery']['after']['revision']==baseline_sha and d['deployment']['recovery']['after']['snapshotHash']==receipt['before']['snapshotHash'] and d['deployment']['deployment']==receipt,'separate approved recovery from '+mode+' restores the original revision/data while preserving the original failure')
+        x=merged_source();d=d_capture(x);d=d_settle(d_act(d,'approveDeploy'));hook_mode('normal',afterRestartWait=8);count=json.loads(app_config.read_text())['count'];d_act(d,'deploy')
+        for _ in range(100):
+            try:
+                health=json.load(urllib.request.urlopen(f'http://127.0.0.1:{app_port}/health',timeout=.2))
+                if health['revision']==x['delivery']['remote']['mergeSha'] and json.loads(app_config.read_text())['count']==count+1:break
+            except OSError:pass
+            time.sleep(.1)
+        else:raise AssertionError('No actual deployed process observed')
+        process.terminate();process.wait(timeout=25);start();d=d_read(d);check(d['operations'][-1]['state']=='uncertain' and json.loads(app_config.read_text())['count']==count+1,'interrupted deployment command is retained and never replayed on startup')
+        original_intent=copy.deepcopy(d['deployment']['deployment']);d=d_settle(d_act(d,'reconcile'));check(d['deployment']['state']=='deployed' and d['deployment']['deployment']==original_intent and json.loads(app_config.read_text())['count']==count+1,'observation-only reconciliation proves an interrupted deployment without rewriting its original receipt')
+        x=merged_source();d=d_capture(x);d=d_settle(d_act(d,'approveDeploy'));hook_mode('badExit',recoveryMode='badExit');d=d_settle(d_act(d,'deploy'));original_receipt=copy.deepcopy(d['deployment']['deployment']);d=d_settle(d_act(d,'approveRecovery'));d=d_settle(d_act(d,'recover'));count=json.loads(app_config.read_text())['count'];failed_recovery=copy.deepcopy(d['deployment']['recovery']);d=d_settle(d_act(d,'reconcile'))
+        check(d['deployment']['state']=='needsAttention' and failed_recovery['exitCode']==7 and d['deployment']['deployment']==original_receipt and d['deployment']['recovery']==failed_recovery,'a failed recovery stays failed even when its observed revision appears healthy')
+        call('/api/factory/deployments/'+d['deployment']['id']+'/actions','POST',d_body(d,'recover'),409);d=d_settle(d_act(d,'close'));check(d['deployment']['state']=='closed' and json.loads(app_config.read_text())['count']==count,'closing a failed recovery retains receipts and performs no external action')
+        hook_mode('normal',afterRestartWait=0,recoveryMode='normal')
+        snapshots=[d_read(item) for item in retained];process.terminate();process.wait(timeout=25);start()
+        check([d_read(item) for item in retained]==snapshots,'completed, recovered, interrupted and closed deployment histories survive native restart unchanged')
+
     def verify_merge_identity():
         run=source();adopt();x=approve(publish(capture(run)));configure(mode='lostMerge');x=merge(x);count=len(provider_call('/__state')['writes'])
         for mode in ['graphqlError','graphqlMissingCommit','graphqlWrongHead','graphqlUnmerged','graphqlWrongRepo','graphqlWrongNumber','graphqlWrongCommit']:
@@ -256,6 +344,10 @@ print('Actual fixture application restarted',flush=True)
         p=call(f'/api/factory/projects/{pid}/pipelines','POST',dict(expectedRevision=revision(),name='No verification fixture',description='Test only',source='Explicit missing-evidence regression',definition=unchecked),201)
         unchecked_version=call('/api/factory/pipelines/'+p['pipeline']['id']+'/publish','POST',dict(expectedRevision=revision(),expectedDraftRevision=1))['versions'][0]
         missing=source(without_checks=True);call('/api/factory/runs/'+missing['run']['id']+'/deliveries','POST',capture_body(missing),409);check('verification command' in ' '.join(lib(missing)['local']['errors']),'manual criterion waivers and review approval cannot replace actual current command verification')
+        if '--serve-deployments' in sys.argv:verify_deployments(serve=True)
+        if '--deployments-only' in sys.argv:verify_deployments()
+        if '--deployments-only' in sys.argv:
+            call(f'/api/projects/{pid}?expectedRevision={revision()}','DELETE');print(f'{checks} targeted deployment checks passed',flush=True);raise SystemExit(0)
         if '--merge-identity-only' in sys.argv:
             verify_merge_identity();call(f'/api/projects/{pid}?expectedRevision={revision()}','DELETE');print(f'{checks} targeted merge identity checks passed',flush=True);raise SystemExit(0)
         if '--hook-integrity-only' in sys.argv:

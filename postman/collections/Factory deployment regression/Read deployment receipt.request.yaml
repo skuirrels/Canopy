@@ -1,0 +1,14 @@
+$kind: http-request
+name: Read deployment receipt
+method: GET
+url: '{{baseUrl}}/api/factory/deployments/{{deploymentId}}'
+order: 2000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('deliveryId')||!pm.variables.get('deploymentId')) throw new Error('Supply isolated fixtureMode, deliveryId and deploymentId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Journal readable',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('Capture is passive',()=>{pm.expect(d.deployment.state).to.eql('captured');pm.expect(d.operations).to.have.lengthOf(0);pm.expect(d.deployment.deployment).to.eql(null);});

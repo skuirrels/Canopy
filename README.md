@@ -131,3 +131,5 @@ The regression script uses the running API, creates its own isolated projects an
 OpenAPI is generated from endpoint request/response types at `/openapi/v1.json`; `docs/API.md` describes invariants and error semantics. Refresh `postman/specs/planner.openapi.json` from that endpoint after contract changes; regenerate only the generated collection, retaining the regression collection.
 
 See `docs/VALIDATION.md` for the checks performed for this build.
+
+Named deployment environments and explicit recovery: [configuration, authority and operation](docs/FACTORY-DEPLOYMENTS.md).

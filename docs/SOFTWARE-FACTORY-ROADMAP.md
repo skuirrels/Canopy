@@ -160,7 +160,10 @@ picker and the same canonical file/hash resolver as execution. See
 live-provider validation is now exercised by the protected GitHub pilot; its
 failed/recovered attempts and completed deliveries must be judged from retained
 operational receipts, not PR state alone. See [live delivery](FACTORY-LIVE-DELIVERY.md).
-Additional deployment targets remain follow-up work. Authentication and team access remain a separate deployment
+Named deployment targets, separate revision-bound approvals and explicit recovery
+are delivered as an extension of controlled delivery. See
+[deployment environments](FACTORY-DEPLOYMENTS.md) and
+[validation](FACTORY-DEPLOYMENTS-VALIDATION.md). Authentication and team access remain a separate deployment
 track. Model routing, parallel dispatch and automatic skill calibration are
 deferred behind the quality and delivery priorities above.
 

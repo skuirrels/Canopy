@@ -118,3 +118,6 @@ or changing the binary/configuration invalidates existing action authority.
 Hook probe URLs and all command inputs come from deployment configuration; the
 API cannot submit arbitrary commands. Hooks must handle the explicit
 `CANOPY_MERGE_SHA`, `CANOPY_DELIVERY_ID` and `CANOPY_REPOSITORY` inputs.
+
+Named deployment environments and explicit recovery extend this contract without
+repeating merges. See [deployment environments](FACTORY-DEPLOYMENTS.md).

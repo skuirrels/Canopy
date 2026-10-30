@@ -1,0 +1,11 @@
+$kind: http-request
+name: Capture merged revision for configured target
+method: POST
+url: '{{baseUrl}}/api/factory/deliveries/{{deliveryId}}/deployments'
+order: 2000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {"requestId":"{{$guid}}","expectedRevision":{{deliveryRevision}},"targetId":"{{deploymentTargetId}}"}

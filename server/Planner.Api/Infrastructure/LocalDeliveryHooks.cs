@@ -6,6 +6,9 @@ namespace Planner.Api.Infrastructure;
 
 public sealed class LocalDeliveryHooks(DeliveryOptions options, IHttpClientFactory clients, AgentOptions agents) : IDeliveryHooks
 {
+    public IReadOnlyList<DeploymentTarget> Targets() => options.Targets;
+    public string ResourceKey(string id)
+    { var hook = Find(id); return FactoryArtifact.Hash(new Uri(hook.HealthUrl).AbsoluteUri + "\n" + new Uri(hook.SnapshotUrl).AbsoluteUri); }
     public string? ConfigurationHash(string? id)
     {
         if (id is null) return null;
@@ -35,7 +38,9 @@ public sealed class LocalDeliveryHooks(DeliveryOptions options, IHttpClientFacto
         var snapshot = await Read(hook.SnapshotUrl, ct);
         return new(identity.ToString(), revision.GetString()!, Hash(snapshot), Hash(health));
     }
-    public async Task<DeliveryHookReceipt> Run(string id, FactoryDelivery delivery, DeliveryProbe before, CancellationToken ct)
+    public Task<DeliveryHookReceipt> Run(string id, FactoryDelivery delivery, DeliveryProbe before, CancellationToken ct) =>
+        RunTarget(id, new(delivery.Id, Guid.Empty, delivery.Policy.Repository, delivery.Remote!.MergeSha!, delivery.Remote.MergeSha!, "", delivery.Policy.Environment, false), before, ct);
+    public async Task<DeliveryHookReceipt> RunTarget(string id, DeploymentExecution execution, DeliveryProbe before, CancellationToken ct)
     {
         var hook = Find(id); using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct); deadline.CancelAfter(TimeSpan.FromSeconds(hook.TimeoutSeconds));
         var output = ""; var truncated = false; int? code = null; DeliveryProbe? after = null; string? error = null;
@@ -43,12 +48,10 @@ public sealed class LocalDeliveryHooks(DeliveryOptions options, IHttpClientFacto
         try
         {
             code = await AgentProcess.Run(LocalAgentEnvironment.Resolve(hook.Executable) ?? throw new RuleException("The configured post-merge hook is unavailable."), hook.WorkingDirectory, hook.Arguments, null, Append, Append, deadline.Token,
-                new Dictionary<string, string> { ["CANOPY_DELIVERY_ID"] = delivery.Id.ToString(), ["CANOPY_MERGE_SHA"] = delivery.Remote!.MergeSha!, ["CANOPY_REPOSITORY"] = delivery.Policy.Repository });
+                new Dictionary<string, string> { ["CANOPY_DELIVERY_ID"] = execution.DeliveryId.ToString(), ["CANOPY_MERGE_SHA"] = execution.MergeSha, ["CANOPY_REPOSITORY"] = execution.Repository,
+                    ["CANOPY_DEPLOYMENT_ID"] = execution.DeploymentId.ToString(), ["CANOPY_REVISION"] = execution.Revision, ["CANOPY_TARGET_ID"] = execution.TargetId, ["CANOPY_ENVIRONMENT"] = execution.Environment, ["CANOPY_RECOVERY"] = execution.Recovery ? "true" : "false" });
             after = await Probe(id, ct);
-            if (code != 0) error = "The configured post-merge command failed.";
-            else if (after.Revision != delivery.Remote!.MergeSha) error = "The restarted application does not report the actual merged revision.";
-            else if (after.Instance == before.Instance) error = "No changed application instance was observed; restart is unverified.";
-            else if (after.SnapshotHash != before.SnapshotHash) error = "Persistence changed across the post-merge restart; inspect the retained receipt.";
+            error = DeploymentVerification.Error(before, after, execution.Revision, code);
         }
         catch (OperationCanceledException) when (!ct.IsCancellationRequested) { error = "The post-merge hook timed out. Reconcile the actual application before further action."; }
         catch (Exception exception) when (exception is RuleException or IOException or System.ComponentModel.Win32Exception) { error = exception.Message; }

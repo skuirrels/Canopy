@@ -18,9 +18,9 @@ credentials and pins actions to verified upstream commit IDs.
   real adapters against local Postman delivery/intake simulations, and local
   collection structural lint. Simulation passes do not prove real GitHub delivery.
 
-The native gate aggregates independent `core` and `providers` groups. It fails
-if either group fails, is cancelled or is skipped. Both groups must finish;
-the client gate remains separate. `--suite core` and `--suite providers` run
+The native gate aggregates independent `core`, `providers` and `deployments` groups. It fails
+if any group fails, is cancelled or is skipped. All groups must finish;
+the client gate remains separate. `--suite core`, `--suite providers` and `--suite deployments` run
 those same groups locally; omitting the option runs both.
 
 `python3 scripts/ci-native.py` runs the same native gate after a Debug backend

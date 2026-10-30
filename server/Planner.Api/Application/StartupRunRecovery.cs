@@ -6,6 +6,12 @@ public sealed class StartupRunRecovery(IWorkspaceStore store)
 {
     public Task Recover(CancellationToken ct) => store.WriteAsync(data =>
     {
+        foreach (var operation in data.DeploymentOperations.Where(x => x.Pending))
+        {
+            operation.End("uncertain", new { interrupted = true }, "Backend restarted. Deployment commands were not replayed.");
+            var deployment = data.Deployments.Single(x => x.Id == operation.DeploymentId);
+            deployment.Change("needsAttention", "Interrupted deployment. Observe the target or explicitly approve configured recovery; no command was replayed."); deployment.Release(operation.Id);
+        }
         foreach (var collection in data.IntakeCollections.Where(x => x.State == "running")) collection.Finish("interrupted", "Backend restarted. Source coverage is unavailable; collection was not replayed.");
         foreach (var operation in data.DeliveryOperations.Where(x => x.Pending))
         {

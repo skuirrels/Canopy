@@ -47,6 +47,7 @@ builder.Services.AddSingleton<FactoryIntakeService>();
 builder.Services.AddSingleton<IDeliveryWorkspace, LocalDeliveryWorkspace>();
 builder.Services.AddSingleton<IDeliveryHooks, LocalDeliveryHooks>();
 builder.Services.AddSingleton<FactoryDeliveryService>();
+builder.Services.AddSingleton<FactoryDeploymentService>();
 builder.Services.AddScoped<FactoryDispatchService>();
 builder.Services.AddSingleton<StartupRunRecovery>();
 var agentOptions = builder.Configuration.GetSection("Agents").Get<AgentOptions>() ?? throw new InvalidOperationException("Configure Agents.");
