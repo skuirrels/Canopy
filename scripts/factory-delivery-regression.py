@@ -214,6 +214,12 @@ print('Actual fixture application restarted',flush=True)
     def merge(d):return settled(act(read(d),'merge'))
     def hook_mode(mode='normal',**values):
         c=json.loads(app_config.read_text());c.update(mode=mode,**values);app_config.write_text(json.dumps(c));return c
+    def verify_merge_identity():
+        run=source();adopt();x=approve(publish(capture(run)));configure(mode='lostMerge');x=merge(x);count=len(provider_call('/__state')['writes'])
+        for mode in ['graphqlError','graphqlMissingCommit','graphqlWrongHead','graphqlUnmerged','graphqlWrongRepo','graphqlWrongNumber','graphqlWrongCommit']:
+            configure(mode=mode);x=settled(act(x,'reconcile'));check(x['operations'][-1]['state']=='failed' and x['delivery']['remote']['mergeSha'] is None and len(provider_call('/__state')['writes'])==count,'GraphQL '+mode+' cannot establish a merged identity or repeat a provider write')
+            call('/api/factory/deliveries/'+x['delivery']['id']+'/actions','POST',act_body(x,'merge'),409)
+        configure(mode='normal');x=settled(act(x,'reconcile'));check(x['delivery']['state']=='delivered' and len(provider_call('/__state')['writes'])==count,'complete GraphQL identity recovers a lost merge without a REST merge SHA or duplicate mutation')
     try:
         start();pid=call('/api/projects','POST',dict(name='Factory delivery regression',description='Isolated contract simulation',color='#477fa1'))['projects'][0]['id']
         call(f'/api/agents/projects/{pid}/connection','PUT',dict(expectedRevision=revision(),repositoryPath=str(repo),baseRef='HEAD',provider='codex',instructions='Explicit protocol fixture; commit candidate before verification.'))
@@ -250,6 +256,8 @@ print('Actual fixture application restarted',flush=True)
         p=call(f'/api/factory/projects/{pid}/pipelines','POST',dict(expectedRevision=revision(),name='No verification fixture',description='Test only',source='Explicit missing-evidence regression',definition=unchecked),201)
         unchecked_version=call('/api/factory/pipelines/'+p['pipeline']['id']+'/publish','POST',dict(expectedRevision=revision(),expectedDraftRevision=1))['versions'][0]
         missing=source(without_checks=True);call('/api/factory/runs/'+missing['run']['id']+'/deliveries','POST',capture_body(missing),409);check('verification command' in ' '.join(lib(missing)['local']['errors']),'manual criterion waivers and review approval cannot replace actual current command verification')
+        if '--merge-identity-only' in sys.argv:
+            verify_merge_identity();call(f'/api/projects/{pid}?expectedRevision={revision()}','DELETE');print(f'{checks} targeted merge identity checks passed',flush=True);raise SystemExit(0)
         if '--hook-integrity-only' in sys.argv:
             run=source();adopt('fixture-restart');x=capture(run);original=hook.read_text();hook.write_text(original+'\n# Explicit changed hook source fixture\n')
             call('/api/factory/deliveries/'+x['delivery']['id']+'/actions','POST',act_body(x,'publish'),409);check(not read(x)['local']['ready'],'changing a declared hook source revokes captured action authority before any mutation')
@@ -267,6 +275,7 @@ print('Actual fixture application restarted',flush=True)
         configure(mode='normal');x=settled(act(x,'reconcile'));check(x['delivery']['remote'] is not None and len(provider_call('/__state')['writes'])==count,'reconcile finds the exact PR marker and never repeats a lost create')
         x=approve(x);configure(mode='lostMerge');x=merge(x);check(x['operations'][-1]['state']=='uncertain','lost merge response is retained as unknown rather than retried')
         count=len(provider_call('/__state')['writes']);configure(mode='normal');x=settled(act(x,'reconcile'));check(x['delivery']['state']=='delivered' and len(provider_call('/__state')['writes'])==count,'lost merge response resolves from actual merge ancestry without a duplicate merge')
+        verify_merge_identity()
         run=source();adopt();x=approve(publish(capture(run)));configure(mode='pending');x=merge(x);check(x['delivery']['state']=='mergePending' and x['delivery']['remote']['mergeSha'] is None,'accepted asynchronous merge is pending, never delivery success');configure(mode='normal');x=settled(act(x,'reconcile'));check(x['delivery']['state']=='delivered','explicit reconciliation verifies the asynchronous merge result')
         for mode in ['pendingWrongHead','pendingBypass']:
             run=source();adopt();x=approve(publish(capture(run)));target_ref='refs/heads/'+fixture['target'];target_before=subprocess.check_output(['git','--git-dir='+str(bare),'rev-parse',target_ref],text=True).strip();writes_before=len(provider_call('/__state')['writes']);configure(mode=mode);x=merge(x);provider_state=provider_call('/__state')

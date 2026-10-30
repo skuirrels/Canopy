@@ -7,7 +7,7 @@ if (!file) throw new Error('Supply the explicit isolated CANOPY_DELIVERY_FIXTURE
 function fixture() { return JSON.parse(fs.readFileSync(file, 'utf8')); }
 function git(...args) { return cp.execFileSync('git', ['--git-dir=' + fixture().barePath, ...args], {encoding:'utf8', stdio:['ignore','pipe','ignore']}).trim(); }
 function ref(branch) { try { return git('rev-parse','--verify','refs/heads/'+branch); } catch { return null; } }
-function pull(p, f) { return {number:p.number,html_url:f.gitUrl+'/pull/'+p.number,body:p.body,state:p.merged?'closed':'open',draft:!f.ready,merged:p.merged,merged_at:p.merged?'2026-01-01T00:00:00Z':null,merge_commit_sha:p.mergeSha??null,mergeable:f.mode==='conflict'?false:true,head:{sha:ref(p.head),ref:p.head,repo:{full_name:f.repository}},base:{sha:ref(p.base),ref:p.base,repo:{full_name:f.repository}}}; }
+function pull(p, f) { return {number:p.number,html_url:f.gitUrl+'/pull/'+p.number,body:p.body,state:p.merged?'closed':'open',draft:!f.ready,merged:p.merged,merged_at:p.merged?'2026-01-01T00:00:00Z':null,mergeable:f.mode==='conflict'?false:true,head:{sha:ref(p.head),ref:p.head,repo:{full_name:f.repository}},base:{sha:ref(p.base),ref:p.base,repo:{full_name:f.repository}}}; }
 async function load() { return await pm.state.get('github-delivery.records') || {pulls:[],requests:{},writes:[]}; }
 async function save(state) { await pm.state.set('github-delivery.records',state); }
 function merge(p, f) {
@@ -25,6 +25,12 @@ http.createServer(async (req,res)=>{
   if (f.mode==='unavailable') return answer(503,{message:'Explicit provider outage fixture'});
   if (f.mode==='html') {res.writeHead(500,{'Content-Type':'text/html'});return res.end('<html>Explicit proxy failure fixture</html>');}
   if (f.mode==='hanging') return;
+  if (path==='/graphql' && req.method==='POST') {
+   const b=req.body,v=b?.variables,p=state.pulls.find(p=>p.number===v?.number);
+   if(!p||v.owner+'/'+v.name!==f.repository||typeof b.query!=='string'||!b.query.startsWith('query(')||!b.query.includes('mergeCommit{oid}'))return answer(400,{errors:[{message:'Query outside the consumed read-only contract'}]});
+   const data={repository:{nameWithOwner:f.mode==='graphqlWrongRepo'?f.repository+'-other':f.repository,pullRequest:{number:f.mode==='graphqlWrongNumber'?p.number+1:p.number,merged:f.mode==='graphqlUnmerged'?false:p.merged,headRefOid:f.mode==='graphqlWrongHead'?ref(p.base):ref(p.head),mergeCommit:f.mode==='graphqlMissingCommit'||!p.merged?null:{oid:f.mode==='graphqlWrongCommit'?ref(p.head):p.mergeSha}}}};
+   return answer(200,f.mode==='graphqlError'?{data,errors:[{message:'Explicit partial GraphQL error'}]}:{data});
+  }
   const root='/repos/'+f.repository;
   if (path===root && req.method==='GET') return answer(200,{full_name:f.repository,clone_url:f.gitUrl,ssh_url:f.gitUrl,allow_merge_commit:true});
   if (path.startsWith(root+'/git/ref/heads/') && req.method==='GET') {const sha=ref(path.slice((root+'/git/ref/heads/').length));return answer(sha?200:404,sha?{object:{sha}}:{message:'Not found'});}

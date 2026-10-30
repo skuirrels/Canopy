@@ -1221,6 +1221,160 @@
           }
         }
       }
+    },
+    "/graphql": {
+      "post": {
+        "summary": "Read the authoritative merged PR commit identity",
+        "description": "Read-only GitHub GraphQL query. REST 2026-03-10 omits merge_commit_sha. Errors and partial or mismatched identity are not evidence of a successful merge. Source: https://docs.github.com/en/graphql/reference/pulls#pullrequest",
+        "operationId": "readMergedPullIdentity",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string"
+                  },
+                  "variables": {
+                    "type": "object",
+                    "properties": {
+                      "owner": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "number": {
+                        "type": "integer",
+                        "minimum": 1
+                      }
+                    },
+                    "required": [
+                      "owner",
+                      "name",
+                      "number"
+                    ]
+                  }
+                },
+                "required": [
+                  "query",
+                  "variables"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Merged PR identity or GraphQL errors; consumer requires complete matching identity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "repository": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "nameWithOwner": {
+                              "type": "string"
+                            },
+                            "pullRequest": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "properties": {
+                                "number": {
+                                  "type": "integer"
+                                },
+                                "merged": {
+                                  "type": "boolean"
+                                },
+                                "headRefOid": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{40}$"
+                                },
+                                "mergeCommit": {
+                                  "type": [
+                                    "object",
+                                    "null"
+                                  ],
+                                  "properties": {
+                                    "oid": {
+                                      "type": "string",
+                                      "pattern": "^[a-f0-9]{40}$"
+                                    }
+                                  },
+                                  "required": [
+                                    "oid"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "number",
+                                "merged",
+                                "headRefOid",
+                                "mergeCommit"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "nameWithOwner",
+                            "pullRequest"
+                          ]
+                        }
+                      }
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "anyOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "errors"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credential unavailable"
+          },
+          "403": {
+            "description": "Read permission unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1298,12 +1452,6 @@
             "type": "boolean"
           },
           "merged_at": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "merge_commit_sha": {
             "type": [
               "string",
               "null"

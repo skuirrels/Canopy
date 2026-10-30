@@ -157,7 +157,10 @@ Installed-skill discovery and a bounded real-provider implementation/check/revie
 pilot are delivered. Discovery uses explicitly configured roots, a searchable
 picker and the same canonical file/hash resolver as execution. See
 [skills](FACTORY-SKILLS.md) and [validation](FACTORY-SKILLS-VALIDATION.md). Broader
-live-provider delivery/deployment validation remains follow-up work. Authentication and team access remain a separate deployment
+live-provider validation is now exercised by the protected GitHub pilot; its
+failed/recovered attempts and completed deliveries must be judged from retained
+operational receipts, not PR state alone. See [live delivery](FACTORY-LIVE-DELIVERY.md).
+Additional deployment targets remain follow-up work. Authentication and team access remain a separate deployment
 track. Model routing, parallel dispatch and automatic skill calibration are
 deferred behind the quality and delivery priorities above.
 
