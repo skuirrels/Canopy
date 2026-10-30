@@ -100,3 +100,6 @@ if __name__ == '__main__':
 
     if suite == 'all':
         run('postman', 'collection', 'lint', ROOT / 'postman/collections/Factory deployment regression', '--reporter', 'cli', '--fail-severity', 'error')
+
+    if suite in ('all', 'deployments'):
+        run('postman', 'spec', 'lint', ROOT / 'postman/specs/planner.openapi.json', '--issueType', 'syntax', '--no-report-events')
