@@ -22,3 +22,5 @@ docs/*.local.md
 
 __pycache__/
 *.pyc
+
+server/Planner.Api/appsettings.Local.json

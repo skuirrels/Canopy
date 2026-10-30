@@ -6,6 +6,8 @@ using Planner.Api.Infrastructure;
 using Planner.Api;
 
 var builder = WebApplication.CreateBuilder(args);
+// Optional machine settings stay out of source control. Preserve environment/CLI precedence.
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: false).AddEnvironmentVariables().AddCommandLine(args);
 builder.Services.AddOpenApi();
 var configuredPath = builder.Configuration["Database:Path"] ?? throw new InvalidOperationException("Database:Path is required.");
 var databasePath = Path.GetFullPath(configuredPath, builder.Environment.ContentRootPath);
@@ -15,6 +17,10 @@ builder.Services.AddSingleton<IWorkspaceStore, DuckDbWorkspaceStore>();
 builder.Services.AddSingleton<IReadOnlyList<WorkflowDefault>>(builder.Configuration.GetSection("WorkflowDefaults").Get<List<WorkflowDefault>>() ?? []);
 builder.Services.AddScoped<PlannerService>();
 builder.Services.AddSingleton<IMarkdownFiles, LocalMarkdownFiles>();
+var skillDiscovery = builder.Configuration.GetSection("Factory:SkillDiscovery").Get<FactorySkillDiscoveryOptions>() ?? throw new InvalidOperationException("Configure Factory:SkillDiscovery.");
+skillDiscovery.Validate(); builder.Services.AddSingleton(skillDiscovery);
+builder.Services.AddSingleton<IFactorySkillCatalogue, LocalFactorySkillCatalogue>();
+builder.Services.AddScoped<FactorySkillService>();
 builder.Services.AddScoped<SpecFileService>();
 var factoryTemplatePath = builder.Configuration["Factory:TemplatesPath"] ?? throw new InvalidOperationException("Configure Factory:TemplatesPath.");
 var factoryTemplates = FactoryTemplateLoader.Load(Path.GetFullPath(factoryTemplatePath, builder.Environment.ContentRootPath));

@@ -16,9 +16,10 @@ It never runs an agent, command, merge or deployment.
    reorder steps. Stage groups arrange the display; prerequisites define order.
    Removing a stage does not invent replacement artifact producers.
 4. For agent steps, choose a role and permissions, optional provider/model/effort,
-   and skill references with sources. **Unverified** means installation and
-   compatibility have not been checked. These are explicit references, not an
-   installed-skill catalogue.
+   and skills from the searchable installed catalogue. Readability, exact source,
+   path and content hash are observed from configured locations; provider
+   compatibility remains unverified. Explicit/manual references are retained,
+   including missing or ambiguous references. See [skills](FACTORY-SKILLS.md).
 5. For command steps, enter the executable, arguments, repository-relative
    working directory and timeout. Each argument occupies one line, including
    any spaces within it. Environment values reference external variable names;
@@ -73,8 +74,8 @@ Published snapshots and task attachments survive backend restarts. Browser
 layout/camera preferences and recovery copies stay on that browser; they are not
 substitutes for database backups. The existing **Agents** actions remain
 independent. [Explicit factory execution](FACTORY-RUNS.md) uses the captured
-version and records actual step state/evidence. Installed-skill discovery remains
-later work.
+version and records actual step state/evidence. Installed-skill discovery uses
+explicitly configured roots and the shared canonical resolver.
 
 The Factory tab now also offers [readiness and run preparation](FACTORY-RUNS.md).
 It captures a work order and pending stage/step records without dispatching work.

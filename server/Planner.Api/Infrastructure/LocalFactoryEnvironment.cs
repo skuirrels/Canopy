@@ -8,7 +8,7 @@ public sealed record FactorySkillLocation(string Id, string Source, string Path)
 
 // Local filesystem observations are confined to the explicitly single-process deployment.
 // Provider credentials/model access and execution success are never inferred from a binary.
-public sealed class LocalFactoryEnvironment(LocalAgentEnvironment agents, IMarkdownFiles markdown, IConfiguration configuration) : IFactoryEnvironment
+public sealed class LocalFactoryEnvironment(LocalAgentEnvironment agents, IFactorySkillCatalogue catalogue) : IFactoryEnvironment
 {
     public async Task<FactoryInspection> InspectCaptured(FactoryEnvironmentSnapshot snapshot, CancellationToken ct)
     {
@@ -37,7 +37,7 @@ public sealed class LocalFactoryEnvironment(LocalAgentEnvironment agents, IMarkd
         { return new(null, [new("repository.unavailable", "error", error.Message)]); }
         catch (OperationCanceledException) when (!ct.IsCancellationRequested)
         { return new(null, [new("repository.timeout", "error", "Repository inspection exceeded the configured Git timeout.")]); }
-        var locations = configuration.GetSection("Factory:Skills").Get<List<FactorySkillLocation>>() ?? [];
+        var installed = definition.Stages.Any(s => s.Steps.Any(step => step.Skills is { Length: > 0 })) ? await catalogue.Read(root, ct) : null;
         var skills = new List<FactorySkillSnapshot>();
         var resolved = new List<FactoryStage>();
         foreach (var stage in definition.Stages)
@@ -61,16 +61,13 @@ public sealed class LocalFactoryEnvironment(LocalAgentEnvironment agents, IMarkd
                     Check("agent.access", "warning", "Provider credentials and model access have not been verified; no model call was made.", stage.Id, step.Id);
                     foreach (var skill in step.Skills ?? [])
                     {
-                        var matches = locations.Where(x => x is not null && x.Id == skill.Id && x.Source == skill.Source).ToList();
-                        if (matches.Count != 1) { Check("skill.unresolved", "error", $"Configure one Factory:Skills path for '{skill.Id}' with its exact source.", stage.Id, step.Id); continue; }
                         try
                         {
-                            var file = markdown.Read(Path.GetFullPath(matches[0].Path, root));
-                            if (!skills.Any(x => x.Id == skill.Id && x.Source == skill.Source)) skills.Add(new(skill.Id, skill.Source, file.Path, file.Hash));
+                            var entry = installed!.Resolve(skill);
+                            if (!skills.Any(x => x.Id == skill.Id && x.Source == skill.Source)) skills.Add(new(skill.Id, skill.Source, entry.Paths[0], entry.Hash!));
                             Check("skill.available", "info", $"Skill '{skill.Id}' resolved to readable Markdown; its content hash is captured.", stage.Id, step.Id);
                         }
-                        catch (Exception error) when (error is RuleException or ArgumentException or IOException or UnauthorizedAccessException)
-                        { Check("skill.unavailable", "error", $"Skill '{skill.Id}': {error.Message}", stage.Id, step.Id); }
+                        catch (RuleException error) { Check("skill.unavailable", "error", $"Skill '{skill.Id}': {error.Message}", stage.Id, step.Id); }
                     }
                 }
                 if (step.Kind == "command" && step.Command is { } command)

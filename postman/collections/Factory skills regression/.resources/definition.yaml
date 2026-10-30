@@ -1,0 +1,8 @@
+$kind: collection
+name: Factory skills regression
+description: Read-only installed-skill API checks against an explicitly supplied isolated fixture.
+variables:
+  - key: baseUrl
+    value: 'http://127.0.0.1:5274'
+  - key: projectId
+    value: ''

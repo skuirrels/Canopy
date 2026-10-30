@@ -1,0 +1,14 @@
+$kind: http-request
+name: Read installed skill observations
+method: GET
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/skills'
+order: 2000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')) throw new Error('Supply explicit isolated fixtureMode and projectId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Catalogue readable',()=>pm.response.to.have.status(200));const c=pm.response.json();pm.test('Coverage and identities explicit',()=>{pm.expect(c.complete).to.be.a('boolean');pm.expect(c.scopes).to.be.an('array');pm.expect(c.entries).to.be.an('array');pm.expect(c.fingerprint).to.match(/^[A-F0-9]{64}$/)});pm.test('Available references have actual paths and hashes',()=>c.entries.filter(e=>e.state==='available').forEach(e=>{pm.expect(e.paths.length).to.eql(1);pm.expect(e.hash).to.match(/^[A-F0-9]{64}$/)}));pm.collectionVariables.set('catalogueFingerprint',c.fingerprint);

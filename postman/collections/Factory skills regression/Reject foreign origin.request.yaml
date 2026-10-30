@@ -1,0 +1,17 @@
+$kind: http-request
+name: Reject foreign origin
+method: GET
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/skills'
+order: 4000
+headers:
+  - key: Origin
+    value: https://example.invalid
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')) throw new Error('Supply explicit isolated fixtureMode and projectId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Foreign origin rejected',()=>pm.response.to.have.status(403));

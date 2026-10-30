@@ -1,0 +1,19 @@
+$kind: http-example
+name: 3-Foreign origin
+request:
+  method: GET
+  url: '{{baseUrl}}/api/factory/projects/{{projectId}}/skills'
+response:
+  statusCode: 403
+  statusText: Forbidden
+  headers:
+    - key: Content-Type
+      value: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.4",
+        "title": "Open factory controls from the local Canopy application.",
+        "status": 403
+      }

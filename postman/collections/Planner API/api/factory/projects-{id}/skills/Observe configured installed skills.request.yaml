@@ -1,0 +1,6 @@
+$kind: http-request
+name: Observe configured installed skills
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/skills'
+method: GET
+order: 1000
+examples: ./.resources/Observe configured installed skills.resources/examples

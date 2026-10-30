@@ -1,0 +1,14 @@
+$kind: http-request
+name: Refresh observed catalogue
+method: GET
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/skills'
+order: 3000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')) throw new Error('Supply explicit isolated fixtureMode and projectId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Refresh readable',()=>pm.response.to.have.status(200));pm.test('Stable files retain fingerprint',()=>pm.expect(pm.response.json().fingerprint).to.eql(pm.collectionVariables.get('catalogueFingerprint')));
