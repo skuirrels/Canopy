@@ -4,7 +4,7 @@ import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, useSensor, useS
 import { SortableContext, horizontalListSortingStrategy, verticalListSortingStrategy, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { DragEndEvent, CollisionDetection, KeyboardCoordinateGetter } from '@dnd-kit/core';
-import { Boxes, ChevronDown, ChevronRight, ChevronsDownUp, ChevronsUpDown, Plus, GripVertical, FileText, Link2, CalendarDays, ArrowUpRight, ArrowLeft, Check } from 'lucide-react';
+import { Boxes, ChevronDown, ChevronRight, ChevronsDownUp, ChevronsUpDown, Plus, GripVertical, FileText, Link2, CalendarDays, ArrowUpRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Item, Project } from '../lib/types';
 import { dateLabel, descendants, overdue, assignedPeople } from '../lib/types';
@@ -15,6 +15,7 @@ import { Avatar, PriorityIcon } from './TaskCard';
 import { Button } from './ui/button';
 import './components.css';
 import { TaskEstimate } from './TaskEstimate';
+import { TaskCompletion } from './TaskCompletion';
 import { bindHorizontalPan } from '../lib/horizontal-pan';
 
 // Task drops prefer siblings over the enclosing component card. This keeps
@@ -57,6 +58,7 @@ function TaskMetadata({ item, listView = false }: { item: Item; listView?: boole
 
 function TaskRow({ node, depth, collapsed, toggle, onOpen, onAdd, listView = false }: { node: EpicTask; depth: number; collapsed: Set<string>; toggle: (id: string) => void; listView?: boolean } & Pick<Actions, 'onOpen' | 'onAdd'>) {
  const { data, pending } = useWorkspace(); const item = node.item;
+ const titleButton = useRef<HTMLButtonElement>(null);
  const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging, transform, transition } = useSortable({ id: item.id, disabled: pending > 0 || listView, data: { type: 'task', parentId: item.parentId, item } });
  const hasChildren = node.children.length > 0; const open = !collapsed.has(item.id);
  const status = data.statuses.find(value => value.id === item.statusId);
@@ -65,8 +67,8 @@ function TaskRow({ node, depth, collapsed, toggle, onOpen, onAdd, listView = fal
  return <li ref={setNodeRef} data-task-id={item.id} className={`epic-task ${node.context ? 'epic-context' : ''} ${isDragging ? 'epic-task-dragging' : ''}`} style={{ transform: CSS.Translate.toString(transform), transition }}>
   <div className="epic-task-row" style={{ '--task-depth': Math.min(depth, 4) } as CSSProperties}>
    {!listView && <button ref={setActivatorNodeRef} className="epic-drag icon-button" {...attributes} {...listeners} aria-label={`Reorder or move ${item.title}`} data-tooltip="Drag up or down to reorder, or onto another component to move · Space, Up/Down, Space to reorder by keyboard" disabled={pending > 0}><GripVertical size={15}/></button>}
-   {hasChildren ? <button className="epic-branch icon-button" aria-label={`${open ? 'Collapse' : 'Expand'} ${item.title}`} aria-expanded={open} onClick={() => toggle(item.id)}>{open ? <ChevronDown size={15}/> : <ChevronRight size={15}/>}</button> : <span className={`epic-task-mark ${complete ? 'epic-task-complete' : ''}`} style={complete ? { color: status.color } : undefined} aria-hidden="true">{complete && <Check size={14} strokeWidth={2.5}/>}</span>}
-   <div className="epic-task-main"><div className="epic-task-title-cell"><button className={`epic-task-title ${complete ? 'epic-task-title-complete' : ''}`} onClick={() => onOpen(item.id)}>{item.title}</button>{node.context && <span className="epic-context-label">Parent context</span>}</div><TaskMetadata item={item} listView={listView}/></div>
+   <TaskCompletion item={item} returnFocusRef={titleButton}/>
+   <div className="epic-task-main"><div className="epic-task-title-cell"><div className="epic-task-heading">{hasChildren && <button className="epic-branch icon-button" aria-label={`${open ? 'Collapse' : 'Expand'} ${item.title}`} aria-expanded={open} onClick={() => toggle(item.id)}>{open ? <ChevronDown size={15}/> : <ChevronRight size={15}/>}</button>}<button ref={titleButton} className={`epic-task-title ${complete ? 'epic-task-title-complete' : ''}`} onClick={() => onOpen(item.id)}>{item.title}</button></div>{node.context && <span className="epic-context-label">Parent context</span>}</div><TaskMetadata item={item} listView={listView}/></div>
    <div className="epic-task-actions">{spec && <button className="icon-button" aria-label={`Open specification for ${item.title}`} data-tooltip="Open specification" onClick={() => onOpen(item.id)}><FileText size={15}/></button>}<button className="icon-button" aria-label={`Add subtask to ${item.title}`} data-tooltip="Add subtask" onClick={() => onAdd(item.id)}><Plus size={15}/></button></div>
   </div>
   {hasChildren && open && <SortableContext items={node.children.map(child => child.item.id)} strategy={verticalListSortingStrategy}><ul className="epic-task-tree">{node.children.map(child => <TaskRow key={child.item.id} node={child} depth={depth + 1} collapsed={collapsed} toggle={toggle} onOpen={onOpen} onAdd={onAdd} listView={listView}/>)}</ul></SortableContext>}
