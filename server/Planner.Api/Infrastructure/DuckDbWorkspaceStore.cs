@@ -42,7 +42,12 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             Sync(db, factoryRuns, data.FactoryRuns); Sync(db, stageRuns, data.FactoryStageRuns); Sync(db, stepRuns, data.FactoryStepRuns);
             Sync(db, specFiles, data.SpecFiles);
             Sync(db, pipelines, data.FactoryPipelines); Sync(db, versions, data.PipelineVersions); Sync(db, taskFactory, data.TaskFactoryConfigurations);
-            await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct); return data;
+            await db.SaveChangesAsync(ct);
+            // Return the database's actual representation, including timestamp precision,
+            // from the same transaction. Tracked pre-save values can differ on Linux.
+            db.ChangeTracker.Clear();
+            var persisted = await Load(db, ct);
+            await transaction.CommitAsync(ct); return persisted;
         }
         finally { writer.Release(); }
     }
