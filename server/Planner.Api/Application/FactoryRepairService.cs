@@ -143,6 +143,7 @@ public sealed class FactoryRepairService(IWorkspaceStore store, IFactoryEnvironm
         if (loop.State == "needsDecision" && Latest(data, loop)?.Feedback?.CodeHash != context.Fingerprint) throw new RuleException("The failed candidate changed. Refresh QA and review before continuing.", 409);
         var plan = loop.Scope.Plans.Single(x => x.Owner == loop.Scope.Owner);
         ValidatePlan(data, loop.ProjectId, plan.Owner, plan.PipelineVersionId);
+        FactoryExecutionPolicyService.RequireLifetime(plan.Execution, environment.CanBoundProcessLifetime);
         var env = plan.Environment with { BaseCommit = context.HeadCommit, BaseRef = context.HeadCommit };
         RequireInspection(await environment.InspectCaptured(env, ct));
         if ((await verification.Observe(parent, ct)).Fingerprint != context.Fingerprint) throw new RuleException("Repair source changed during dispatch.", 409);

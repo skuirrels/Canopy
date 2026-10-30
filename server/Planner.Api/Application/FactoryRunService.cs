@@ -6,6 +6,7 @@ namespace Planner.Api.Application;
 public sealed record FactoryInspection(FactoryEnvironmentSnapshot? Environment, IReadOnlyList<FactoryReadinessCheck> Checks);
 public interface IFactoryEnvironment
 {
+    bool CanBoundProcessLifetime { get; }
     Task<FactoryInspection> InspectCaptured(FactoryEnvironmentSnapshot snapshot, CancellationToken ct);
     Task<FactoryInspection> Inspect(FactoryDefinition definition, ProjectAgentConnection? connection, CancellationToken ct);
 }

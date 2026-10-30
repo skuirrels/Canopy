@@ -10,13 +10,13 @@ public sealed record FactoryExecutionPolicyDetail(long ProjectRevision, FactoryE
 public sealed record FactoryPolicyInspection(FactoryInspection Inspection, FactoryExecutionSnapshot? Execution);
 public sealed record FactoryBudgetView(int ReservedAgentInvocations, int ReservedCommandInvocations, DateTime? Deadline, string? BlockedReason);
 
-public sealed class FactoryExecutionPolicyService(IWorkspaceStore store, IAgentEnvironment agents)
+public sealed class FactoryExecutionPolicyService(IWorkspaceStore store, IAgentEnvironment agents, IFactoryEnvironment factory)
 {
     public async Task<FactoryExecutionPolicyDetail> Read(Guid projectId, CancellationToken ct)
     {
         var data = await store.ReadAsync(ct);
         return new(data.Graph(projectId).Project.Revision, data.ExecutionPolicies.SingleOrDefault(x => x.Id == projectId)?.Policy,
-            FactoryRules.AgentRoles, agents.Providers(), new(true, true, false, false, "Provider completion counters are observations; missing usage is unknown and counters do not establish account billing."));
+            FactoryRules.AgentRoles, agents.Providers(), new(true, factory.CanBoundProcessLifetime, false, false, "Provider completion counters are observations; missing usage is unknown and counters do not establish account billing."));
     }
     public async Task<FactoryExecutionPolicyDetail> Edit(Guid projectId, EditFactoryExecutionPolicy input, CancellationToken ct)
     {
@@ -65,6 +65,8 @@ public sealed class FactoryExecutionPolicyService(IWorkspaceStore store, IAgentE
         return new(agents, calls, snapshot is not null && run.StartedAt.HasValue ? run.StartedAt.Value.AddSeconds(snapshot.Policy.MaxElapsedSeconds) : null,
             !Matches(data, run.ProjectId, snapshot) ? "Execution policy changed. Prepare current work before further dispatch." : snapshot?.Policy.Exceeded(run.StartedAt, run.FinishedAt ?? DateTime.UtcNow, agents, calls, nextKind));
     }
+    public static void RequireLifetime(FactoryExecutionSnapshot? execution, bool canBound)
+    { if (execution is not null && !canBound) throw new RuleException("Enabled elapsed budgets require an owned-process lifetime adapter for this operating system.", 503); }
     public static string? Failure(WorkspaceData data, FactoryRun run) => Budget(data, run).BlockedReason;
     public static void Require(WorkspaceData data, FactoryRun run, string? nextKind = null)
     { if (Budget(data, run, nextKind).BlockedReason is { } error) throw new RuleException(error, 409); }
@@ -81,6 +83,7 @@ public sealed class FactoryExecutionPolicyService(IWorkspaceStore store, IAgentE
         }).ToArray() }).ToArray() };
         var inspection = await environment.Inspect(routed, connection, ct); var checks = inspection.Checks.ToList();
         var flat = routed.Stages.SelectMany(x => x.Steps).ToList();
+        if (!environment.CanBoundProcessLifetime) checks.Add(new("execution.processLifetime", "error", "Enabled elapsed budgets require an owned-process lifetime adapter for this operating system. No execution is authorized against an unsupported guarantee."));
         if (policy.Unsupported(flat.Any(x => x.Kind == "agent")) is { } unsupported) checks.Add(new("execution.unsupported", "error", unsupported));
         if (flat.Count(x => x.Kind == "agent") > policy.MaxAgentInvocations) checks.Add(new("execution.agentBudget", "error", "The pipeline needs more agent invocations than the adopted work-order budget."));
         if (flat.Count(x => x.Kind == "command") > policy.MaxCommandInvocations) checks.Add(new("execution.commandBudget", "error", "The pipeline needs more command invocations than the adopted work-order budget."));

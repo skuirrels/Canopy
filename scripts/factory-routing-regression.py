@@ -163,6 +163,18 @@ for i in range(5 if 'OVERFLOW_USAGE' in prompt else 2 if 'MIXED_USAGE' in prompt
         adopt(policy(maxElapsedSeconds=5));pidfile=scratch/'command.pid';prepared=prepare(definition([command(f'import os,time,pathlib;pathlib.Path({str(pidfile)!r}).write_text(str(os.getpid()));time.sleep(120)')]))
         dispatch(prepared);failed=wait(prepared,'failed');check('elapsed' in failed['run']['error'] and pidfile.exists() and not alive(int(pidfile.read_text())),'elapsed deadline kills the owned command process and retains one reservation')
         check(failed['budget']['reservedCommandInvocations']==1,'failed command reservation is retained and never refunded into an implicit retry')
+        adopt(policy(maxElapsedSeconds=5));orphan_pid=scratch/'inherited-output.pid';orphan_marker='canopy-owned-output-'+str(uuid.uuid4())
+        code=f'import subprocess,sys,pathlib;child=subprocess.Popen([sys.executable,"-c","import time;time.sleep(120)",{orphan_marker!r}]);pathlib.Path({str(orphan_pid)!r}).write_text(str(child.pid))'
+        orphan=prepare(definition([command(code)]));dispatch(orphan)
+        try:
+            orphan=wait(orphan,'failed')
+            check(orphan_pid.exists() and not alive(int(orphan_pid.read_text())),'elapsed deadline closes inherited output and stops a child after its direct parent exits')
+        finally:
+            if orphan_pid.exists():
+                child_pid=int(orphan_pid.read_text())
+                observed=subprocess.run(['ps','-p',str(child_pid),'-o','command='],capture_output=True,text=True)
+                if orphan_marker in observed.stdout:
+                    os.kill(child_pid,9)
         adopt(policy(maxElapsedSeconds=5));timed_agent=prepare(definition([agent(instructions='WAIT_FOR_REVOCATION')]));dispatch(timed_agent);timed_agent=wait(timed_agent,'failed')
         check('elapsed' in timed_agent['run']['error'] and len(rows())==count+1 and not alive(rows()[-1]['pid']) and timed_agent['budget']['reservedAgentInvocations']==1,'elapsed budget stops the owned agent and retains its invocation')
         count=len(rows())

@@ -10,7 +10,7 @@ model quality, billing completeness or provider-internal spending ceiling.
 - `npm test --prefix client`: 99 tests passed.
 - `npm run build --prefix client`: passed. The existing large-chunk warning remains.
 - `dotnet build Planner.sln`: passed with no warnings/errors.
-- `python3 scripts/factory-routing-regression.py --postman`: 40 checks and the saved
+- `python3 scripts/factory-routing-regression.py --postman`: 41 checks and the saved
   collection's four requests/eight assertions passed. Policy validation, optimistic
   revisions, same-origin controls, role/step/task precedence, provider isolation,
   actual model/effort arguments, unknown/invalid/mixed/truncated usage, stage-local
@@ -25,7 +25,7 @@ model quality, billing completeness or provider-internal spending ceiling.
   and existing index across upgrade, update and restart. Historical usage stays
   unknown. Migration uses the repository's transactional table-copy pattern.
 - `postman collection lint 'postman/collections/Factory routing regression'`:
-  four requests, zero errors/warnings. OpenAPI JSON parsed and all 501 local schema
+  four requests, zero errors/warnings. OpenAPI JSON parsed and all 503 local schema
   references resolved. The live generated endpoint and changed schemas were copied
   without replacing configured servers or reordering unrelated contracts.
 
@@ -53,6 +53,15 @@ from the live workspace.
 
 ## Review corrections
 
+A late negative-case test reproduced a genuine hang on the original PR head: a
+command spawned a child inheriting stdout, exited, and left the work order running
+after its five-second budget. The worker still waited after 35 seconds. The fixture
+then killed only its identified child and cleaned up. The corrected runner passes
+the same case, stopping the child and settling the failed work order.
+
+- Added a macOS/Linux process supervisor and cancellable output reads, preventing
+  inherited-output children from escaping an active command deadline. Unsupported
+  platforms block enabled-policy preparation/dispatch rather than imply enforcement.
 - Replaced unsupported constrained `ALTER ADD` with transactional copy, preserving
   native data and indexes rather than changing provider/storage paths.
 - Kept the effective timeout at the earlier of the backend active-step ceiling and
@@ -70,3 +79,9 @@ No default execution policy, model IDs, prices, automatic fallback or concurrenc
 was introduced. Hard token/currency caps block preparation; explicit unmetered
 consent is required for agent steps under an enabled policy. Standalone assistance
 and normal planning retain their existing explicit controls.
+
+The shared supervisor change also passed the existing 36 factory execution checks
+and 29 standalone-agent checks, preserving permissions, timeouts, cancellation,
+shutdown diff collection and restart recovery. The original required CI run passed
+before the inherited-output correction; merge requires a fresh run on the corrected
+head, including delivery and deployment integration coverage.

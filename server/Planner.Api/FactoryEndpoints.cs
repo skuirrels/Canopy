@@ -91,7 +91,7 @@ public static class FactoryEndpoints
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
         group.MapPost("/repair-loops/{id:guid}/advance", (Guid id, AdvanceRepairLoop input, FactoryRepairService service, CancellationToken ct) => service.Advance(id, input, ct))
             .WithDescription("Bounded repair policy, immutable scope and attempt lineage. Execution requires explicit advance; fresh QA and independent review remain required. Money usage is unavailable.")
-            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
         group.MapPost("/repair-loops/{id:guid}/stop", (Guid id, StopRepairLoop input, FactoryRepairService service, CancellationToken ct) => service.Stop(id, input, ct))
             .WithDescription("Bounded repair policy, immutable scope and attempt lineage. Execution requires explicit advance; fresh QA and independent review remain required. Money usage is unavailable.")
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
@@ -120,7 +120,7 @@ public static class FactoryEndpoints
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
         group.MapPost("/runs/{id:guid}/start", (Guid id, StartFactoryRun input, FactoryDispatchService service, CancellationToken ct) => service.Start(id, input, ct))
             .WithDescription("Explicitly dispatch a prepared work order in its own worktree. expectedRevision is the run revision. Reusing the same requestId never redispatches work.")
-            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
         group.MapPost("/runs/{id:guid}/cancel", (Guid id, CancelFactoryRun input, FactoryDispatchService service, CancellationToken ct) => service.Cancel(id, input, ct))
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
         group.MapPost("/runs/{id:guid}/steps/{stepId:guid}/decision", (Guid id, Guid stepId, DecideFactoryStep input, FactoryDispatchService service, CancellationToken ct) => service.Decide(id, stepId, input, ct))

@@ -28,6 +28,7 @@ public sealed class LocalFactoryRunner(IWorkspaceStore store, LocalAgentEnvironm
             var ct = lifetime.Token; var data = await store.ReadAsync(ct); var run = FactoryDispatchService.Find(data, id);
             if (run.State == "cancelling") { await StopChildren(data, id); await End(id, "cancelled", null); return; }
             FactoryExecutionPolicyService.Require(data, run);
+            FactoryExecutionPolicyService.RequireLifetime(run.Snapshot.Execution, LocalProcessHost.Supported);
             if (run.State == "queued")
             {
                 var workspace = Path.Combine(options.WorkspaceRoot, run.Id.ToString());

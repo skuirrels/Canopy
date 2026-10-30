@@ -5,6 +5,9 @@ using Planner.Api.Domain;
 using Planner.Api.Infrastructure;
 using Planner.Api;
 
+if (args.FirstOrDefault() == LocalProcessHost.Argument)
+{ Environment.ExitCode = await LocalProcessHost.Run(args); return; }
+
 var builder = WebApplication.CreateBuilder(args);
 // Optional machine settings stay out of source control. Preserve environment/CLI precedence.
 builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: false).AddEnvironmentVariables().AddCommandLine(args);

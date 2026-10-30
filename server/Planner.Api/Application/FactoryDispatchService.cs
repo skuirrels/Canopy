@@ -21,6 +21,7 @@ public sealed class FactoryDispatchService(IWorkspaceStore store, IFactoryEnviro
         Rules.Revision(input.ExpectedRevision, run.Revision);
         if (run.State != "prepared") throw new RuleException("Only prepared work orders can start. Review interrupted work before preparing a new run.", 409);
         CheckCurrent(before, run);
+        FactoryExecutionPolicyService.RequireLifetime(run.Snapshot.Execution, environment.CanBoundProcessLifetime);
         var inspected = await environment.InspectCaptured(run.Snapshot.Environment, ct);
         var error = inspected.Checks.FirstOrDefault(x => x.Severity == "error");
         if (error is not null) throw new RuleException(error.Message);

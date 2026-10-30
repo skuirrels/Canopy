@@ -78,3 +78,15 @@ unknown/incomplete without turning it into zero.
 See [validation](FACTORY-EXECUTION-POLICY-VALIDATION.md) for tested guarantees and
 limits. Native persistence uses the public EFCoreProvider and the established
 transactional copy migration; existing agent fields/indexes are preserved.
+
+On macOS and Linux, subprocesses run in an owned session with a supervising process
+that stays alive until the child and inherited output streams settle. Deadline or
+cancellation terminates that active process group, including inherited-output children
+whose direct parent exited. Output reads are cancellable. This does not sandbox
+arbitrary commands or claim ownership of deliberately detached daemons. Final diff
+and receipt collection retain their bounded backend inspection timeouts.
+
+An enabled policy requires the owned-process lifetime adapter. Other operating
+systems report the elapsed-limit capability as unavailable and block preparation
+and dispatch, including captures moved from another machine. Existing policy-free
+operation retains its previous platform behavior.

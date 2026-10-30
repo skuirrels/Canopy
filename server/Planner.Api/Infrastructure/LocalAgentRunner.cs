@@ -71,30 +71,31 @@ internal static class AgentProcess
     public static async Task<int> Run(string executable, string directory, IReadOnlyList<string> arguments, string? input,
         Func<string, Task> stdout, Func<string, Task> stderr, CancellationToken ct, IReadOnlyDictionary<string, string>? environment = null, bool agentClient = false)
     {
-        var start = new ProcessStartInfo(executable) { WorkingDirectory = directory, UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true };
-        foreach (var argument in arguments) start.ArgumentList.Add(argument);
+        var start = LocalProcessHost.Start(executable, directory, arguments);
+        start.UseShellExecute = false; start.RedirectStandardInput = true; start.RedirectStandardOutput = true; start.RedirectStandardError = true; start.CreateNoWindow = true;
         if (environment is not null) foreach (var entry in environment) start.Environment[entry.Key] = entry.Value;
         if (agentClient) start.Environment.Remove("CLAUDECODE"); // The worker is a separate CLI client, not a nested Claude tool call.
         using var process = new Process { StartInfo = start };
         ct.ThrowIfCancellationRequested();
         process.Start();
-        using var registration = ct.Register(() => { try { if (!process.HasExited) process.Kill(entireProcessTree: true); } catch (InvalidOperationException) { } });
-        var readOut = Read(process.StandardOutput, stdout); var readError = Read(process.StandardError, stderr);
+        using var registration = ct.Register(() => LocalProcessHost.Stop(process));
+        var readOut = Read(process.StandardOutput, stdout, ct); var readError = Read(process.StandardError, stderr, ct);
         try
         {
             if (input is not null) await process.StandardInput.WriteAsync(input.AsMemory(), ct);
             process.StandardInput.Close();
             await Task.WhenAll(readOut, readError, process.WaitForExitAsync(ct));
+            ct.ThrowIfCancellationRequested();
             return process.ExitCode;
         }
         finally
         {
-            if (!process.HasExited) { try { process.Kill(entireProcessTree: true); } catch (InvalidOperationException) { } }
+            LocalProcessHost.Stop(process);
             await process.WaitForExitAsync(CancellationToken.None);
             await Task.WhenAll(readOut, readError);
         }
-        static async Task Read(StreamReader reader, Func<string, Task> receive)
-        { while (await reader.ReadLineAsync() is { } line) await receive(line); }
+        static async Task Read(StreamReader reader, Func<string, Task> receive, CancellationToken token)
+        { while (await reader.ReadLineAsync(token) is { } line) await receive(line); }
     }
 }
 
