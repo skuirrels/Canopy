@@ -1,0 +1,10 @@
+$kind: collection
+name: Factory deployment regression
+description: Reads an explicitly isolated deployment fixture and asserts rejected actions without running commands.
+variables:
+  - key: baseUrl
+    value: ''
+  - key: deliveryId
+    value: ''
+  - key: deploymentId
+    value: ''

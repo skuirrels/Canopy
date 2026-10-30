@@ -1,0 +1,14 @@
+$kind: http-request
+name: Verify rejected actions leave journal unchanged
+method: GET
+url: '{{baseUrl}}/api/factory/deployments/{{deploymentId}}'
+order: 6000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('deliveryId')||!pm.variables.get('deploymentId')) throw new Error('Supply isolated fixtureMode, deliveryId and deploymentId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Rejected actions did not create command intents',()=>{pm.response.to.have.status(200);const d=pm.response.json();pm.expect(d.operations).to.have.lengthOf(0);pm.expect(d.deployment.revision).to.eql(1);});

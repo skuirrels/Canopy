@@ -40,6 +40,16 @@ public static class FactoryEndpoints
         group.MapPost("/intake/candidates/{id:guid}/actions", (Guid id, ActOnIntake input, FactoryIntakeService service, CancellationToken ct) => service.Act(id, input, ct))
             .WithSummary("Verify, dismiss, reopen, file or link a candidate explicitly").WithDescription("Optional configured intake. Collection success is distinct from unavailable coverage. Exact request retries never duplicate tasks. Filing requires current source evidence, an explicit verification rationale and backlog column; it grants no execution or acceptance authority.")
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
+        group.MapGet("/deliveries/{id:guid}/deployments", (Guid id, FactoryDeploymentService service, CancellationToken ct) => service.List(id, ct))
+            .WithSummary("Read configured deployment targets and retained deployment history").ProducesProblem(404);
+        group.MapPost("/deliveries/{id:guid}/deployments", (Guid id, PrepareDeployment input, FactoryDeploymentService service, CancellationToken ct) => service.Prepare(id, input, ct))
+            .WithSummary("Capture a merged revision for an explicitly authorized environment").WithDescription("Capture executes nothing. Target commands and probes come from administrator configuration. Exact request retries return the original capture.")
+            .ProducesProblem(400).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
+        group.MapGet("/deployments/{id:guid}", (Guid id, FactoryDeploymentService service, CancellationToken ct) => service.Read(id, ct))
+            .WithSummary("Read revision-bound deployment authority and immutable command receipts").ProducesProblem(404);
+        group.MapPost("/deployments/{id:guid}/actions", (Guid id, ActOnDeployment input, FactoryDeploymentService service, CancellationToken ct) => service.Act(id, input, ct))
+            .WithSummary("Approve, deploy, reconcile or explicitly recover a configured target").WithDescription("Deployment and recovery approvals are separate and bound to revision, environment and configuration. Persistent intents precede dispatch; restart and retries never repeat a command or merge. Recovery targets the recorded pre-deployment revision and original persistence snapshot; original failure receipts remain unchanged.")
+            .ProducesProblem(400).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
         group.MapGet("/projects/{id:guid}/delivery-policy", (Guid id, FactoryDeliveryService service, CancellationToken ct) => service.Policy(id, ct))
             .WithSummary("Read project delivery policy").WithDescription("Commit-bound delivery authority and persistent operation receipts. Capturing executes nothing. Mutations are asynchronous; exact retries never repeat side effects. Unknown outcomes require reconciliation.")
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);

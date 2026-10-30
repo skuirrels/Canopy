@@ -7,7 +7,7 @@ public sealed class FactoryDeliveryService(IWorkspaceStore store, FactoryQuality
     IDeliveryWorkspace workspace, IDeliveryProvider provider, IDeliveryHooks hooks, IAgentEnvironment agents)
 {
     public async Task<DeliveryPolicyDetail> Policy(Guid projectId, CancellationToken ct) => Policy(await store.ReadAsync(ct), projectId);
-    private DeliveryPolicyDetail Policy(WorkspaceData data, Guid id) => new(data.Graph(id).Project.Revision, data.DeliveryPolicies.SingleOrDefault(x => x.Id == id)?.Policy, hooks.List());
+    private DeliveryPolicyDetail Policy(WorkspaceData data, Guid id) => new(data.Graph(id).Project.Revision, data.DeliveryPolicies.SingleOrDefault(x => x.Id == id)?.Policy, hooks.List(), hooks.Targets());
     public async Task<DeliveryPolicyDetail> EditPolicy(Guid id, EditDeliveryPolicy input, CancellationToken ct)
     {
         if (input.Policy is null) throw new RuleException("Supply an explicit delivery policy.");
@@ -15,6 +15,7 @@ public sealed class FactoryDeliveryService(IWorkspaceStore store, FactoryQuality
         {
             var graph = data.Graph(id, input.ExpectedRevision); input.Policy.Validate();
             if (input.Policy.PostMergeHookId is { } hook && !hooks.List().Any(x => x.Id == hook)) throw new RuleException("Choose an administrator-configured post-merge hook.");
+            if (input.Policy.DeploymentTargetIds?.Any(id => !hooks.Targets().Any(x => x.Id == id)) == true) throw new RuleException("Choose administrator-configured deployment targets.");
             var policy = data.DeliveryPolicies.SingleOrDefault(x => x.Id == id);
             if (policy is null) data.DeliveryPolicies.Add(ProjectDeliveryPolicy.Adopt(id, input.Policy)); else policy.Replace(input.Policy);
             graph.Project.Touch();
@@ -76,6 +77,7 @@ public sealed class FactoryDeliveryService(IWorkspaceStore store, FactoryQuality
                 if (input.Action == "publish" && delivery.Remote is not null) throw new RuleException("This delivery already has a recorded PR.", 409);
                 if (input.Action == "merge" && (delivery.State == "mergePending" || delivery.Remote?.MergeRequestId is not null)) throw new RuleException("Observe the pending merge instead of submitting it again.", 409);
                 if (input.Action == "postMerge" && delivery.Hook is not null) throw new RuleException("A post-merge hook was already attempted. Reconcile its outcome; it will not be repeated.", 409);
+                if (input.Action is "approvePostMerge" or "postMerge" && delivery.Policy.PostMergeHookId is { } hookId && data.Deployments.Any(x => x.Open && x.Capture.ResourceKey == hooks.ResourceKey(hookId))) throw new RuleException("An open deployment reserves this target. Finish or explicitly close it first.", 409);
             }
             delivery.Queue(operation.Id); data.DeliveryOperations.Add(operation);
         }, ct);
@@ -194,7 +196,7 @@ public sealed class FactoryDeliveryService(IWorkspaceStore store, FactoryQuality
         var state = result.Status == "pending" ? "mergePending" : "needsAttention";
         await Finish(operationId, saved => { var d = Find(saved, delivery.Id); d.RecordRemote(delivery.Remote! with { MergeRequestId = result.Status == "failed" ? null : result.RequestId ?? delivery.Remote!.MergeRequestId }); if (result.Status == "failed") foreach (var op in Operations(saved, d).Where(x => x.Kind == "merge")) op.Resolve("failed", result); d.Change(state, result.Status == "pending" ? "GitHub accepted a pending merge. Reconcile its actual outcome; it is not delivery success." : "Provider merge is " + result.Status + ". Inspect the retained result; no merge will be replayed."); }, result, ct);
     }
-    private async Task VerifyMerge(FactoryDelivery delivery, string sha, CancellationToken ct)
+    public async Task VerifyMerge(FactoryDelivery delivery, string sha, CancellationToken ct)
     {
         var commit = await provider.Commit(delivery.Policy, sha, ct);
         if (commit.Sha != sha || commit.TreeSha != delivery.Capture.TreeSha || commit.Parents.Count != 2 || commit.Parents[0] != delivery.Capture.BaseSha || commit.Parents[1] != delivery.Capture.HeadSha || !await provider.TargetContains(delivery.Policy, sha, ct))

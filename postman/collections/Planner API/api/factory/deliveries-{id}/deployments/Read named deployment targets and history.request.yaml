@@ -1,0 +1,5 @@
+$kind: http-request
+name: Read named deployment targets and history
+method: GET
+url: '{{baseUrl}}/api/factory/deliveries/{{deliveryId}}/deployments'
+order: 1000

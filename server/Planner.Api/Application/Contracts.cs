@@ -24,6 +24,8 @@ public sealed record EditPerson(string Name);
 public sealed record WorkflowDefault(string Name, string Color, bool IsCompleted);
 public sealed class WorkspaceData
 {
+    [JsonIgnore] public List<FactoryDeployment> Deployments { get; init; } = [];
+    [JsonIgnore] public List<FactoryDeploymentOperation> DeploymentOperations { get; init; } = [];
     [JsonIgnore] public List<FactoryIntakeSource> IntakeSources { get; init; } = [];
     [JsonIgnore] public List<FactoryIntakeCollection> IntakeCollections { get; init; } = [];
     [JsonIgnore] public List<FactoryIntakeCandidate> IntakeCandidates { get; init; } = [];
@@ -59,6 +61,8 @@ public sealed class WorkspaceData
     {
         var ids = runIds.ToHashSet();
         var deliveryIds = Deliveries.Where(x => ids.Contains(x.RunId)).Select(x => x.Id).ToHashSet();
+        var deploymentIds = Deployments.Where(x => deliveryIds.Contains(x.DeliveryId)).Select(x => x.Id).ToHashSet();
+        DeploymentOperations.RemoveAll(x => deploymentIds.Contains(x.DeploymentId)); Deployments.RemoveAll(x => deploymentIds.Contains(x.Id));
         DeliveryOperations.RemoveAll(x => deliveryIds.Contains(x.DeliveryId)); Deliveries.RemoveAll(x => deliveryIds.Contains(x.Id));
         var loopIds = RepairLoops.Where(x => ids.Contains(x.RootRunId)).Select(x => x.Id).ToHashSet();
         RepairAttempts.RemoveAll(x => loopIds.Contains(x.LoopId)); RepairLoops.RemoveAll(x => loopIds.Contains(x.Id));

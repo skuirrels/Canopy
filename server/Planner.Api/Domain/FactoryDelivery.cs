@@ -9,7 +9,8 @@ public sealed record DeliveryCheck(string Name, long AppId);
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record DeliveryPolicy(bool Enabled, string Repository, string RemoteName, string TargetBranch, string BranchPrefix,
     bool AllowDraftPr, bool AllowMerge, IReadOnlyList<DeliveryCheck> RequiredChecks, string? PostMergeHookId,
-    string Environment, IReadOnlyList<string> SensitivePaths, IReadOnlyList<string> MigrationPaths)
+    string Environment, IReadOnlyList<string> SensitivePaths, IReadOnlyList<string> MigrationPaths,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<string>? DeploymentTargetIds = null)
 {
     public void Validate()
     {
@@ -24,6 +25,7 @@ public sealed record DeliveryPolicy(bool Enabled, string Repository, string Remo
         foreach (var patterns in new[] { SensitivePaths, MigrationPaths })
             if (patterns is null || patterns.Count > 100 || patterns.Any(x => string.IsNullOrWhiteSpace(x) || x.Length > 1000 || Path.IsPathRooted(x) || x.Split('/','\\').Contains("..") || x.Any(char.IsControl))) throw new RuleException("Supply up to 100 explicit relative sensitive/migration path patterns, using [] for none.");
         if (PostMergeHookId is not null) Rules.Name(PostMergeHookId, "Post-merge hook");
+        if (DeploymentTargetIds is not null && (DeploymentTargetIds.Count > 100 || DeploymentTargetIds.Any(string.IsNullOrWhiteSpace) || DeploymentTargetIds.Distinct().Count() != DeploymentTargetIds.Count)) throw new RuleException("Choose distinct configured deployment targets.");
     }
     public static void Branch(string? value)
     {

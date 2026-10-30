@@ -19,6 +19,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             await using var db = await factory.CreateDbContextAsync(ct);
             await using var transaction = await db.Database.BeginTransactionAsync(ct);
             var data = await Load(db, ct);
+            var deployments = data.Deployments.ToList(); var deploymentOperations = data.DeploymentOperations.ToList();
             var projects = data.Projects.ToList(); var items = data.Items.ToList(); var statuses = data.Statuses.ToList(); var dependencies = data.Dependencies.ToList(); var people = data.People.ToList();
             var connections = data.AgentConnections.ToList(); var runs = data.AgentRuns.ToList();
             var intakeSources = data.IntakeSources.ToList(); var intakeCollections = data.IntakeCollections.ToList(); var intakeCandidates = data.IntakeCandidates.ToList(); var intakeObservations = data.IntakeObservations.ToList(); var intakeDecisions = data.IntakeDecisions.ToList();
@@ -31,6 +32,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             var specFiles = data.SpecFiles.ToList();
             var pipelines = data.FactoryPipelines.ToList(); var versions = data.PipelineVersions.ToList(); var taskFactory = data.TaskFactoryConfigurations.ToList();
             change(data);
+            Sync(db, deployments, data.Deployments); Sync(db, deploymentOperations, data.DeploymentOperations);
             Sync(db, projects, data.Projects); Sync(db, items, data.Items); Sync(db, statuses, data.Statuses); Sync(db, dependencies, data.Dependencies); Sync(db, people, data.People);
             Sync(db, connections, data.AgentConnections); Sync(db, runs, data.AgentRuns);
             Sync(db, intakeSources, data.IntakeSources); Sync(db, intakeCollections, data.IntakeCollections); Sync(db, intakeCandidates, data.IntakeCandidates); Sync(db, intakeObservations, data.IntakeObservations); Sync(db, intakeDecisions, data.IntakeDecisions);
@@ -55,6 +57,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
     { db.RemoveRange(before.Except(after)); db.AddRange(after.Except(before)); }
     private static async Task<WorkspaceData> Load(PlannerDb db, CancellationToken ct) => new()
     {
+        Deployments = await db.Deployments.ToListAsync(ct), DeploymentOperations = await db.DeploymentOperations.ToListAsync(ct),
         IntakeSources = await db.IntakeSources.ToListAsync(ct), IntakeCollections = await db.IntakeCollections.ToListAsync(ct), IntakeCandidates = await db.IntakeCandidates.ToListAsync(ct), IntakeObservations = await db.IntakeObservations.ToListAsync(ct), IntakeDecisions = await db.IntakeDecisions.ToListAsync(ct),
         DeliveryPolicies = await db.DeliveryPolicies.ToListAsync(ct), Deliveries = await db.Deliveries.ToListAsync(ct), DeliveryOperations = await db.DeliveryOperations.ToListAsync(ct),
         RepairPolicies = await db.RepairPolicies.ToListAsync(ct), RepairLoops = await db.RepairLoops.ToListAsync(ct), RepairAttempts = await db.RepairAttempts.ToListAsync(ct),

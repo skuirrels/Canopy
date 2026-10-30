@@ -1,0 +1,20 @@
+$kind: http-request
+name: Reject stale deployment approval
+method: POST
+url: '{{baseUrl}}/api/factory/deployments/{{deploymentId}}/actions'
+order: 4000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {"requestId":"{{$guid}}","expectedRevision":-1,"action":"approveDeploy","approvalNote":"Isolated stale approval assertion"}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('deliveryId')||!pm.variables.get('deploymentId')) throw new Error('Supply isolated fixtureMode, deliveryId and deploymentId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Stale approval rejected',()=>pm.response.to.have.status(409));

@@ -4669,6 +4669,250 @@
           }
         }
       }
+    },
+    "/api/factory/deliveries/{id}/deployments": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Read configured deployment targets and retained deployment history",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeploymentLibrary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Capture a merged revision for an explicitly authorized environment",
+        "description": "Capture executes nothing. Target commands and probes come from administrator configuration. Exact request retries return the original capture.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepareDeployment"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeploymentDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/deployments/{id}": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Read revision-bound deployment authority and immutable command receipts",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeploymentDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/deployments/{id}/actions": {
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Approve, deploy, reconcile or explicitly recover a configured target",
+        "description": "Deployment and recovery approvals are separate and bound to revision, environment and configuration. Persistent intents precede dispatch; restart and retries never repeat a command or merge. Recovery targets the recorded pre-deployment revision and original persistence snapshot; original failure receipts remain unchanged.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActOnDeployment"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeploymentDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -9711,6 +9955,15 @@
             "items": {
               "type": "string"
             }
+          },
+          "deploymentTargetIds": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
           }
         },
         "additionalProperties": false
@@ -9719,7 +9972,8 @@
         "required": [
           "projectRevision",
           "policy",
-          "hooks"
+          "hooks",
+          "targets"
         ],
         "type": "object",
         "properties": {
@@ -9745,6 +9999,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DeliveryHookInfo"
+            }
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeploymentTarget"
             }
           }
         }
@@ -10645,6 +10905,363 @@
             "type": "string"
           },
           "complete": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "DeploymentTarget": {
+        "required": [
+          "id",
+          "name",
+          "environment",
+          "deployHookId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "deployHookId": {
+            "type": "string"
+          },
+          "recoveryHookId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "DeploymentDetail": {
+        "required": [
+          "deployment",
+          "operations",
+          "authorityErrors",
+          "deployBinding",
+          "recoveryBinding",
+          "pollIntervalMs"
+        ],
+        "type": "object",
+        "properties": {
+          "deployment": {
+            "$ref": "#/components/schemas/FactoryDeployment"
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryDeploymentOperation"
+            }
+          },
+          "authorityErrors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "deployBinding": {
+            "type": "string"
+          },
+          "recoveryBinding": {
+            "type": "string"
+          },
+          "pollIntervalMs": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "FactoryDeploymentOperation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deploymentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestHash": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "approvalNote": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finishedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "pending": {
+            "type": "boolean"
+          },
+          "result": {
+            "$ref": "#/components/schemas/JsonElement"
+          }
+        }
+      },
+      "FactoryDeployment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deliveryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestHash": {
+            "type": "string"
+          },
+          "revision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "currentOperationId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "open": {
+            "type": "boolean"
+          },
+          "capture": {
+            "$ref": "#/components/schemas/DeploymentCapture"
+          },
+          "approvals": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/DeliveryApproval"
+            }
+          },
+          "deployment": {
+            "$ref": "#/components/schemas/DeliveryHookReceipt"
+          },
+          "recovery": {
+            "$ref": "#/components/schemas/DeliveryHookReceipt"
+          }
+        }
+      },
+      "DeploymentCapture": {
+        "required": [
+          "target",
+          "resourceKey",
+          "configurationHash",
+          "providerBinding",
+          "mergeSha",
+          "policyHash"
+        ],
+        "type": "object",
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/DeploymentTarget"
+          },
+          "resourceKey": {
+            "type": "string"
+          },
+          "configurationHash": {
+            "type": "string"
+          },
+          "providerBinding": {
+            "type": "string"
+          },
+          "mergeSha": {
+            "type": "string"
+          },
+          "policyHash": {
+            "type": "string"
+          }
+        }
+      },
+      "ActOnDeployment": {
+        "required": [
+          "requestId",
+          "expectedRevision",
+          "action"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "action": {
+            "type": "string"
+          },
+          "approvalNote": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "additionalProperties": false
+      },
+      "PrepareDeployment": {
+        "required": [
+          "requestId",
+          "expectedRevision",
+          "targetId"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "targetId": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeploymentLibrary": {
+        "required": [
+          "deliveryId",
+          "sourceRevision",
+          "targets",
+          "deployments",
+          "pollIntervalMs"
+        ],
+        "type": "object",
+        "properties": {
+          "deliveryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeploymentTargetInfo"
+            }
+          },
+          "deployments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryDeployment"
+            }
+          },
+          "pollIntervalMs": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "DeploymentTargetInfo": {
+        "required": [
+          "target",
+          "allowed",
+          "ready",
+          "error"
+        ],
+        "type": "object",
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/DeploymentTarget"
+          },
+          "allowed": {
+            "type": "boolean"
+          },
+          "ready": {
             "type": "boolean"
           },
           "error": {

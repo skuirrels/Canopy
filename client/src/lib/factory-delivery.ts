@@ -1,8 +1,9 @@
 import type { VerificationContext } from './factory-quality';
 export type DeliveryCheck = { name: string; appId: number };
-export type DeliveryPolicy = { enabled: boolean; repository: string; remoteName: string; targetBranch: string; branchPrefix: string; allowDraftPr: boolean; allowMerge: boolean; requiredChecks: DeliveryCheck[]; postMergeHookId: string | null; environment: string; sensitivePaths: string[]; migrationPaths: string[] };
+export type DeliveryPolicy = { enabled: boolean; repository: string; remoteName: string; targetBranch: string; branchPrefix: string; allowDraftPr: boolean; allowMerge: boolean; requiredChecks: DeliveryCheck[]; postMergeHookId: string | null; environment: string; sensitivePaths: string[]; migrationPaths: string[]; deploymentTargetIds?: string[] | null };
 export type DeliveryHookInfo = { id: string; name: string; ready: boolean; error: string | null };
-export type DeliveryPolicyDetail = { projectRevision: number; policy: DeliveryPolicy | null; hooks: DeliveryHookInfo[] };
+export type DeploymentTarget = { id: string; name: string; environment: string; deployHookId: string; recoveryHookId: string | null };
+export type DeliveryPolicyDetail = { projectRevision: number; policy: DeliveryPolicy | null; hooks: DeliveryHookInfo[]; targets: DeploymentTarget[] };
 export type DeliveryLocalReadiness = { ready: boolean; runRevision: number; context: VerificationContext | null; reviewId: string | null; errors: string[] };
 export type DeliveryRecord = { id: string; runId: string; itemId: string; projectId: string; revision: number; state: string; reason: string; currentOperationId: string | null; open: boolean; createdAt: string; policy: DeliveryPolicy; capture: { headSha: string; baseSha: string; treeSha: string; branchName: string; reviewId: string; qaHash: string; sensitiveFiles: string[]; migrationFiles: string[] }; remote: { number: number; url: string; headSha: string; baseSha: string; state: string; draft: boolean; mergeSha: string | null; mergeRequestId: string | null } | null; approvals: { action: string; binding: string; note: string; createdAt: string }[]; binding: string; observation: unknown; hook: unknown };
 export type DeliveryOperation = { id: string; kind: string; requestId: string; state: string; error: string | null; result: unknown; approvalNote: string; createdAt: string };

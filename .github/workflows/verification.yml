@@ -41,7 +41,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [core, providers]
+        suite: [core, providers, deployments]
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
@@ -56,7 +56,7 @@ jobs:
         with:
           python-version: '3.13'
       - run: npm install --global postman-cli@1.75.0
-        if: matrix.suite == 'providers'
+        if: matrix.suite != 'core'
       - run: dotnet build Planner.sln --configuration Debug
       - run: python3 scripts/ci-native.py --suite ${{ matrix.suite }}
 

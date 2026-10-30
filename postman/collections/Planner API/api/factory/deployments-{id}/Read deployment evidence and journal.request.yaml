@@ -1,0 +1,5 @@
+$kind: http-request
+name: Read deployment evidence and journal
+method: GET
+url: '{{baseUrl}}/api/factory/deployments/{{deploymentId}}'
+order: 3000

@@ -4,6 +4,8 @@ namespace Planner.Api.Infrastructure;
 
 public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(options)
 {
+    public DbSet<FactoryDeployment> Deployments => Set<FactoryDeployment>();
+    public DbSet<FactoryDeploymentOperation> DeploymentOperations => Set<FactoryDeploymentOperation>();
     public DbSet<FactoryIntakeSource> IntakeSources => Set<FactoryIntakeSource>();
     public DbSet<FactoryIntakeCollection> IntakeCollections => Set<FactoryIntakeCollection>();
     public DbSet<FactoryIntakeCandidate> IntakeCandidates => Set<FactoryIntakeCandidate>();
@@ -38,6 +40,14 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<TaskFactoryConfiguration> TaskFactoryConfigurations => Set<TaskFactoryConfiguration>();
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.Ignore<DeploymentTarget>(); model.Ignore<DeploymentCapture>();
+        model.Entity<FactoryDeployment>().HasKey(x => x.Id); model.Entity<FactoryDeployment>().HasIndex(x => x.RequestId).IsUnique(); model.Entity<FactoryDeployment>().HasIndex(x => x.DeliveryId);
+        model.Entity<FactoryDeployment>().Ignore(x => x.Open).Ignore(x => x.Capture).Ignore(x => x.Approvals).Ignore(x => x.Deployment).Ignore(x => x.Recovery);
+        model.Entity<FactoryDeployment>().Property(x => x.CreatedAt).HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+        model.Entity<FactoryDeploymentOperation>().HasKey(x => x.Id); model.Entity<FactoryDeploymentOperation>().HasIndex(x => x.RequestId).IsUnique(); model.Entity<FactoryDeploymentOperation>().HasIndex(x => x.DeploymentId);
+        model.Entity<FactoryDeploymentOperation>().Ignore(x => x.Pending).Ignore(x => x.Result);
+        model.Entity<FactoryDeploymentOperation>().Property(x => x.CreatedAt).HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+        model.Entity<FactoryDeploymentOperation>().Property(x => x.FinishedAt).HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : (DateTime?)null);
         model.Ignore<IntakeConfiguration>(); model.Ignore<IntakeSignal>();
         model.Entity<FactoryIntakeSource>().HasKey(x => x.Id); model.Entity<FactoryIntakeSource>().Ignore(x => x.Configuration);
         model.Entity<FactoryIntakeSource>().HasIndex(x => new { x.ProjectId, x.Scope }).IsUnique();

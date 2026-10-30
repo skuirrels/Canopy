@@ -10,7 +10,7 @@ public sealed record PrepareDelivery(Guid RequestId, long ExpectedRevision, stri
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record ActOnDelivery(Guid RequestId, long ExpectedRevision, string Action, string ApprovalNote = "");
 public sealed record DeliveryHookInfo(string Id, string Name, bool Ready, string? Error);
-public sealed record DeliveryPolicyDetail(long ProjectRevision, DeliveryPolicy? Policy, IReadOnlyList<DeliveryHookInfo> Hooks);
+public sealed record DeliveryPolicyDetail(long ProjectRevision, DeliveryPolicy? Policy, IReadOnlyList<DeliveryHookInfo> Hooks, IReadOnlyList<DeploymentTarget> Targets);
 public sealed record DeliveryLocalReadiness(bool Ready, long RunRevision, VerificationContext? Context, Guid? ReviewId, string? ReviewHash, string? QaHash, IReadOnlyList<string> Errors);
 public sealed record DeliveryDetail(FactoryDelivery Delivery, IReadOnlyList<FactoryDeliveryOperation> Operations, DeliveryLocalReadiness Local, IReadOnlyList<string> MergeErrors, int PollIntervalMs);
 public sealed record DeliveryLibrary(Guid RunId, DeliveryPolicyDetail Policy, DeliveryLocalReadiness Local, IReadOnlyList<FactoryDelivery> Deliveries, int PollIntervalMs);
@@ -35,7 +35,11 @@ public interface IDeliveryWorkspace
 public interface IDeliveryHooks
 {
     IReadOnlyList<DeliveryHookInfo> List();
+    IReadOnlyList<DeploymentTarget> Targets();
+    string ResourceKey(string id);
     string? ConfigurationHash(string? id);
     Task<DeliveryProbe> Probe(string id, CancellationToken ct);
     Task<DeliveryHookReceipt> Run(string id, FactoryDelivery delivery, DeliveryProbe before, CancellationToken ct);
+    Task<DeliveryHookReceipt> RunTarget(string id, DeploymentExecution execution, DeliveryProbe before, CancellationToken ct);
 }
+public sealed record DeploymentExecution(Guid DeliveryId, Guid DeploymentId, string Repository, string MergeSha, string Revision, string TargetId, string Environment, bool Recovery);

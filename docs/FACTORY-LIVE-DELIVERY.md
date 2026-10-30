@@ -18,9 +18,9 @@ credentials and pins actions to verified upstream commit IDs.
   real adapters against local Postman delivery/intake simulations, and local
   collection structural lint. Simulation passes do not prove real GitHub delivery.
 
-The native gate aggregates independent `core` and `providers` groups. It fails
-if either group fails, is cancelled or is skipped. Both groups must finish;
-the client gate remains separate. `--suite core` and `--suite providers` run
+The native gate aggregates independent `core`, `providers` and `deployments` groups. It fails
+if any group fails, is cancelled or is skipped. All groups must finish;
+the client gate remains separate. `--suite core`, `--suite providers` and `--suite deployments` run
 those same groups locally; omitting the option runs both.
 
 `python3 scripts/ci-native.py` runs the same native gate after a Debug backend
@@ -89,3 +89,9 @@ authority. Local evidence is retained under the API content root's ignored
 Unknown remote or hook outcomes require reconciliation. Never repeat a merge or
 restart just because the caller lost its response. A delivered task remains in its
 existing workflow column until the operator separately accepts it.
+
+Native startup keeps the EF connection open and explicitly checkpoints before
+and after migration. This avoids the pinned engine's context-free shutdown
+checkpoint of lazily replayed secondary indexes. The core gate retains a
+three-process failing control and verifies the actual application initialization
+before update/deletion; see [native recovery evidence](FACTORY-DEPLOYMENTS-VALIDATION.md#native-startup-recovery-finding).

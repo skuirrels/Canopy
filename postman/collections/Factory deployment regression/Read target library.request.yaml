@@ -1,0 +1,14 @@
+$kind: http-request
+name: Read target library
+method: GET
+url: '{{baseUrl}}/api/factory/deliveries/{{deliveryId}}/deployments'
+order: 1000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('deliveryId')||!pm.variables.get('deploymentId')) throw new Error('Supply isolated fixtureMode, deliveryId and deploymentId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Target library readable',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('Targets have explicit environments',()=>pm.expect(d.targets.every(x=>x.target.environment&&x.target.id)).to.eql(true));

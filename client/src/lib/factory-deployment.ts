@@ -1,0 +1,6 @@
+import type { DeploymentTarget } from './factory-delivery';
+export type DeploymentProbe = { instance: string; revision: string; snapshotHash: string; healthHash: string };
+export type DeploymentReceipt = { before: DeploymentProbe; after: DeploymentProbe | null; exitCode: number | null; output: string; outputTruncated: boolean; error: string | null };
+export type DeploymentRecord = { id: string; revision: number; deliveryId: string; state: string; reason: string; open: boolean; currentOperationId: string | null; createdAt: string; capture: { target: DeploymentTarget; mergeSha: string; configurationHash: string }; deployment: DeploymentReceipt | null; recovery: DeploymentReceipt | null; approvals: { action: string; binding: string; note: string; createdAt: string }[] };
+export type DeploymentLibrary = { deliveryId: string; sourceRevision: number; targets: { target: DeploymentTarget; allowed: boolean; ready: boolean; error: string | null }[]; deployments: DeploymentRecord[]; pollIntervalMs: number };
+export type DeploymentDetail = { deployment: DeploymentRecord; operations: { id: string; kind: string; state: string; error: string | null; approvalNote: string; result: unknown; createdAt: string }[]; authorityErrors: string[]; deployBinding: string; recoveryBinding: string; pollIntervalMs: number };
