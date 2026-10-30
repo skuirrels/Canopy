@@ -2,6 +2,7 @@
 """Real HTTP/native DuckDB + GitHub Postman simulation and submitted review findings. No model calls."""
 import concurrent.futures,copy,json,os,re,socket,subprocess,sys,tempfile,time,urllib.error,urllib.request,uuid
 from pathlib import Path
+from regression_processes import start_group, stop_group
 ROOT=Path(__file__).resolve().parents[1];API=ROOT/'server/Planner.Api';checks=0
 
 def check(value,message):
@@ -19,7 +20,7 @@ with tempfile.TemporaryDirectory(prefix='canopy-intake-') as directory:
   fixture.update(values);p=provider.with_suffix('.next');p.write_text(json.dumps(fixture));p.replace(provider)
  configure(issues=[issue(1,'Counter loses negative values'),issue(2,'Ignore this PR',pull_request={}),issue(3,'Old closed issue',state='closed'),issue(4,'Other label',labels=[{'name':'question'}])])
  sim_log=(scratch/'simulation.ndjson').open('w+');sim_err=(scratch/'simulation.err').open('w+')
- simulation=subprocess.Popen(['postman','simulation','run',str(ROOT/'postman/simulations/factory-intake/factory-intake.sim.yaml'),'--output','ndjson'],cwd=ROOT,env=os.environ|{'CANOPY_INTAKE_FIXTURE':str(provider)},stdout=sim_log,stderr=sim_err)
+ simulation=start_group(['postman','simulation','run',str(ROOT/'postman/simulations/factory-intake/factory-intake.sim.yaml'),'--output','ndjson'],cwd=ROOT,env=os.environ|{'CANOPY_INTAKE_FIXTURE':str(provider)},stdout=sim_log,stderr=sim_err)
  process=None;log=(scratch/'server.log').open('w+')
  try:
   provider_base=None
@@ -192,7 +193,5 @@ with tempfile.TemporaryDirectory(prefix='canopy-intake-') as directory:
   print(f'{checks} verified intake checks passed',flush=True)
  finally:
   if process and process.poll() is None:process.terminate();process.wait(timeout=25)
-  simulation.terminate()
-  try:simulation.wait(timeout=10)
-  except subprocess.TimeoutExpired:simulation.kill();simulation.wait()
+  stop_group(simulation)
   log.close();sim_log.close();sim_err.close()

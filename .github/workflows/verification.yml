@@ -34,10 +34,14 @@ jobs:
       - run: npm run build
         working-directory: client
 
-  native:
-    name: Native API verification
+  native-tests:
+    name: Native regressions (${{ matrix.suite }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [core, providers]
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
@@ -52,5 +56,18 @@ jobs:
         with:
           python-version: '3.13'
       - run: npm install --global postman-cli@1.75.0
+        if: matrix.suite == 'providers'
       - run: dotnet build Planner.sln --configuration Debug
-      - run: python3 scripts/ci-native.py
+      - run: python3 scripts/ci-native.py --suite ${{ matrix.suite }}
+
+  native:
+    name: Native API verification
+    needs: native-tests
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require every native regression group to pass
+        env:
+          NATIVE_RESULT: ${{ needs.native-tests.result }}
+        run: test "$NATIVE_RESULT" = success

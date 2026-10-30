@@ -18,6 +18,7 @@ import http.server
 import sqlite3
 import signal
 import re
+from regression_processes import start_group, stop_group
 
 ROOT=Path(__file__).resolve().parents[1]; API=ROOT/'server/Planner.Api'; checks=0
 
@@ -113,7 +114,7 @@ print(json.dumps({'type':'item.completed','item':{'type':'agent_message','text':
     def configure(**values):
         fixture.update(values);temporary=fixture_path.with_suffix('.next');temporary.write_text(json.dumps(fixture));temporary.replace(fixture_path)
     configure()
-    sim_log=(scratch/'simulation.ndjson').open('w+');sim_err=(scratch/'simulation.err').open('w+');simulation=subprocess.Popen(['postman','simulation','run',str(ROOT/'postman/simulations/factory-delivery/factory-delivery.sim.yaml'),'--output','ndjson'],cwd=ROOT,env=os.environ|{'CANOPY_DELIVERY_FIXTURE':str(fixture_path)},stdout=sim_log,stderr=sim_err)
+    sim_log=(scratch/'simulation.ndjson').open('w+');sim_err=(scratch/'simulation.err').open('w+');simulation=start_group(['postman','simulation','run',str(ROOT/'postman/simulations/factory-delivery/factory-delivery.sim.yaml'),'--output','ndjson'],cwd=ROOT,env=os.environ|{'CANOPY_DELIVERY_FIXTURE':str(fixture_path)},stdout=sim_log,stderr=sim_err)
     provider_base=None
     for _ in range(150):
         sim_log.flush();lines=(scratch/'simulation.ndjson').read_text().splitlines()
@@ -311,7 +312,7 @@ print('Actual fixture application restarted',flush=True)
         call(f'/api/projects/{pid}?expectedRevision={revision()}','DELETE');check(not call('/api/workspace')['projects'],'test-only tasks and native delivery journals clean up transactionally');print(f'{checks} controlled delivery checks passed')
     finally:
         if process and process.poll() is None:process.terminate();process.wait(timeout=25)
-        simulation.terminate();simulation.wait(timeout=20);git_server.shutdown()
+        stop_group(simulation);git_server.shutdown()
         try:os.kill(json.loads(app_config.read_text())['pid'],signal.SIGTERM)
         except ProcessLookupError:pass
         if application.poll() is None:application.terminate()

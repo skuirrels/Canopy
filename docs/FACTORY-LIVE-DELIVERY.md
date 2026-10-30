@@ -18,10 +18,20 @@ credentials and pins actions to verified upstream commit IDs.
   real adapters against local Postman delivery/intake simulations, and local
   collection structural lint. Simulation passes do not prove real GitHub delivery.
 
+The native gate aggregates independent `core` and `providers` groups. It fails
+if either group fails, is cancelled or is skipped. Both groups must finish;
+the client gate remains separate. `--suite core` and `--suite providers` run
+those same groups locally; omitting the option runs both.
+
 `python3 scripts/ci-native.py` runs the same native gate after a Debug backend
 build. Each regression owns temporary databases and worktrees. The gate needs
 Postman CLI 1.75.0, Git, Python and the .NET 10 runtime; it needs no provider
 credentials, paid model access or shared Postman workspace publication.
+
+Simulation launchers run in explicitly owned process groups. Teardown sends
+SIGINT and uses a bounded kill fallback for remaining launcher/CLI children;
+real process-tree tests cover both paths. A launcher cleanup error is a failed
+gate even when its behavioral assertions passed.
 
 Repository administrators must explicitly adopt strict required-check protection,
 enforce it for administrators and bind both check names to their observed GitHub

@@ -5,6 +5,7 @@ Prerequisites: a Debug backend build, Python, Git and Postman CLI 1.75.0.
 Provider regressions use local protocol fixtures; no model or GitHub calls.
 """
 import json
+import argparse
 import os
 from pathlib import Path
 import socket
@@ -71,18 +72,27 @@ def workspace_regression():
 
 
 if __name__ == '__main__':
-    run('dotnet', 'run', '--project', ROOT / 'tests/Planner.StoreRegression', '--',
-        API / 'factory-templates.json')
-    workspace_regression()
-    for name in (
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--suite', choices=('all', 'core', 'providers'), default='all')
+    suite = parser.parse_args().suite
+    if suite in ('all', 'core'):
+        run('dotnet', 'run', '--project', ROOT / 'tests/Planner.StoreRegression', '--',
+            API / 'factory-templates.json')
+        workspace_regression()
+    core = (
         'spec-file', 'agent', 'factory', 'factory-run', 'factory-execution',
         'factory-quality', 'factory-review', 'factory-repair',
-        'factory-skills', 'factory-delivery', 'factory-intake',
-    ):
+        'factory-skills',
+    )
+    providers = ('factory-delivery', 'factory-intake')
+    if suite in ('all', 'providers'):
+        run(sys.executable, ROOT / 'scripts/regression-processes-test.py')
+    selected = core if suite == 'core' else providers if suite == 'providers' else core + providers
+    for name in selected:
         run(sys.executable, ROOT / f'scripts/{name}-regression.py')
-    for name in ('Planner API', 'Planner regression', 'Factory regression',
+    for name in (() if suite == 'core' else ('Planner API', 'Planner regression', 'Factory regression',
                  'Factory review regression', 'Factory repair regression',
                  'Factory delivery regression', 'Factory intake regression',
-                 'Factory skills regression'):
+                 'Factory skills regression')):
         run('postman', 'collection', 'lint', ROOT / 'postman/collections' / name,
             '--reporter', 'cli', '--fail-severity', 'error')
