@@ -50,3 +50,21 @@ worktrees and simulation groups are isolated and removed after validation.
 Remote deployment infrastructure and each administrator's real recovery procedure
 require their own target-specific evidence. An application's successful exit or a
 healthy target at the wrong revision cannot substitute for that verification.
+
+## Native startup recovery finding
+
+The Linux provider gate exposed `Failed to delete all rows from index` after the
+existing intake test force-killed its backend. A separate three-process test
+reproduces the same error deterministically on the pinned public provider:
+retain a committed WAL with a secondary unique index, replay it and close without
+an explicit checkpoint, then update/delete the recovered row in a fresh process.
+This matches the [upstream WAL/shutdown-checkpoint investigation](https://github.com/duckdb/duckdb/pull/23848).
+
+`PlannerDatabase.Initialize` holds the public EF connection open, checkpoints with
+an active client context before migration, migrates and checkpoints again before
+closing. It neither changes the database/provider nor recreates data or indexes.
+`tests/Planner.WalRegression` retains the failing native control and calls this
+actual initialization path for its passing case, verifying the original row and
+subsequent update/deletion after another process restart. CI runs this regression
+in the core group. The original intake interruption assertions and timing remain
+unchanged; the provider group still exercises the observed failure path.

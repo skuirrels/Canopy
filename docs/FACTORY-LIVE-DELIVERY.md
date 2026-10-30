@@ -89,3 +89,9 @@ authority. Local evidence is retained under the API content root's ignored
 Unknown remote or hook outcomes require reconciliation. Never repeat a merge or
 restart just because the caller lost its response. A delivered task remains in its
 existing workflow column until the operator separately accepts it.
+
+Native startup keeps the EF connection open and explicitly checkpoints before
+and after migration. This avoids the pinned engine's context-free shutdown
+checkpoint of lazily replayed secondary indexes. The core gate retains a
+three-process failing control and verifies the actual application initialization
+before update/deletion; see [native recovery evidence](FACTORY-DEPLOYMENTS-VALIDATION.md#native-startup-recovery-finding).

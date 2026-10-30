@@ -72,7 +72,7 @@ await using (var scope = app.Services.CreateAsyncScope())
 {
     var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<PlannerDb>>();
     await using var db = await factory.CreateDbContextAsync();
-    await db.Database.MigrateAsync();
+    await PlannerDatabase.Initialize(db, CancellationToken.None);
 }
 await app.Services.GetRequiredService<StartupRunRecovery>().Recover(CancellationToken.None);
 app.MapOpenApi();

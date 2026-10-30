@@ -78,6 +78,7 @@ if __name__ == '__main__':
     if suite in ('all', 'core'):
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.StoreRegression', '--',
             API / 'factory-templates.json')
+        run('dotnet', 'run', '--project', ROOT / 'tests/Planner.WalRegression')
         workspace_regression()
     core = (
         'spec-file', 'agent', 'factory', 'factory-run', 'factory-execution',
