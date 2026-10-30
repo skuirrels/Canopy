@@ -20,6 +20,13 @@ a mismatched real target/base Git object or claimed rules bypass. Unhandled rout
 inspection route for checking mutation counts and unmerged fixture state; it is
 not a GitHub API contract.
 
+REST PR payloads intentionally omit `merge_commit_sha`, matching version
+2026-03-10 observed in the live pilot. `/graphql` models only the consumed
+read-only merged-PR identity query. Merge OIDs come from actual fixture Git
+objects. Partial GraphQL errors, missing commits, wrong repository/PR/head,
+unmerged responses and incorrect commit ancestry must block reconciliation and
+must never repeat a lost merge mutation.
+
 No remote Postman workspace push or mock deployment is needed. Inspect the
 simulation NDJSON request events to establish that the actual adapter used this
 provider. Restart the simulation after editing the handler; mocks do not reload.

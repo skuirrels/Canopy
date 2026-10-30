@@ -59,6 +59,33 @@ An isolated comparison capture may use an explicitly configured absent check or 
 different observed remote head; all rejected attempts must retain their receipts
 without a merge request. Close those captures explicitly before proceeding.
 
+## Live findings and repair
+
+The real protected pilot in PR #26 exercised implementation, captured command
+verification, independent read-only review, draft publication, missing-CI and
+changed-local-commit rejection, and one asynchronous merge. It exposed two gaps
+that the earlier simulations had not established:
+
+- REST 2026-03-10 omits the merged commit field. The adapter now queries the
+  authoritative GraphQL merge identity, binds repository/PR/head, and still checks
+  the actual Git tree, parents and target ancestry. The fixture omits the removed
+  field. Seven invalid identity responses block recovery without another merge;
+  complete identity recovers a lost response. The full suite has 66 checks;
+  `--merge-identity-only` runs the shared 23-check focused scenario.
+- A target restart must not inherit the controlling application's isolated
+  database/worktree/skill/hook overrides. The machine-local target launcher now
+  removes those section overrides and passes its own configured database and
+  worktree paths explicitly. Its scripts remain declared integrity inputs; no
+  restart command is adopted as a product default.
+
+The first delivery's nonzero hook receipt remains failed and was explicitly
+closed. The app was recovered with the exact pre-hook workspace. Do not relabel a
+manual recovery as a successful configured hook or replay the failed action.
+A new delivery captures the repaired code, fresh QA/review and corrected hook
+source hashes. Its successful merge/restart/persistence receipts are the completion
+authority. Local evidence is retained under the API content root's ignored
+`data/validation/20261030-live-delivery/` directory when that run completes.
+
 Unknown remote or hook outcomes require reconciliation. Never repeat a merge or
 restart just because the caller lost its response. A delivered task remains in its
 existing workflow column until the operator separately accepts it.

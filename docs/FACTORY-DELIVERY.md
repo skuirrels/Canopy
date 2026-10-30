@@ -77,12 +77,21 @@ therefore use GitHub's official contracts:
 - https://docs.github.com/en/rest/branches/branch-protection
 - https://docs.github.com/en/rest/checks/runs
 - https://docs.github.com/en/rest/git/commits
+- https://docs.github.com/en/graphql/reference/pulls#pullrequest
+- https://docs.github.com/en/rest/about-the-rest-api/breaking-changes
 - https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches
 
 Credentials come from the configured environment-variable name or local `gh auth`
 for the configured host. Tokens and resolved environment values are never returned
 or stored. Provider URLs, request limits, polling and hook execution/probes are
 deployment configuration. The application never weakens repository protections.
+
+REST version 2026-03-10 omits `merge_commit_sha`. Merged PR observations use a
+read-only query at the configured provider root's `/graphql` endpoint for the
+actual `mergeCommit.oid`. Repository, PR number, merged state and head must match
+the REST observation. GraphQL errors, partial/unavailable identities and mismatches
+block reconciliation. The actual commit's tree, two parents and target ancestry
+are still verified; no SHA is inferred from a branch tip or substituted literal.
 
 ## Deployment configuration
 

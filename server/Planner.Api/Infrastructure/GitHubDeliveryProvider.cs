@@ -40,6 +40,7 @@ public sealed class GitHubDeliveryProvider(GitHubApiClient api, DeliveryOptions 
                 if (matching.Count > 1 || pulls.Count > matching.Count) throw new RuleException("The publication branch already has a different or ambiguous pull request. Choose a new branch.", 409);
                 if (matching.Count == 1) pull = ParsePull(matching[0], policy, capture.BranchName);
             }
+            if (pull is { State: "merged" }) pull = await MergedPull(policy, pull, ct);
             if (branchSha == capture.HeadSha)
             {
                 var checkRuns = await Pages(root + "/commits/" + capture.HeadSha + "/check-runs?filter=latest", "check_runs", ct);
@@ -76,6 +77,24 @@ public sealed class GitHubDeliveryProvider(GitHubApiClient api, DeliveryOptions 
         var value = (await Send(Repo(policy) + "/compare/" + mergeSha + "..." + Escape(policy.TargetBranch), HttpMethod.Get, null, ct))!.Value;
         return Text(value, "status") is "ahead" or "identical" && Sha(value.GetProperty("merge_base_commit"), "sha") == mergeSha;
     }
+    private async Task<DeliveryRemote> MergedPull(DeliveryPolicy policy, DeliveryRemote pull, CancellationToken ct)
+    {
+        // REST 2026-03-10 omits merge_commit_sha. GraphQL supplies the actual
+        // merged commit, including reconciliation after a lost merge response.
+        const string query = "query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){nameWithOwner pullRequest(number:$number){number merged headRefOid mergeCommit{oid}}}}";
+        var parts = policy.Repository.Split('/');
+        var result = (await Send("graphql", HttpMethod.Post, new { query, variables = new { owner = parts[0], name = parts[1], number = pull.Number } }, ct))!.Value;
+        if (result.ValueKind != JsonValueKind.Object || result.TryGetProperty("errors", out var errors) && (errors.ValueKind != JsonValueKind.Array || errors.GetArrayLength() != 0))
+            throw new RuleException("GitHub GraphQL merge identity contains errors; no complete outcome was established.", 503);
+        if (!Object(result, "data", out var data) || !Object(data, "repository", out var repository) || !Object(repository, "pullRequest", out var observed)
+            || !Text(repository, "nameWithOwner").Equals(policy.Repository, StringComparison.OrdinalIgnoreCase)
+            || !observed.TryGetProperty("number", out var number) || number.ValueKind != JsonValueKind.Number || !number.TryGetInt32(out var id) || id != pull.Number
+            || !Flag(observed, "merged") || Text(observed, "headRefOid") != pull.HeadSha || !Object(observed, "mergeCommit", out var commit))
+            throw new RuleException("GitHub GraphQL merged PR identity is unavailable or does not match the observed repository, PR and head.", 503);
+        return pull with { MergeSha = Sha(commit, "oid") };
+    }
+    private static bool Object(JsonElement value, string name, out JsonElement child)
+    { child = default; return value.ValueKind == JsonValueKind.Object && value.TryGetProperty(name, out child) && child.ValueKind == JsonValueKind.Object; }
     private static DeliveryMergeResult ParseMerge(JsonElement value, string headSha)
     {
         var status = Text(value, "status"); var details = value.GetProperty("details");
@@ -92,7 +111,7 @@ public sealed class GitHubDeliveryProvider(GitHubApiClient api, DeliveryOptions 
             throw new RuleException("Pull request repository or branch binding changed.", 409);
         var url = Text(value, "html_url"); DeliveryOptions.Endpoint(url);
         var merged = Flag(value, "merged") || value.TryGetProperty("merged_at", out var at) && at.ValueKind == JsonValueKind.String;
-        return new(value.GetProperty("number").GetInt32(), url, Sha(head, "sha"), Sha(target, "sha"), merged ? "merged" : Text(value, "state"), Flag(value, "draft"), merged ? Sha(value, "merge_commit_sha") : null,
+        return new(value.GetProperty("number").GetInt32(), url, Sha(head, "sha"), Sha(target, "sha"), merged ? "merged" : Text(value, "state"), Flag(value, "draft"), null,
             Mergeable: value.TryGetProperty("mergeable", out var can) && can.ValueKind is JsonValueKind.True or JsonValueKind.False ? can.GetBoolean() : null);
     }
     private async Task<List<JsonElement>> Pages(string path, string? arrayName, CancellationToken ct)
