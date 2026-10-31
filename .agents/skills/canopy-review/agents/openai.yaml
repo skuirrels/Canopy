@@ -1,0 +1,4 @@
+interface:
+  display_name: "Canopy Review"
+  short_description: "Review raw changes and recheck persistent findings"
+  default_prompt: "Use $canopy-review to independently assess this captured change and recheck earlier findings."

@@ -76,6 +76,7 @@ if __name__ == '__main__':
     parser.add_argument('--suite', choices=('all', 'core', 'providers', 'deployments', 'parallel', 'calibration'), default='all')
     suite = parser.parse_args().suite
     if suite in ('all', 'core'):
+        run(sys.executable, ROOT / 'scripts/canopy-skills-configuration-test.py')
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.StoreRegression', '--',
             API / 'factory-templates.json')
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.WalRegression')

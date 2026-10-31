@@ -1,0 +1,4 @@
+interface:
+  display_name: "Canopy Calibrator"
+  short_description: "Learn from verified deliveries within selected skills"
+  default_prompt: "Use $canopy-calibrator to assess the captured delivery evidence and improve only the permitted mirrored skills."

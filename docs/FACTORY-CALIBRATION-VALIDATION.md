@@ -88,7 +88,9 @@ The run inspector now gives delivery, review and repair controls distinct siblin
 keys; policy refresh no longer duplicates controls. Adoption confirmation lists
 only changed targets, wraps paths and distinguishes file writes from learner work.
 
-No real calibrator or canonical edit roots are enabled in the live app. CLI sandbox
+At the PR 34 deployment, no real calibrator or canonical edit roots were enabled
+in the live app. The later [project-owned skill setup](FACTORY-CANOPY-SKILLS.md)
+registers a manual calibrator and two permitted targets. CLI sandbox
 behavior remains the execution security boundary; filesystem audits are not an OS
 sandbox. Skill lesson quality remains an external learner/operator judgment.
 Authentication/team access, skill installation, memory edits and publication retain

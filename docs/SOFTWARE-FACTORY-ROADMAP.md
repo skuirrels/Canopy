@@ -221,9 +221,10 @@ outputs and physical artifacts are not distributed as source.
 
 See [calibration setup and contract](FACTORY-CALIBRATION.md) and
 [validation](FACTORY-CALIBRATION-VALIDATION.md). Path and hash verification does not
-judge semantic lesson quality. No real calibrator or canonical edit scope is
-installed or enabled by this phase; private skills, memory and publication remain
-under separate authority.
+judge semantic lesson quality. The project-owned [calibrator and QA/review
+skills](FACTORY-CANOPY-SKILLS.md) provide a narrow manual setup; automatic execution
+and adoption remain off. Private skills, memory and publication retain separate
+authority.
 
 ## Operating constraints
 

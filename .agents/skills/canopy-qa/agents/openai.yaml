@@ -1,0 +1,4 @@
+interface:
+  display_name: "Canopy QA"
+  short_description: "Verify work against criteria and inspectable evidence"
+  default_prompt: "Use $canopy-qa to verify this captured work order and report criterion coverage with actual evidence."

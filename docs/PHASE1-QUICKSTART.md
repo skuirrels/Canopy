@@ -119,4 +119,6 @@ the result; execution, review and merge leave that decision to you. [Delivery de
 Back up DuckDB with the backend stopped; retain any WAL alongside it. Browser
 recovery drafts and exported project JSON do not replace a database backup.
 
-For the full delivered scope, see the [roadmap](SOFTWARE-FACTORY-ROADMAP.md).
+Install the [project-owned calibrator and QA/review skills](FACTORY-CANOPY-SKILLS.md)
+for a narrow manual learning setup. For the full delivered scope, see the
+[roadmap](SOFTWARE-FACTORY-ROADMAP.md).
