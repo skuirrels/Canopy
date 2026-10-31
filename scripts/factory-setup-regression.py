@@ -9,6 +9,7 @@ def check(value,message):
  checks+=1;print(f'PASS {checks:02}: {message}',flush=True)
 with tempfile.TemporaryDirectory(prefix='canopy-setup-') as temporary:
  scratch=Path(temporary).resolve();repo=scratch/'repo';repo.mkdir()
+ (repo/'skills').mkdir()
  (repo/'verify.py').write_text('assert 2 + 2 == 4\n')
  for args in [('init','-q'),('config','user.name','Setup fixture'),('config','user.email','setup@example.invalid'),('add','.'),('commit','-qm','Isolated verification inputs')]:subprocess.run(['git','-C',str(repo),*args],check=True)
  with socket.socket() as sock:sock.bind(('127.0.0.1',0));base='http://127.0.0.1:'+str(sock.getsockname()[1])
@@ -17,6 +18,7 @@ with tempfile.TemporaryDirectory(prefix='canopy-setup-') as temporary:
  env.update(Database__Path=str(scratch/'workspace.duckdb'),Agents__WorkspaceRoot=str(scratch/'worktrees'),Agents__CodexExecutable=sys.executable)
  for i,name in enumerate(('canopy-qa','canopy-review')):
   for key,value in {'Id':name,'Source':'Canopy factory skills','Path':str(ROOT/'.agents/skills'/name/'SKILL.md')}.items():env[f'Factory__Skills__{i}__{key}']=value
+ env.update(Factory__SkillDiscovery__Roots__0__Source='Repository skills',Factory__SkillDiscovery__Roots__0__Path='skills',Factory__SkillDiscovery__Roots__0__MaximumDepth='1')
  log=(scratch/'api.log').open('w+');process=None
  def call(path,method='GET',body=None,status=200,headers=None):
   request=urllib.request.Request(base+path,method=method,data=None if body is None else json.dumps(body).encode(),headers={'Content-Type':'application/json'}|(headers or {}))
@@ -44,12 +46,14 @@ with tempfile.TemporaryDirectory(prefix='canopy-setup-') as temporary:
  try:
   start();project=call('/api/projects','POST',{'name':'Factory setup verification','description':'Disposable project','color':'#477fa1'})['projects'][0];pid=project['id'];route=f'/api/factory/projects/{pid}/setup'
   tid=call(f'/api/projects/{pid}/items','POST',{'expectedRevision':revision(),'title':'First explicit task'})['items'][0]['id']
+  check(not call(f'/api/factory/projects/{pid}/skills')['complete'],'relative project skill roots expose missing connection before setup')
   initial=call('/api/workspace');detail=setup();template=next(t for t in detail['templates'] if t['id']==detail['defaults']['defaultTemplateId'])
   request={'templateId':template['id'],'name':'Project verification workflow','commands':[{'executable':sys.executable,'arguments':['verify.py'],'workingDirectory':'.','timeoutSeconds':17,'environmentReferences':None}],'skills':{'review':[{'id':'canopy-review','source':'Canopy factory skills'}]},'itemId':tid}
   check(detail['setup'] is None and call('/api/workspace')==initial and not pipelines(),'observing setup changes no planner state and creates no default workflow')
   call(route,'GET',status=403,headers={'Origin':'https://example.invalid'})
   call(route,'PUT',body(),400);check(not pipelines(),'missing connection blocks setup without guessed repository or agent')
   call(f'/api/agents/projects/{pid}/connection','PUT',{'expectedRevision':revision(),'repositoryPath':str(repo),'baseRef':'HEAD','provider':'codex','instructions':'Only explicitly requested work.'})
+  check(call(f'/api/factory/projects/{pid}/skills')['complete'],'connecting the actual repository resolves its configured relative skill source')
   for change in [{'commands':[]},{'commands':[request['commands'][0]|{'timeoutSeconds':0}]},{'skills':{'review':[{'id':'unavailable','source':'Canopy factory skills'}]}},{'skills':{'implementation':[{'id':'canopy-review','source':'Wrong source'}]}},{'templateId':'missing'}]:
    call(route,'PUT',body(**change),400)
   check(not pipelines(),'invalid checks, missing skills and unknown templates leave no partial setup')
@@ -109,8 +113,10 @@ with tempfile.TemporaryDirectory(prefix='canopy-setup-') as temporary:
    browser_tid=next(i['id'] for i in result['items'] if i['projectId']==browser_pid)
    browser_workspace=call('/api/workspace');revision_browser=next(p['revision'] for p in browser_workspace['projects'] if p['id']==browser_pid);browser_task=next(i for i in browser_workspace['items'] if i['id']==browser_tid)
    call('/api/items/'+browser_tid,'PATCH',{'expectedRevision':revision_browser,'title':browser_task['title'],'specJson':json.dumps({'type':'doc','content':[{'type':'paragraph','content':[{'type':'text','text':'Verify the tracked repository assertion in verify.py and preserve the observed evidence.'}]}]}),'statusId':browser_task['statusId'],'priority':browser_task['priority'],'assigneeIds':[],'dependencyIds':[],'startDate':None,'dueDate':None})
-   output=Path('/private/tmp/canopy-factory-setup-browser.json');output.write_text(json.dumps({'baseUrl':base,'projectId':browser_pid,'taskId':browser_tid,'repository':str(repo),'scratch':str(scratch),'executable':sys.executable}));print('BROWSER FIXTURE '+str(output),flush=True)
+   disconnected=call('/api/projects','POST',{'name':'First connection browser verification','description':'Disposable connection UX','color':'#477fa1'});disconnected_pid=next(p['id'] for p in disconnected['projects'] if p['id'] not in (pid,browser_pid))
+   output=Path('/private/tmp/canopy-factory-setup-browser.json');output.write_text(json.dumps({'baseUrl':base,'projectId':browser_pid,'taskId':browser_tid,'repository':str(repo),'scratch':str(scratch),'executable':sys.executable,'disconnectedProjectId':disconnected_pid}));print('BROWSER FIXTURE '+str(output),flush=True)
    while not (scratch/'stop-browser').exists():time.sleep(.5)
+   latest=call('/api/workspace');disconnected_rev=next(p['revision'] for p in latest['projects'] if p['id']==disconnected_pid);call(f'/api/projects/{disconnected_pid}?expectedRevision={disconnected_rev}','DELETE')
    latest=call('/api/workspace');rev=next(p['revision'] for p in latest['projects'] if p['id']==browser_pid);call(f'/api/projects/{browser_pid}?expectedRevision={rev}','DELETE')
   call(f'/api/projects/{pid}?expectedRevision={revision()}','DELETE');check(not call('/api/workspace')['projects'],'public project deletion cleans up reusable setup and test-only data')
   call(route,status=404)
