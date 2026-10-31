@@ -6449,7 +6449,8 @@
             "type": "string"
           },
           "provider": {
-            "type": "string"
+            "type": "string",
+            "description": "Local CLI provider: codex, claude or gemini."
           },
           "model": {
             "type": [
@@ -6556,7 +6557,8 @@
             "format": "int64"
           },
           "provider": {
-            "type": "string"
+            "type": "string",
+            "description": "Local CLI provider: codex, claude or gemini."
           },
           "purpose": {
             "type": "string"
@@ -12427,7 +12429,8 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "Local CLI provider: codex, claude or gemini (Antigravity CLI)."
           },
           "name": {
             "type": "string"
@@ -12439,7 +12442,8 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Configured supported effort values for the provider. Model-specific support depends on the installed CLI and account."
           }
         }
       },

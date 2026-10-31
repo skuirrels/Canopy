@@ -92,7 +92,7 @@ with tempfile.TemporaryDirectory(prefix='canopy-setup-') as temporary:
   if '--write-openapi' in sys.argv:
    spec_path=ROOT/'postman/specs/planner.openapi.json';prior=json.loads(spec_path.read_text());current=call('/openapi/v1.json')
    def ordered(prior,current):
-    if isinstance(prior,dict) and isinstance(current,dict):return {key:ordered(prior.get(key),current[key]) for key in list(prior)+[k for k in current if k not in prior] if key in current}
+    if isinstance(prior,dict) and isinstance(current,dict):return {key:ordered(prior.get(key),current[key]) if key in current else prior[key] for key in list(prior)+[k for k in current if k not in prior] if key in current or key in {'description','summary','example','examples','deprecated','externalDocs'}}
     return current
    current['servers']=[{'url':json.loads((API/'appsettings.json').read_text())['Urls'].rstrip('/')+'/'}]
    spec_path.write_text(json.dumps(ordered(prior,current),indent=2)+'\n')
