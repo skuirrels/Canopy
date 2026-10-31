@@ -1,0 +1,874 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-31T19:22:44+00:00",
+  "title": "Design System: Canopy",
+  "extensions": {
+    "colorMeta": {
+      "canopy-green": {
+        "role": "primary",
+        "displayName": "Canopy Green",
+        "canonical": "#2f7258",
+        "tonalRamp": [
+          "#1c3028",
+          "#2d5344",
+          "#3b7c63",
+          "#48a883",
+          "#6bbd9d",
+          "#9acbb8",
+          "#c5ddd4",
+          "#f0f5f3"
+        ]
+      },
+      "canopy-green-deep": {
+        "role": "primary",
+        "displayName": "Canopy Green Deep",
+        "canonical": "#29644d",
+        "tonalRamp": [
+          "#1c3028",
+          "#2c5344",
+          "#3b7c63",
+          "#47a883",
+          "#6bbd9d",
+          "#9acbb8",
+          "#c5ded4",
+          "#f0f5f3"
+        ]
+      },
+      "canopy-green-lit": {
+        "role": "primary",
+        "displayName": "Canopy Green Lit",
+        "canonical": "#558c76",
+        "tonalRamp": [
+          "#202c27",
+          "#344b42",
+          "#496f60",
+          "#5c947e",
+          "#7cac99",
+          "#a4c1b5",
+          "#cad8d3",
+          "#f1f4f3"
+        ]
+      },
+      "canopy-green-border": {
+        "role": "primary",
+        "displayName": "Canopy Green Border",
+        "canonical": "#97b9ac",
+        "tonalRamp": [
+          "#222b27",
+          "#374942",
+          "#4d6b5f",
+          "#618e7d",
+          "#81a798",
+          "#a7beb5",
+          "#cbd7d2",
+          "#f1f4f3"
+        ]
+      },
+      "canopy-green-border-night": {
+        "role": "primary",
+        "displayName": "Canopy Green Border Night",
+        "canonical": "#24463b",
+        "tonalRamp": [
+          "#1f2e29",
+          "#314f45",
+          "#437565",
+          "#539d85",
+          "#75b39f",
+          "#9fc6b9",
+          "#c8dbd4",
+          "#f0f4f3"
+        ]
+      },
+      "react-flow-pink": {
+        "role": "secondary",
+        "displayName": "React Flow Hot Pink",
+        "canonical": "#ff0073",
+        "tonalRamp": [
+          "#3e0f24",
+          "#6e123b",
+          "#a90e54",
+          "#ec046c",
+          "#f6328a",
+          "#ee77ad",
+          "#efb3ce",
+          "#f9ecf2"
+        ]
+      },
+      "project-violet": {
+        "role": "secondary",
+        "displayName": "Project Violet",
+        "canonical": "#6c63a8",
+        "tonalRamp": [
+          "#21202d",
+          "#36334d",
+          "#4c4672",
+          "#605799",
+          "#7f78b0",
+          "#a6a2c3",
+          "#cbc9da",
+          "#f1f0f4"
+        ]
+      },
+      "project-ochre": {
+        "role": "secondary",
+        "displayName": "Project Ochre",
+        "canonical": "#c38b46",
+        "tonalRamp": [
+          "#32271a",
+          "#574228",
+          "#836034",
+          "#b37e3d",
+          "#c69962",
+          "#d1b694",
+          "#e0d3c2",
+          "#f6f3ef"
+        ]
+      },
+      "project-steel": {
+        "role": "secondary",
+        "displayName": "Project Steel",
+        "canonical": "#477fa1",
+        "tonalRamp": [
+          "#1d282f",
+          "#2e4452",
+          "#3e637a",
+          "#4b83a5",
+          "#6e9dba",
+          "#9bb8ca",
+          "#c6d4dd",
+          "#f0f3f5"
+        ]
+      },
+      "project-rose": {
+        "role": "secondary",
+        "displayName": "Project Rose",
+        "canonical": "#bd6c73",
+        "tonalRamp": [
+          "#2f1d1f",
+          "#512e31",
+          "#793e43",
+          "#a44c53",
+          "#b96f75",
+          "#c99ca0",
+          "#dcc6c8",
+          "#f5f0f0"
+        ]
+      },
+      "project-sage": {
+        "role": "secondary",
+        "displayName": "Project Sage",
+        "canonical": "#6c8580",
+        "tonalRamp": [
+          "#242928",
+          "#3b4543",
+          "#546461",
+          "#6c847f",
+          "#8a9e9a",
+          "#acb9b6",
+          "#ced4d3",
+          "#f2f3f3"
+        ]
+      },
+      "dependency-gold": {
+        "role": "tertiary",
+        "displayName": "Dependency Gold",
+        "canonical": "#c29141",
+        "tonalRamp": [
+          "#32291a",
+          "#584528",
+          "#846534",
+          "#b3863c",
+          "#c6a062",
+          "#d1ba94",
+          "#e0d5c2",
+          "#f6f3ef"
+        ]
+      },
+      "dependency-gold-night": {
+        "role": "tertiary",
+        "displayName": "Dependency Gold Night",
+        "canonical": "#e4b16c",
+        "tonalRamp": [
+          "#362916",
+          "#604520",
+          "#916426",
+          "#c88428",
+          "#d79e51",
+          "#dcb989",
+          "#e6d4bd",
+          "#f7f3ee"
+        ]
+      },
+      "night-floor": {
+        "role": "neutral",
+        "displayName": "Night Floor",
+        "canonical": "#111114",
+        "tonalRamp": [
+          "#242428",
+          "#3c3c43",
+          "#565662",
+          "#6e6e81",
+          "#8c8c9c",
+          "#aeaeb7",
+          "#cfcfd4",
+          "#f2f2f3"
+        ]
+      },
+      "night-rail": {
+        "role": "neutral",
+        "displayName": "Night Rail",
+        "canonical": "#151518",
+        "tonalRamp": [
+          "#252528",
+          "#3d3d43",
+          "#575761",
+          "#707080",
+          "#8d8d9a",
+          "#afafb6",
+          "#cfcfd3",
+          "#f2f2f3"
+        ]
+      },
+      "graphite": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "#19191d",
+        "tonalRamp": [
+          "#252528",
+          "#3c3c43",
+          "#565662",
+          "#6f6f80",
+          "#8d8d9b",
+          "#aeaeb7",
+          "#cfcfd3",
+          "#f2f2f3"
+        ]
+      },
+      "graphite-raised": {
+        "role": "neutral",
+        "displayName": "Graphite Raised",
+        "canonical": "#25252b",
+        "tonalRamp": [
+          "#242428",
+          "#3c3c43",
+          "#565662",
+          "#6f6f81",
+          "#8d8d9b",
+          "#aeaeb7",
+          "#cfcfd3",
+          "#f2f2f3"
+        ]
+      },
+      "graphite-line": {
+        "role": "neutral",
+        "displayName": "Graphite Line",
+        "canonical": "#303036",
+        "tonalRamp": [
+          "#252528",
+          "#3d3d42",
+          "#575760",
+          "#71717f",
+          "#8e8e9a",
+          "#afafb6",
+          "#cfcfd3",
+          "#f2f2f3"
+        ]
+      },
+      "graphite-edge": {
+        "role": "neutral",
+        "displayName": "Graphite Edge",
+        "canonical": "#51515e",
+        "tonalRamp": [
+          "#252528",
+          "#3c3c43",
+          "#565662",
+          "#6f6f80",
+          "#8d8d9b",
+          "#aeaeb7",
+          "#cfcfd3",
+          "#f2f2f3"
+        ]
+      },
+      "ash": {
+        "role": "neutral",
+        "displayName": "Ash",
+        "canonical": "#777784",
+        "tonalRamp": [
+          "#252527",
+          "#3d3d42",
+          "#585860",
+          "#72727e",
+          "#8f8f99",
+          "#afafb6",
+          "#d0d0d3",
+          "#f2f2f3"
+        ]
+      },
+      "pewter": {
+        "role": "neutral",
+        "displayName": "Pewter",
+        "canonical": "#aaaab7",
+        "tonalRamp": [
+          "#242428",
+          "#3c3c44",
+          "#555562",
+          "#6e6e81",
+          "#8c8c9c",
+          "#aeaeb7",
+          "#cfcfd4",
+          "#f2f2f3"
+        ]
+      },
+      "mist": {
+        "role": "neutral",
+        "displayName": "Mist",
+        "canonical": "#c6c6cf",
+        "tonalRamp": [
+          "#242428",
+          "#3c3c44",
+          "#555562",
+          "#6e6e82",
+          "#8c8c9c",
+          "#adadb8",
+          "#cfcfd4",
+          "#f2f2f3"
+        ]
+      },
+      "moonlight": {
+        "role": "neutral",
+        "displayName": "Moonlight",
+        "canonical": "#ededf0",
+        "tonalRamp": [
+          "#242428",
+          "#3c3c44",
+          "#555563",
+          "#6d6d82",
+          "#8b8b9d",
+          "#adadb8",
+          "#ceced4",
+          "#f2f2f3"
+        ]
+      },
+      "chalk": {
+        "role": "neutral",
+        "displayName": "Chalk",
+        "canonical": "#fafafa",
+        "tonalRamp": [
+          "#262626",
+          "#404040",
+          "#5c5c5c",
+          "#787878",
+          "#949494",
+          "#b2b2b2",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#262626",
+          "#404040",
+          "#5c5c5c",
+          "#787878",
+          "#949494",
+          "#b2b2b2",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "slate-50": {
+        "role": "neutral",
+        "displayName": "Slate 50",
+        "canonical": "#f8fafc",
+        "tonalRamp": [
+          "#1d2630",
+          "#2d4052",
+          "#3d5c7b",
+          "#4978a6",
+          "#6d94bb",
+          "#9bb2ca",
+          "#c5d1dd",
+          "#f0f2f5"
+        ]
+      },
+      "slate-100": {
+        "role": "neutral",
+        "displayName": "Slate 100",
+        "canonical": "#f1f5f9",
+        "tonalRamp": [
+          "#1d2630",
+          "#2d4052",
+          "#3d5c7b",
+          "#4978a6",
+          "#6d94bb",
+          "#9bb3ca",
+          "#c5d1dd",
+          "#f0f2f5"
+        ]
+      },
+      "slate-200": {
+        "role": "neutral",
+        "displayName": "Slate 200",
+        "canonical": "#e2e8f0",
+        "tonalRamp": [
+          "#1f252e",
+          "#313e4e",
+          "#435875",
+          "#53739d",
+          "#758fb3",
+          "#a0b0c5",
+          "#c8d0db",
+          "#f0f2f4"
+        ]
+      },
+      "slate-300": {
+        "role": "neutral",
+        "displayName": "Slate 300",
+        "canonical": "#cbd5e1",
+        "tonalRamp": [
+          "#20262d",
+          "#333f4c",
+          "#475a71",
+          "#597597",
+          "#7a92ae",
+          "#a2b1c3",
+          "#c9d0d9",
+          "#f1f2f4"
+        ]
+      },
+      "slate-400": {
+        "role": "neutral",
+        "displayName": "Slate 400",
+        "canonical": "#94a3b8",
+        "tonalRamp": [
+          "#21252b",
+          "#363e49",
+          "#4c596c",
+          "#60748f",
+          "#8091a8",
+          "#a6b0bf",
+          "#cbd0d7",
+          "#f1f2f4"
+        ]
+      },
+      "slate-500": {
+        "role": "neutral",
+        "displayName": "Slate 500",
+        "canonical": "#64748b",
+        "tonalRamp": [
+          "#22262a",
+          "#383e47",
+          "#4f5a68",
+          "#65748b",
+          "#8491a4",
+          "#a9b1bc",
+          "#ccd0d6",
+          "#f1f2f3"
+        ]
+      },
+      "slate-600": {
+        "role": "neutral",
+        "displayName": "Slate 600",
+        "canonical": "#475569",
+        "tonalRamp": [
+          "#22252b",
+          "#373e49",
+          "#4d596b",
+          "#61748e",
+          "#8191a7",
+          "#a7b0be",
+          "#cbd0d7",
+          "#f1f2f3"
+        ]
+      },
+      "slate-700": {
+        "role": "neutral",
+        "displayName": "Slate 700",
+        "canonical": "#334155",
+        "tonalRamp": [
+          "#20252c",
+          "#343e4b",
+          "#48586f",
+          "#5b7395",
+          "#7b90ac",
+          "#a4b0c1",
+          "#cad0d9",
+          "#f1f2f4"
+        ]
+      },
+      "slate-800": {
+        "role": "neutral",
+        "displayName": "Slate 800",
+        "canonical": "#1e293b",
+        "tonalRamp": [
+          "#1f242e",
+          "#313c4f",
+          "#425675",
+          "#526f9e",
+          "#748cb4",
+          "#9faec6",
+          "#c7cfdb",
+          "#f0f2f4"
+        ]
+      },
+      "slate-900": {
+        "role": "neutral",
+        "displayName": "Slate 900",
+        "canonical": "#0f172a",
+        "tonalRamp": [
+          "#1b2231",
+          "#2a3756",
+          "#374d81",
+          "#4161af",
+          "#6681c2",
+          "#96a7cf",
+          "#c3cbdf",
+          "#eff1f5"
+        ]
+      },
+      "clay-danger": {
+        "role": "semantic",
+        "displayName": "Clay Danger",
+        "canonical": "#b85851",
+        "tonalRamp": [
+          "#301e1c",
+          "#532f2c",
+          "#7c403b",
+          "#a94e47",
+          "#bd706b",
+          "#cc9d99",
+          "#dec6c5",
+          "#f5f0f0"
+        ]
+      },
+      "clay-danger-deep": {
+        "role": "semantic",
+        "displayName": "Clay Danger Deep",
+        "canonical": "#a24741",
+        "tonalRamp": [
+          "#301d1c",
+          "#532e2c",
+          "#7d3f3b",
+          "#a94c46",
+          "#be6f6a",
+          "#cc9c99",
+          "#dec6c4",
+          "#f5f0ef"
+        ]
+      },
+      "coral-night": {
+        "role": "semantic",
+        "displayName": "Coral Night",
+        "canonical": "#ff9b9b",
+        "tonalRamp": [
+          "#3e0f0f",
+          "#6e1212",
+          "#a90e0e",
+          "#ec0404",
+          "#f63232",
+          "#ee7777",
+          "#efb3b3",
+          "#f9ecec"
+        ]
+      },
+      "amber-pending": {
+        "role": "semantic",
+        "displayName": "Amber Pending",
+        "canonical": "#826435",
+        "tonalRamp": [
+          "#30281c",
+          "#53442c",
+          "#7c633b",
+          "#a98347",
+          "#bd9d6b",
+          "#ccb899",
+          "#ded4c5",
+          "#f5f3f0"
+        ]
+      },
+      "amber-pending-night": {
+        "role": "semantic",
+        "displayName": "Amber Pending Night",
+        "canonical": "#e8c58c",
+        "tonalRamp": [
+          "#362a17",
+          "#5f4721",
+          "#906828",
+          "#c58a2b",
+          "#d5a353",
+          "#dabc8b",
+          "#e5d6bd",
+          "#f7f3ee"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "The canopy. brand in the sidebar."
+      },
+      "display": {
+        "displayName": "Display",
+        "purpose": "Overview heading."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Project and task titles; dialogs at 28px."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card, column and map-node titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Form fields and general reading."
+      },
+      "body-spec": {
+        "displayName": "Specification",
+        "purpose": "Tiptap specification editor."
+      },
+      "ui": {
+        "displayName": "UI",
+        "purpose": "Nav, toolbars, buttons and metadata."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Uppercase tracked eyebrows and section labels."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Code inside specifications."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-rest",
+        "value": "0 2px 4px #0f172a06",
+        "purpose": "Cards at rest (light); dark uses 0 3px 8px #0002."
+      },
+      {
+        "name": "card-hover",
+        "value": "0 3px 9px #0000000b",
+        "purpose": "Cards under the pointer (light); dark uses 0 4px 16px #0003."
+      },
+      {
+        "name": "drag-lift",
+        "value": "0 12px 28px #00000020",
+        "purpose": "Card being dragged, with a 2deg tilt."
+      },
+      {
+        "name": "menu",
+        "value": "0 8px 30px #00000013",
+        "purpose": "Dropdowns and pickers."
+      },
+      {
+        "name": "dialog",
+        "value": "0 22px 75px #1e293b30",
+        "purpose": "Dialogs over a 3px backdrop blur; dark uses 0 24px 80px #0008."
+      },
+      {
+        "name": "inspector-edge",
+        "value": "-7px 0 25px #00000006",
+        "purpose": "Task inspector left edge."
+      },
+      {
+        "name": "accent-focus",
+        "value": "0 0 0 3px color-mix(in srgb,var(--accent-source) 12%,transparent)",
+        "purpose": "Focused inputs in dark."
+      }
+    ],
+    "motion": [
+      {
+        "name": "popover-in",
+        "value": ".12s ease-out",
+        "purpose": "Menus fade and drop 3px."
+      },
+      {
+        "name": "state",
+        "value": ".15s",
+        "purpose": "Hover, border and button press transitions."
+      },
+      {
+        "name": "dialog-in",
+        "value": ".2s ease-out",
+        "purpose": "Dialogs rise 2% and fade in; inspector slides 30px from the right."
+      },
+      {
+        "name": "progress",
+        "value": ".25s",
+        "purpose": "Progress track width changes."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "0.01ms",
+        "purpose": "prefers-reduced-motion collapses all animation and transition durations."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide",
+        "value": "1700px"
+      },
+      {
+        "name": "desktop-compact",
+        "value": "1300px"
+      },
+      {
+        "name": "tablet-landscape",
+        "value": "1100px"
+      },
+      {
+        "name": "tablet",
+        "value": "850px"
+      },
+      {
+        "name": "phone",
+        "value": "550px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action in a view or dialog; takes the project accent.",
+      "html": "<button class=\"ds-btn-primary\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg>New project</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:9px 15px;border-radius:999px;border:1px solid var(--accent-fill,#2f7258);background:var(--accent-fill,#2f7258);color:#fff;font:550 14px/1.25 Inter,-apple-system,sans-serif;box-shadow:0 0 0 1px color-mix(in srgb,var(--accent-source,#2f7258) 7%,transparent),0 3px 12px #0003;cursor:pointer;transition:background .15s,box-shadow .15s,transform .15s}.ds-btn-primary:hover{background:var(--accent-hover,#29644d)}.ds-btn-primary:active{transform:translateY(1px)}.ds-btn-primary:focus-visible{outline:2px solid var(--accent,#558c76);outline-offset:3px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Supporting actions such as Import plan or Project setup.",
+      "html": "<button class=\"ds-btn-secondary\">Import plan</button>",
+      "css": ".ds-btn-secondary{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:9px 15px;border-radius:999px;border:1px solid var(--line,#303036);background:var(--surface,#19191d);color:var(--body-text,#c6c6cf);font:550 14px/1.25 Inter,-apple-system,sans-serif;cursor:pointer;transition:background .15s,border-color .15s,transform .15s}.ds-btn-secondary:hover{background:var(--surface-hover,#25252b);border-color:var(--border-hover,#51515e)}.ds-btn-secondary:active{transform:translateY(1px)}.ds-btn-secondary:focus-visible{outline:2px solid var(--accent,#558c76);outline-offset:3px}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Low-emphasis actions such as Cancel.",
+      "html": "<button class=\"ds-btn-ghost\">Cancel</button>",
+      "css": ".ds-btn-ghost{display:inline-flex;align-items:center;min-height:40px;padding:9px 15px;border-radius:999px;border:1px solid transparent;background:none;color:var(--body-text,#c6c6cf);font:550 14px/1.25 Inter,-apple-system,sans-serif;cursor:pointer;transition:background .15s}.ds-btn-ghost:hover{background:var(--surface-hover,#25252b)}.ds-btn-ghost:focus-visible{outline:2px solid var(--accent,#558c76);outline-offset:3px}"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Confirmed destructive actions only.",
+      "html": "<button class=\"ds-btn-danger\">Delete project</button>",
+      "css": ".ds-btn-danger{display:inline-flex;align-items:center;min-height:40px;padding:9px 15px;border-radius:999px;border:1px solid transparent;background:#b85851;color:#fff;font:550 14px/1.25 Inter,-apple-system,sans-serif;cursor:pointer;transition:background .15s,transform .15s}.ds-btn-danger:hover{background:#a24741}.ds-btn-danger:active{transform:translateY(1px)}.ds-btn-danger:focus-visible{outline:2px solid #ff9b9b;outline-offset:3px}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Dialog and form input with accent focus glow.",
+      "html": "<label class=\"ds-field\">Project name<input class=\"ds-input\" placeholder=\"What are you working on?\"></label>",
+      "css": ".ds-field{display:block;font:550 14px/1.5 Inter,-apple-system,sans-serif;color:var(--body-text,#c6c6cf);max-width:360px}.ds-input{display:block;width:100%;box-sizing:border-box;margin-top:7px;padding:10px 11px;border:1px solid var(--line,#303036);border-radius:6px;background:var(--surface,#19191d);color:var(--body-text,#c6c6cf);font:400 16px/1.5 Inter,-apple-system,sans-serif;outline:none}.ds-input::placeholder{color:var(--secondary-text,#aaaab7)}.ds-input:hover{border-color:var(--border-hover,#51515e)}.ds-input:focus{border-color:var(--accent,#558c76);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-source,#2f7258) 12%,transparent)}"
+    },
+    {
+      "name": "View Tabs",
+      "kind": "nav",
+      "refersTo": "view-tabs",
+      "description": "Segmented control switching project views; the active view takes the accent soft tint.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\"><button class=\"ds-tab\">Components</button><button class=\"ds-tab ds-tab-active\" aria-selected=\"true\">Board</button><button class=\"ds-tab\">Gantt</button><button class=\"ds-tab\">Mind map</button><button class=\"ds-tab\">Software Factory</button></div>",
+      "css": ".ds-tabs{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line,#303036);border-radius:999px;background:#1b1b20}.ds-tab{min-height:38px;padding:6px 12px;border:0;border-radius:999px;background:none;color:var(--body-text,#c6c6cf);font:400 14px/1.5 Inter,-apple-system,sans-serif;cursor:pointer}.ds-tab:hover{background:var(--surface-hover,#25252b)}.ds-tab:focus-visible{outline:2px solid var(--accent,#558c76);outline-offset:3px}.ds-tab-active{background:var(--accent-soft,#1c2424);color:var(--accent-soft-text,#60937f);font-weight:550;box-shadow:inset 0 0 0 1px var(--accent-border,#24463b)}"
+    },
+    {
+      "name": "Blocked Badge",
+      "kind": "chip",
+      "refersTo": "",
+      "description": "Warm amber badge for outstanding prerequisites; never alarm red.",
+      "html": "<span class=\"ds-badge-blocked\">Blocked by 2</span>",
+      "css": ".ds-badge-blocked{display:inline-flex;align-items:center;gap:4px;padding:3px 5px;border:1px solid #5e4b2d;border-radius:4px;background:#302719;color:#e8c58c;font:400 12px/1.5 Inter,-apple-system,sans-serif}"
+    },
+    {
+      "name": "Task Card",
+      "kind": "card",
+      "refersTo": "task-card",
+      "description": "Kanban card: priority, title, parent component, date and assignees.",
+      "html": "<article class=\"ds-task-card\" tabindex=\"0\"><div class=\"ds-task-priority\">High</div><h3>Add Sea Areas</h3><div class=\"ds-task-parent\">SIS</div><div class=\"ds-task-footer\"><span class=\"ds-task-date\">27 Oct</span><span class=\"ds-avatar\">JW</span></div></article>",
+      "css": ".ds-task-card{width:290px;box-sizing:border-box;padding:16px;border:1px solid var(--line,#303036);border-radius:14px;background:var(--surface,#19191d);color:var(--foreground,#ededf0);box-shadow:0 3px 8px #0002;font-family:Inter,-apple-system,sans-serif;cursor:grab;transition:border-color .15s,box-shadow .15s}.ds-task-card:hover{border-color:var(--accent-border,#24463b);box-shadow:0 4px 16px #0003}.ds-task-card:focus-visible{outline:2px solid var(--accent,#558c76);outline-offset:3px}.ds-task-priority{font-size:12px;color:#e7c786}.ds-task-card h3{margin:8px 0 0;font-size:16px;font-weight:600;line-height:1.5;letter-spacing:-.07px}.ds-task-parent{margin-top:7px;font-size:12px;color:var(--secondary-text,#aaaab7)}.ds-task-footer{display:flex;justify-content:space-between;align-items:center;margin-top:19px;font-size:14px;color:#ff9b9b}.ds-avatar{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--accent-soft,#1c2424);color:var(--accent-soft-text,#60937f);border:1px solid var(--accent-border,#24463b);font-size:12px}"
+    },
+    {
+      "name": "Mind Map Root",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "Project root node: accent gradient, branch-colour left border.",
+      "html": "<div class=\"ds-map-root\"><div class=\"ds-map-eyebrow\">YOUR PROJECT</div><div class=\"ds-map-title\">Supply Chain Intelligence</div><div class=\"ds-map-foot\">6 direct items</div></div>",
+      "css": ".ds-map-root{width:220px;min-height:110px;box-sizing:border-box;display:flex;flex-direction:column;padding:18px 20px;border:1px solid var(--accent-border,#24463b);border-left:4px solid var(--accent,#558c76);border-radius:12px;background:linear-gradient(135deg,var(--accent-soft-strong,#1e2d2a),var(--accent-soft,#1c2424));color:var(--heading,#fafafa);font-family:Inter,-apple-system,sans-serif;box-shadow:0 4px 24px #0003}.ds-map-eyebrow{font-size:12px;font-weight:550;letter-spacing:.8px;color:var(--secondary-text,#aaaab7);margin-bottom:12px}.ds-map-title{font-size:18px;font-weight:600;line-height:1.5}.ds-map-foot{margin-top:auto;padding-top:10px;font-size:14px;color:var(--secondary-text,#aaaab7)}"
+    },
+    {
+      "name": "Progress Ring",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "Conic completion ring in the project colour beside the project title.",
+      "html": "<div class=\"ds-ring\" style=\"--progress:31%\"><span>31%</span></div>",
+      "css": ".ds-ring{position:relative;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:conic-gradient(var(--accent,#558c76) var(--progress),var(--line,#303036) 0)}.ds-ring:before{content:\"\";position:absolute;inset:3px;border-radius:50%;background:var(--surface,#19191d)}.ds-ring>span{position:relative;font:550 12px/1 Inter,-apple-system,sans-serif;font-variant-numeric:tabular-nums;color:var(--body-text,#c6c6cf)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Night Workshop",
+    "overview": "Canopy is a charcoal bench after hours. The room is dark and quiet, and the one lit thing is the project in front of you: its colour runs through the active view tab, the selected nav item, avatars, the progress ring, the mind-map root and every focus ring. Everything else sits in layered greys so the work, not the chrome, holds the eye. Dark (\"React Flow\" theme) is the default; a light theme (\"Navy\", cool slate neutrals) offers the same structure in daylight.\n\nThe workshop is warm, not clinical. Warmth lives in the microcopy (\"A little room for what's next\", \"A little progress, one card at a time\"), in the sprout and tree marks, in earthy semantic tones (ochre for high priority, clay for urgent and overdue, amber for pending) instead of alarm red, and in small kindnesses such as a gentle radial glow behind the welcome panel. Density is moderate: a planner you work in all day, with 14px UI text, generous card padding and clear 1px boundaries.\n\nControls are soft-edged and steady. Buttons and tabs become pills in the dark theme, cards have gently rounded corners, and touch targets grow to 44px on phones. Nothing bounces or flourishes; motion is short and only confirms what you did.",
+    "keyCharacteristics": [
+      "Charcoal tonal layers with 1px lines; depth from tone first, soft shadow second.",
+      "One accent at a time: the current project's colour, derived for contrast, with Canopy Green when no project applies.",
+      "Inter throughout, tight negative tracking on headings, uppercase tracked eyebrows.",
+      "Earthy, low-alarm semantic colour; warm copy in empty states and footers.",
+      "Every pointer interaction has a keyboard path and a reduced-motion fallback."
+    ],
+    "rules": [
+      {
+        "name": "The One Lamp Rule",
+        "body": "Only the current project's colour is used as an accent on a screen. Do not introduce a second brand hue; derived soft tints of the same colour are the only variation.",
+        "section": "colors"
+      },
+      {
+        "name": "The Derived Accent Rule",
+        "body": "Never hard-code a project's accent. Read the `--accent*` custom properties, which are recalculated for contrast whenever the project colour or theme changes.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Alarm Rule",
+        "body": "Urgency, overdue and blocked states use earthy, muted tones (clay, ochre, amber), not saturated red. Saturated red is reserved for genuine error toasts.",
+        "section": "colors"
+      },
+      {
+        "name": "The Static Weights Rule",
+        "body": "Only Inter 400, 500, 600 and 700 are loaded and `font-synthesis` is off. Weights written as 550 render as 600, and 650 as 700; prefer the loaded weights in new work.",
+        "section": "typography"
+      },
+      {
+        "name": "The Small Print Floor Rule",
+        "body": "Keep readable text at 12px or larger. The 8 to 10px sizes in dense factory diagrams are an existing exception, not a pattern to extend.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat at Rest Rule",
+        "body": "Panels, columns and toolbars carry no shadow; only cards, floating layers and selected nodes may lift.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do take every accent from the derived `--accent*` properties so any project colour stays readable in both themes.",
+      "Do build depth from the night floor, rail, graphite and raised graphite layers with 1px lines before reaching for a shadow.",
+      "Do keep controls at 40px (44px on phones) with 6px or pill corners, and give every drag a keyboard path.",
+      "Do write empty and status states in the warm, short voice already used (\"A little room for what's next\").",
+      "Do check new work in both the dark and light themes and at 550px.",
+      "Do keep motion between 0.12s and 0.25s with ease-out, and let `prefers-reduced-motion` switch it off."
+    ],
+    "donts": [
+      "Don't introduce a second accent hue or hard-code `#2f7258` where the project colour should apply.",
+      "Don't colour urgency or overdue with saturated red; use the earthy clay, ochre and amber tones.",
+      "Don't reuse dependency gold for anything other than dependencies.",
+      "Don't hard-code workflow status colours; they come from configuration.",
+      "Don't add shadows to panels, columns or toolbars at rest.",
+      "Don't set new text below 12px."
+    ]
+  }
+}
