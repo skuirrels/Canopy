@@ -1,0 +1,17 @@
+$kind: http-request
+name: Read captured parallel run
+method: GET
+url: '{{baseUrl}}/api/factory/runs/{{parallelRunId}}'
+order: 1000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')||!pm.variables.get('parallelRunId')||!pm.variables.get('baseUrl')) throw new Error('Supply isolated fixtureMode, baseUrl, projectId and parallelRunId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Captured run is readable',()=>pm.response.to.have.status(200));const d=pm.response.json();
+      pm.test('Complete integration has actual trees and context',()=>{pm.expect(d.run.state).to.eql('succeeded');pm.expect(d.parallel.state).to.eql('complete');pm.expect(d.parallel.initial.tree).to.match(/^[a-f0-9]{40,64}$/);pm.expect(d.parallel.final.tree).to.match(/^[a-f0-9]{40,64}$/);pm.expect(d.parallel.finalContext.fingerprint).to.be.a('string').and.not.empty});
+      pm.test('Every stage has a separate retained worktree and Git checkpoint',()=>{pm.expect(d.parallelStages).to.have.length(3);pm.expect(new Set(d.parallelStages.map(s=>s.workspacePath)).size).to.eql(3);d.parallelStages.forEach(s=>{pm.expect(s.workspacePath).not.to.eql(d.run.workspacePath);pm.expect(s.state).to.eql('complete');pm.expect(s.stepCheckpoints).to.have.length(1);pm.expect(s.output.tree).to.be.a('string').and.not.empty})});
+      pm.test('Atomic reservations retain actual executed invocation count',()=>{pm.expect(d.budget.reservedCommandInvocations).to.eql(3);pm.expect(d.budget.reservedAgentInvocations).to.eql(0)});

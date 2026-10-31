@@ -22,6 +22,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             var deployments = data.Deployments.ToList(); var deploymentOperations = data.DeploymentOperations.ToList();
             var projects = data.Projects.ToList(); var items = data.Items.ToList(); var statuses = data.Statuses.ToList(); var dependencies = data.Dependencies.ToList(); var people = data.People.ToList();
             var connections = data.AgentConnections.ToList(); var runs = data.AgentRuns.ToList();
+            var parallelRuns = data.ParallelRuns.ToList(); var parallelStages = data.ParallelStages.ToList();
             var analyticsReceipts = data.AnalyticsReceipts.ToList(); var analyticsReports = data.AnalyticsReportIdentities.ToList();
             var errorReceipts = data.ErrorFeedReceipts.ToList(); var errorEvents = data.ErrorEventIdentities.ToList();
             var intakeSources = data.IntakeSources.ToList(); var intakeCollections = data.IntakeCollections.ToList(); var intakeCandidates = data.IntakeCandidates.ToList(); var intakeObservations = data.IntakeObservations.ToList(); var intakeDecisions = data.IntakeDecisions.ToList();
@@ -38,6 +39,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             Sync(db, deployments, data.Deployments); Sync(db, deploymentOperations, data.DeploymentOperations);
             Sync(db, projects, data.Projects); Sync(db, items, data.Items); Sync(db, statuses, data.Statuses); Sync(db, dependencies, data.Dependencies); Sync(db, people, data.People);
             Sync(db, connections, data.AgentConnections); Sync(db, runs, data.AgentRuns);
+            Sync(db, parallelRuns, data.ParallelRuns); Sync(db, parallelStages, data.ParallelStages);
             Sync(db, analyticsReceipts, data.AnalyticsReceipts); Sync(db, analyticsReports, data.AnalyticsReportIdentities);
             Sync(db, errorReceipts, data.ErrorFeedReceipts); Sync(db, errorEvents, data.ErrorEventIdentities);
             Sync(db, intakeSources, data.IntakeSources); Sync(db, intakeCollections, data.IntakeCollections); Sync(db, intakeCandidates, data.IntakeCandidates); Sync(db, intakeObservations, data.IntakeObservations); Sync(db, intakeDecisions, data.IntakeDecisions);
@@ -64,6 +66,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
     private static async Task<WorkspaceData> Load(PlannerDb db, CancellationToken ct) => new()
     {
         Deployments = await db.Deployments.ToListAsync(ct), DeploymentOperations = await db.DeploymentOperations.ToListAsync(ct),
+        ParallelRuns = await db.ParallelRuns.ToListAsync(ct), ParallelStages = await db.ParallelStages.ToListAsync(ct),
         AnalyticsReceipts = await db.AnalyticsReceipts.ToListAsync(ct), AnalyticsReportIdentities = await db.AnalyticsReportIdentities.ToListAsync(ct),
         ErrorFeedReceipts = await db.ErrorFeedReceipts.ToListAsync(ct), ErrorEventIdentities = await db.ErrorEventIdentities.ToListAsync(ct),
         IntakeSources = await db.IntakeSources.ToListAsync(ct), IntakeCollections = await db.IntakeCollections.ToListAsync(ct), IntakeCandidates = await db.IntakeCandidates.ToListAsync(ct), IntakeObservations = await db.IntakeObservations.ToListAsync(ct), IntakeDecisions = await db.IntakeDecisions.ToListAsync(ct),

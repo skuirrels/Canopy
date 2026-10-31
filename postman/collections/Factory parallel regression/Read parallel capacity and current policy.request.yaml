@@ -1,0 +1,16 @@
+$kind: http-request
+name: Read parallel capacity and current policy
+method: GET
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/execution-policy'
+order: 2000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')||!pm.variables.get('parallelRunId')||!pm.variables.get('baseUrl')) throw new Error('Supply isolated fixtureMode, baseUrl, projectId and parallelRunId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Policy readable',()=>pm.response.to.have.status(200));const d=pm.response.json();
+      pm.test('Capacity is explicit and serial policy stays opt in',()=>{pm.expect(d.capabilities.maximumConcurrentStages).to.eql(4);pm.expect(d.policy).not.to.have.property('maxConcurrentStages')});
+      pm.collectionVariables.set('policyJson',JSON.stringify(d.policy));pm.collectionVariables.set('revision',d.projectRevision);

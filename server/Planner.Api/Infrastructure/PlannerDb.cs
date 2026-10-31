@@ -6,6 +6,8 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
 {
     public DbSet<FactoryDeployment> Deployments => Set<FactoryDeployment>();
     public DbSet<FactoryDeploymentOperation> DeploymentOperations => Set<FactoryDeploymentOperation>();
+    public DbSet<FactoryParallelRun> ParallelRuns => Set<FactoryParallelRun>();
+    public DbSet<FactoryParallelStage> ParallelStages => Set<FactoryParallelStage>();
     public DbSet<FactoryAnalyticsReceipt> AnalyticsReceipts => Set<FactoryAnalyticsReceipt>();
     public DbSet<FactoryAnalyticsReportIdentity> AnalyticsReportIdentities => Set<FactoryAnalyticsReportIdentity>();
     public DbSet<FactoryErrorEventIdentity> ErrorEventIdentities => Set<FactoryErrorEventIdentity>();
@@ -45,6 +47,7 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<TaskFactoryConfiguration> TaskFactoryConfigurations => Set<TaskFactoryConfiguration>();
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.Ignore<ParallelTree>(); model.Ignore<ParallelStepCheckpoint>();
         model.Ignore<DeploymentTarget>(); model.Ignore<DeploymentCapture>();
         model.Entity<FactoryDeployment>().HasKey(x => x.Id); model.Entity<FactoryDeployment>().HasIndex(x => x.RequestId).IsUnique(); model.Entity<FactoryDeployment>().HasIndex(x => x.DeliveryId);
         model.Entity<FactoryDeployment>().Ignore(x => x.Open).Ignore(x => x.Capture).Ignore(x => x.Approvals).Ignore(x => x.Deployment).Ignore(x => x.Recovery);
@@ -54,6 +57,11 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
         model.Entity<FactoryDeploymentOperation>().Property(x => x.CreatedAt).HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
         model.Entity<FactoryDeploymentOperation>().Property(x => x.FinishedAt).HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : (DateTime?)null);
         model.Ignore<IntakeConfiguration>(); model.Ignore<IntakeSignal>();
+        model.Entity<FactoryParallelRun>().HasKey(x => x.Id);
+        model.Entity<FactoryParallelRun>().Ignore(x => x.Initial).Ignore(x => x.InitialContext).Ignore(x => x.Final).Ignore(x => x.FinalContext);
+        model.Entity<FactoryParallelStage>().HasKey(x => x.Id);
+        model.Entity<FactoryParallelStage>().Ignore(x => x.Input).Ignore(x => x.Output).Ignore(x => x.Checkpoint).Ignore(x => x.StepCheckpoints);
+        model.Entity<FactoryParallelStage>().HasIndex(x => x.RunId);
         model.Entity<FactoryAnalyticsReceipt>().HasKey(x => x.Id);
         model.Entity<FactoryAnalyticsReceipt>().Ignore(x => x.Coverage);
         model.Entity<FactoryAnalyticsReceipt>().HasIndex(x => x.ProjectId);
@@ -174,7 +182,7 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
         model.Entity<WorkItem>().HasMany(x => x.Assignments).WithOne().HasForeignKey(x => x.ItemId).OnDelete(DeleteBehavior.ClientCascade);
         model.Entity<WorkItem>().Navigation(x => x.Assignments).HasField("assignments").UsePropertyAccessMode(PropertyAccessMode.Field);
         foreach (var entity in model.Model.GetEntityTypes())
-            entity.FindProperty("Id")!.ValueGenerated = Microsoft.EntityFrameworkCore.Metadata.ValueGenerated.Never;
+            (entity.FindProperty("Id") ?? throw new InvalidOperationException("Unexpected mapped non-entity: " + entity.Name)).ValueGenerated = Microsoft.EntityFrameworkCore.Metadata.ValueGenerated.Never;
         model.Entity<WorkItem>().HasIndex(x => x.ProjectId);
         model.Entity<Dependency>().HasIndex(x => x.ProjectId);
         model.Entity<WorkflowStatus>().HasIndex(x => x.ProjectId);

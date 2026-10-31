@@ -25,6 +25,9 @@ public sealed class FactoryRun
     public long Revision { get; private set; } = 1;
     public Guid? StartRequestId { get; private set; }
     public string? WorkspacePath { get; private set; }
+    internal Guid? InspectionStageId { get; private set; }
+    internal FactoryRun InspectStage(Guid stageId, string workspace)
+    { var view = (FactoryRun)MemberwiseClone(); view.WorkspacePath = workspace; view.InspectionStageId = stageId; return view; }
     public string? Error { get; private set; }
     public DateTime? StartedAt { get; private set; }
     public DateTime? FinishedAt { get; private set; }

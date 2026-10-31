@@ -1,0 +1,15 @@
+$kind: http-request
+name: Verify rejected adoption preserves policy
+method: GET
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/execution-policy'
+order: 4000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')||!pm.variables.get('parallelRunId')||!pm.variables.get('baseUrl')) throw new Error('Supply isolated fixtureMode, baseUrl, projectId and parallelRunId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Policy still readable',()=>pm.response.to.have.status(200));const d=pm.response.json();
+      pm.test('Rejected policy leaves settings and optimistic revision intact',()=>{pm.expect(d.projectRevision).to.eql(Number(pm.collectionVariables.get('revision')));pm.expect(d.policy).to.deep.eql(JSON.parse(pm.collectionVariables.get('policyJson')))});

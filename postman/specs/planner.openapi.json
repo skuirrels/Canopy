@@ -7225,6 +7225,25 @@
           },
           "budget": {
             "$ref": "#/components/schemas/FactoryBudgetView"
+          },
+          "parallel": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/FactoryParallelRun"
+              }
+            ]
+          },
+          "parallelStages": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/FactoryParallelStage"
+            }
           }
         }
       },
@@ -11769,6 +11788,15 @@
               "null",
               "string"
             ]
+          },
+          "maxConcurrentStages": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -11898,7 +11926,8 @@
           "elapsedTimeLimit",
           "hardTokenCap",
           "hardCurrencyCap",
-          "usageSemantics"
+          "usageSemantics",
+          "maximumConcurrentStages"
         ],
         "type": "object",
         "properties": {
@@ -11916,6 +11945,14 @@
           },
           "usageSemantics": {
             "type": "string"
+          },
+          "maximumConcurrentStages": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },
@@ -12454,6 +12491,132 @@
           },
           "minimumSamples": {
             "type": "string"
+          }
+        }
+      },
+      "FactoryParallelRun": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string"
+          },
+          "head": {
+            "type": "string"
+          },
+          "indexHash": {
+            "type": "string"
+          },
+          "initial": {
+            "$ref": "#/components/schemas/ParallelTree"
+          },
+          "initialContext": {
+            "$ref": "#/components/schemas/VerificationContext"
+          },
+          "final": {
+            "$ref": "#/components/schemas/ParallelTree"
+          },
+          "finalContext": {
+            "$ref": "#/components/schemas/VerificationContext"
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "FactoryParallelStage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "workspacePath": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "input": {
+            "$ref": "#/components/schemas/ParallelTree"
+          },
+          "output": {
+            "$ref": "#/components/schemas/ParallelTree"
+          },
+          "checkpoint": {
+            "$ref": "#/components/schemas/VerificationContext"
+          },
+          "stepCheckpoints": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ParallelStepCheckpoint"
+            }
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ParallelStepCheckpoint": {
+        "required": [
+          "stepRunId",
+          "context",
+          "indexHash",
+          "files"
+        ],
+        "type": "object",
+        "properties": {
+          "stepRunId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "context": {
+            "$ref": "#/components/schemas/VerificationContext"
+          },
+          "indexHash": {
+            "type": "string"
+          },
+          "files": {
+            "$ref": "#/components/schemas/ParallelTree"
+          }
+        }
+      },
+      "ParallelTree": {
+        "required": [
+          "tree",
+          "modes"
+        ],
+        "type": "object",
+        "properties": {
+          "tree": {
+            "type": "string"
+          },
+          "modes": {
+            "type": "object",
+            "additionalProperties": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
           }
         }
       }

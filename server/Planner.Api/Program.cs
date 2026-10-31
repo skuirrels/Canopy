@@ -29,7 +29,11 @@ var factoryTemplatePath = builder.Configuration["Factory:TemplatesPath"] ?? thro
 var factoryTemplates = FactoryTemplateLoader.Load(Path.GetFullPath(factoryTemplatePath, builder.Environment.ContentRootPath));
 builder.Services.AddSingleton<IReadOnlyList<FactoryTemplate>>(factoryTemplates);
 builder.Services.AddScoped<FactoryService>();
+var parallelOptions = builder.Configuration.GetSection("Factory:Parallel").Get<FactoryParallelOptions>() ?? throw new InvalidOperationException("Configure Factory:Parallel.");
+parallelOptions.Validate(); builder.Services.AddSingleton(parallelOptions);
 builder.Services.AddSingleton<IFactoryEnvironment, LocalFactoryEnvironment>();
+builder.Services.AddSingleton<IFactoryParallelWorkspace, LocalFactoryParallelWorkspace>();
+builder.Services.AddSingleton<LocalFactoryStepExecutor>();
 builder.Services.AddScoped<FactoryRunService>();
 builder.Services.AddSingleton<FactoryExecutionPolicyService>();
 builder.Services.AddHostedService<LocalFactoryPolicyMonitor>();
@@ -66,6 +70,7 @@ builder.Services.AddSingleton<IAgentEnvironment>(services => services.GetRequire
 builder.Services.AddScoped<AgentService>();
 builder.Services.AddHostedService<LocalAgentRunner>();
 builder.Services.AddHostedService<LocalFactoryRunner>();
+builder.Services.AddHostedService<LocalParallelFactoryRunner>();
 builder.Services.AddHostedService<LocalRepairCoordinator>();
 builder.Services.AddHostedService<LocalDeliveryCoordinator>();
 var app = builder.Build();

@@ -8,20 +8,20 @@ import { Dialog } from '../ui/dialog';
 export function FactoryExecutionPolicy({ projectId, onClose, onSaved }: { projectId: string; onClose: () => void; onSaved: () => void }) {
  const [detail, setDetail] = useState<ExecutionPolicyDetail | null>(null), [error, setError] = useState(''), [busy, setBusy] = useState(false);
  const [enabled, setEnabled] = useState(false), [unmetered, setUnmetered] = useState(false), [routes, setRoutes] = useState<ModelRoute[]>([]);
- const [limits, setLimits] = useState({ agents: '', commands: '', seconds: '', tokens: '', cost: '', currency: '' });
+ const [limits, setLimits] = useState({ agents: '', commands: '', seconds: '', tokens: '', cost: '', currency: '', parallel: '' });
  useEffect(() => {
   const controller = new AbortController();
   void factoryRequest<ExecutionPolicyDetail>(`/projects/${projectId}/execution-policy`, 'GET', undefined, controller.signal).then(value => {
    if (controller.signal.aborted) return;
    setDetail(value); const p = value.policy;
-   if (p) { setEnabled(p.enabled); setUnmetered(p.allowUnmeteredCost); setRoutes(p.routes); setLimits({ agents: String(p.maxAgentInvocations), commands: String(p.maxCommandInvocations), seconds: String(p.maxElapsedSeconds), tokens: p.maxTokens === null ? '' : String(p.maxTokens), cost: p.maxCost === null ? '' : String(p.maxCost), currency: p.currency ?? '' }); }
+   if (p) { setEnabled(p.enabled); setUnmetered(p.allowUnmeteredCost); setRoutes(p.routes); setLimits({ agents: String(p.maxAgentInvocations), commands: String(p.maxCommandInvocations), seconds: String(p.maxElapsedSeconds), tokens: p.maxTokens === null ? '' : String(p.maxTokens), cost: p.maxCost === null ? '' : String(p.maxCost), currency: p.currency ?? '', parallel: p.maxConcurrentStages == null ? '' : String(p.maxConcurrentStages) }); }
   }).catch(cause => { if (!controller.signal.aborted) setError((cause as Error).message); });
   return () => controller.abort();
  }, [projectId]);
  async function save(event: React.FormEvent) {
   event.preventDefault(); if (!detail) return; setBusy(true); setError('');
   try {
-   await factoryRequest(`/projects/${projectId}/execution-policy`, 'PUT', { expectedRevision: detail.projectRevision, policy: { enabled, routes, maxAgentInvocations: Number(limits.agents), maxCommandInvocations: Number(limits.commands), maxElapsedSeconds: Number(limits.seconds), allowUnmeteredCost: unmetered, maxTokens: limits.tokens === '' ? null : Number(limits.tokens), maxCost: limits.cost === '' ? null : Number(limits.cost), currency: limits.currency || null } });
+   await factoryRequest(`/projects/${projectId}/execution-policy`, 'PUT', { expectedRevision: detail.projectRevision, policy: { enabled, routes, maxAgentInvocations: Number(limits.agents), maxCommandInvocations: Number(limits.commands), maxElapsedSeconds: Number(limits.seconds), allowUnmeteredCost: unmetered, maxTokens: limits.tokens === '' ? null : Number(limits.tokens), maxCost: limits.cost === '' ? null : Number(limits.cost), currency: limits.currency || null, maxConcurrentStages: limits.parallel === '' ? null : Number(limits.parallel) } });
    onSaved(); onClose();
   } catch (cause) { setError((cause as Error).message); } finally { setBusy(false); }
  }
@@ -42,6 +42,8 @@ export function FactoryExecutionPolicy({ projectId, onClose, onSaved }: { projec
    {!detail.capabilities.elapsedTimeLimit && <p role="alert" className="factory-error">This backend cannot enforce owned-process elapsed limits on its current operating system. Enabled policy blocks preparation.</p>}
    <h3>Per-work-order limits</h3><p className="factory-help">Invocations are reserved before dispatch. Elapsed time starts with execution and includes manual approval waits. Repair attempts also retain their existing loop limits.</p>
    <div className="factory-form-row factory-policy-limits">{(['agents', 'commands', 'seconds'] as const).map(key => <label key={key}>{key === 'agents' ? 'Maximum agent invocations' : key === 'commands' ? 'Maximum command invocations' : 'Maximum elapsed seconds'}<input required type="number" min={key === 'seconds' ? 1 : 0} max={2147483647} step={1} value={limits[key]} onChange={e => setLimits({ ...limits, [key]: e.target.value })}/></label>)}</div>
+   <h3>Stage concurrency</h3><label>Maximum concurrent stages<input type="number" min={1} max={detail.capabilities.maximumConcurrentStages} step={1} value={limits.parallel} onChange={e => setLimits({ ...limits, parallel: e.target.value })} placeholder="Serial execution"/></label>
+   <p className="factory-help">An empty field keeps serial execution. Values above one opt into isolated stage worktrees and dependency-only Git joins, up to this backend's capacity of {detail.capabilities.maximumConcurrentStages}. Conflicts stop for review. The final worktree keeps the original index; branch commits and step checkpoints remain inspectable. Approval waits are stage-local. Saving still executes nothing.</p>
    <label className="factory-policy-checkbox"><input type="checkbox" checked={unmetered} onChange={e => setUnmetered(e.target.checked)}/>I permit model execution without a hard token or currency cap</label>
    <p className="factory-help">{detail.capabilities.usageSemantics}</p>
    <details><summary>Requested token or currency cap · unsupported by these CLI runners</summary><p className="factory-help">Setting either cap blocks execution. Provider completion reports arrive after use and cannot enforce a spending ceiling.</p><div className="factory-form-row"><label>Hard token cap<input type="number" min={0} max={Number.MAX_SAFE_INTEGER} step={1} value={limits.tokens} onChange={e => setLimits({ ...limits, tokens: e.target.value })}/></label><label>Hard currency cap<input type="number" min={0} step="any" value={limits.cost} onChange={e => setLimits({ ...limits, cost: e.target.value })}/></label><label>Currency<input required={limits.cost !== ''} value={limits.currency} onChange={e => setLimits({ ...limits, currency: e.target.value })}/></label></div></details>

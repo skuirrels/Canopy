@@ -1,0 +1,22 @@
+$kind: http-request
+name: Reject invalid concurrency
+method: PUT
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/execution-policy'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"expectedRevision": {{revision}}, "policy": {{invalidPolicy}}}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')||!pm.variables.get('parallelRunId')||!pm.variables.get('baseUrl')) throw new Error('Supply isolated fixtureMode, baseUrl, projectId and parallelRunId.');
+      const p=JSON.parse(pm.collectionVariables.get('policyJson'));p.maxConcurrentStages=0;pm.variables.set('invalidPolicy',JSON.stringify(p));
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Zero concurrency is rejected',()=>pm.response.to.have.status(400));

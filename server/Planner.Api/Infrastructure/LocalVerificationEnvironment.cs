@@ -77,7 +77,7 @@ public sealed class LocalVerificationEnvironment( IMarkdownFiles markdown, Agent
     internal string Workspace(FactoryRun run)
     {
         if (run.WorkspacePath is null || !Directory.Exists(run.WorkspacePath)) throw new RuleException("The retained verification worktree is unavailable.");
-        var expected = Path.GetFullPath(Path.Combine(options.WorkspaceRoot, run.Id.ToString()));
+        var expected = Path.GetFullPath(run.InspectionStageId is { } stageId ? Path.Combine(options.WorkspaceRoot, run.Id + ".stages", stageId.ToString()) : Path.Combine(options.WorkspaceRoot, run.Id.ToString()));
         if (Path.GetFullPath(run.WorkspacePath) != expected) throw new RuleException("The worktree is outside this deployment's configured run directory.");
         RejectLinks(expected);
         return expected;
