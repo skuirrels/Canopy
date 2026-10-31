@@ -19,6 +19,7 @@ builder.Services.AddDbContextFactory<PlannerDb>(options => options.UseDuckDB($"D
 builder.Services.AddSingleton<IWorkspaceStore, DuckDbWorkspaceStore>();
 builder.Services.AddSingleton<IReadOnlyList<WorkflowDefault>>(builder.Configuration.GetSection("WorkflowDefaults").Get<List<WorkflowDefault>>() ?? []);
 builder.Services.AddScoped<PlannerService>();
+builder.Services.AddScoped<PlanImportService>();
 builder.Services.AddSingleton<IMarkdownFiles, LocalMarkdownFiles>();
 var skillDiscovery = builder.Configuration.GetSection("Factory:SkillDiscovery").Get<FactorySkillDiscoveryOptions>() ?? throw new InvalidOperationException("Configure Factory:SkillDiscovery.");
 skillDiscovery.Validate(); builder.Services.AddSingleton(skillDiscovery);
@@ -111,6 +112,10 @@ app.MapPost("/api/projects", (CreateProject input, PlannerService service, Cance
 app.MapPatch("/api/projects/{id:guid}", (Guid id, EditProject input, PlannerService service, CancellationToken ct) => service.UpdateProject(id, input, ct));
 app.MapDelete("/api/projects/{id:guid}", (Guid id, long expectedRevision, PlannerService service, CancellationToken ct) => service.DeleteProject(id, expectedRevision, ct));
 app.MapPost("/api/projects/{id:guid}/items", (Guid id, CreateItem input, PlannerService service, CancellationToken ct) => service.AddItem(id, input, ct));
+app.MapPost("/api/projects/{id:guid}/plan-imports", (Guid id, ImportPlan input, PlanImportService service, CancellationToken ct) => service.Import(id, input, ct))
+    .WithSummary("Import a reviewed plan draft")
+    .WithDescription("Atomically creates components, tasks, acceptance criteria and dependencies. Source and item keys identify previous imports, which are preserved. Explicit existingItemId adopts a task in this project without editing it. Unknown references, hierarchy/dependency cycles and stale revisions reject the entire import.")
+    .Produces<WorkspaceData>().ProducesProblem(400).ProducesProblem(404).ProducesProblem(409);
 app.MapPatch("/api/items/{id:guid}", (Guid id, EditItem input, PlannerService service, CancellationToken ct) => service.UpdateItem(id, input, ct));
 app.MapPost("/api/items/{id:guid}/move", (Guid id, MoveItem input, PlannerService service, CancellationToken ct) => service.Move(id, input, ct));
 app.MapDelete("/api/items/{id:guid}", (Guid id, long expectedRevision, PlannerService service, CancellationToken ct) => service.DeleteItem(id, expectedRevision, ct));

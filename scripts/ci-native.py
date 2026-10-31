@@ -90,7 +90,7 @@ if __name__ == '__main__':
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.GeminiMigrationRegression')
         workspace_regression()
     core = (
-        'spec-file', 'agent', 'factory', 'factory-run', 'factory-execution',
+        'plan-import', 'spec-file', 'agent', 'factory', 'factory-run', 'factory-execution',
         'factory-quality', 'factory-review', 'factory-repair',
         'factory-skills', 'factory-routing',
     )

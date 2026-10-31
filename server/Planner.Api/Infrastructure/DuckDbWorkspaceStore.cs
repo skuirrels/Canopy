@@ -19,6 +19,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             await using var db = await factory.CreateDbContextAsync(ct);
             await using var transaction = await db.Database.BeginTransactionAsync(ct);
             var data = await Load(db, ct);
+            var planImports = data.PlanImports.ToList();
             var deployments = data.Deployments.ToList(); var deploymentOperations = data.DeploymentOperations.ToList();
             var setups = data.FactoryProjectSetups.ToList();
             var projects = data.Projects.ToList(); var items = data.Items.ToList(); var statuses = data.Statuses.ToList(); var dependencies = data.Dependencies.ToList(); var people = data.People.ToList();
@@ -39,6 +40,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             var specFiles = data.SpecFiles.ToList();
             var pipelines = data.FactoryPipelines.ToList(); var versions = data.PipelineVersions.ToList(); var taskFactory = data.TaskFactoryConfigurations.ToList();
             change(data);
+            Sync(db, planImports, data.PlanImports);
             Sync(db, setups, data.FactoryProjectSetups);
             Sync(db, deployments, data.Deployments); Sync(db, deploymentOperations, data.DeploymentOperations);
             Sync(db, projects, data.Projects); Sync(db, items, data.Items); Sync(db, statuses, data.Statuses); Sync(db, dependencies, data.Dependencies); Sync(db, people, data.People);
@@ -71,6 +73,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
     { db.RemoveRange(before.Except(after)); db.AddRange(after.Except(before)); }
     private static async Task<WorkspaceData> Load(PlannerDb db, CancellationToken ct) => new()
     {
+        PlanImports = await db.PlanImports.ToListAsync(ct),
         FactoryProjectSetups = await db.FactoryProjectSetups.ToListAsync(ct),
         Deployments = await db.Deployments.ToListAsync(ct), DeploymentOperations = await db.DeploymentOperations.ToListAsync(ct),
         CalibrationTriggers = await db.CalibrationTriggers.OrderBy(x => x.CreatedAt).ToListAsync(ct),

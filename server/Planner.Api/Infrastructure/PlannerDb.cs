@@ -4,6 +4,7 @@ namespace Planner.Api.Infrastructure;
 
 public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(options)
 {
+    public DbSet<PlanImportEntry> PlanImports => Set<PlanImportEntry>();
     public DbSet<FactoryProjectSetup> FactoryProjectSetups => Set<FactoryProjectSetup>();
     public DbSet<CalibrationTriggerReceipt> CalibrationTriggers => Set<CalibrationTriggerReceipt>();
     public DbSet<ProjectCalibrationPolicy> CalibrationPolicies => Set<ProjectCalibrationPolicy>();
@@ -51,6 +52,8 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<TaskFactoryConfiguration> TaskFactoryConfigurations => Set<TaskFactoryConfiguration>();
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.Entity<PlanImportEntry>().HasKey(x => x.Id);
+        model.Entity<PlanImportEntry>().HasIndex(x => new { x.ProjectId, x.Source, x.Key }).IsUnique();
         model.Entity<FactoryProjectSetup>().HasKey(x => x.Id);
         model.Ignore<CalibrationPolicy>(); model.Ignore<CalibrationCapture>(); model.Ignore<CalibrationSkill>(); model.Ignore<CalibrationWorkspaceInput>(); model.Ignore<CalibrationEdit>(); model.Ignore<CalibrationWrite>(); model.Ignore<CalibrationAction>();
         model.Entity<CalibrationTriggerReceipt>().HasKey(x => x.Id); model.Entity<CalibrationTriggerReceipt>().HasIndex(x => new { x.DeliveryId, x.PolicyHash, x.ScopeHash }).IsUnique();

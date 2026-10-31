@@ -1515,6 +1515,36 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("PipelineVersions");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.PlanImportEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("SourceHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId", "Source", "Key")
+                        .IsUnique();
+
+                    b.ToTable("PlanImports");
+                });
 
             modelBuilder.Entity("Planner.Api.Domain.Project", b =>
                 {
