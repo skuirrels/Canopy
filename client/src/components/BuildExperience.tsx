@@ -1,3 +1,4 @@
+import { agentNames } from '../lib/agents';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Activity, ArrowLeft, ArrowRight, Expand, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 import type { AgentRun } from '../lib/agents';
@@ -20,7 +21,7 @@ function BuildCanvas({ run, presentation }: { run: AgentRun; presentation: Build
  const [supported, setSupported] = useState(true);
  useEffect(() => {
   if (!canvas.current) return;
-  scene.current = createBuildScene(canvas.current, presentation, run.provider === 'codex' ? 'Codex' : 'Claude');
+  scene.current = createBuildScene(canvas.current, presentation, agentNames[run.provider]);
   setSupported(!!scene.current);
   return () => { scene.current?.dispose(); scene.current = null; };
  }, [run.id, run.provider]);
@@ -109,12 +110,12 @@ export const BuildExperience = forwardRef<BuildExperienceHandle, { run?: AgentRu
 
  return <>
   {enabled && run && presentation && <div className="build-experience-preview" data-run-state={run.state}>
-   <Activity size={24}/><div><strong>{run.provider === 'codex' ? 'Codex' : 'Claude'} · {presentation.label}</strong><span>{run.title}</span></div>
+   <Activity size={24}/><div><strong>{agentNames[run.provider]} · {presentation.label}</strong><span>{run.title}</span></div>
    <Button size="sm" variant="secondary" onClick={watch}>View build</Button>
   </div>}
-  <Dialog open={enabled && open && !!run} onOpenChange={value => { if (!value) close(); }} title={`${run?.provider === 'claude' ? 'Claude' : 'Codex'} build`} description={run?.title} className="agent-build-dialog">
+  <Dialog open={enabled && open && !!run} onOpenChange={value => { if (!value) close(); }} title={`${run ? agentNames[run.provider] : 'Agent'} build`} description={run?.title} className="agent-build-dialog">
    {run && presentation && <div className={`build-chamber ${presentation.attention ? 'build-chamber-attention' : ''}`} data-run-state={run.state}>
-    <header className="build-chamber-header"><span><i/>{run.provider === 'codex' ? 'CODEX' : 'CLAUDE'} / {run.active ? 'BUILD ACTIVITY' : 'RUN RESULT'}</span><button type="button" className="build-sound-button" aria-pressed={soundWanted && audioReady} onClick={toggleSound}>{soundWanted && audioReady ? <Volume2 size={15}/> : <VolumeX size={15}/>} {soundWanted && audioReady ? 'Mute sound' : 'Enable sound'}</button></header>
+    <header className="build-chamber-header"><span><i/>{agentNames[run.provider].toUpperCase()} / {run.active ? 'BUILD ACTIVITY' : 'RUN RESULT'}</span><button type="button" className="build-sound-button" aria-pressed={soundWanted && audioReady} onClick={toggleSound}>{soundWanted && audioReady ? <Volume2 size={15}/> : <VolumeX size={15}/>} {soundWanted && audioReady ? 'Mute sound' : 'Enable sound'}</button></header>
     <BuildCanvas run={run} presentation={presentation}/>
     <div className="build-chamber-activity"><span className="build-activity-marker"/><div><strong>{presentation.label}</strong><p>{presentation.detail}</p></div></div>
     <div className="build-chamber-footer"><span>{run.state === 'succeeded' ? 'Agent finished · review required' : run.active ? 'Driven by the agent’s recorded activity' : 'Run stopped · retained changes remain available'}</span><div><button type="button" onClick={() => changeEnabled(false)}>Turn build effects off</button>{run.active && <Button size="sm" variant="secondary" disabled={stopping || run.state === 'cancelling'} onClick={onStop}>Stop run</Button>}<Button size="sm" variant="secondary" onClick={close}>Run details</Button></div></div>

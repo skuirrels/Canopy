@@ -9,7 +9,7 @@ scripts:
       pm.test('Local agent capabilities are discoverable', () => {
         pm.response.to.have.status(200);
         const value = pm.response.json();
-        pm.expect(value.providers.map(p => p.id)).to.have.members(['codex', 'claude']);
+        pm.expect(value.providers.map(p => p.id)).to.have.members(['codex', 'claude', 'gemini']);
         pm.expect(value.pollIntervalMs).to.be.above(0);
         value.providers.forEach(p => {
           pm.expect(p.available).to.be.a('boolean');

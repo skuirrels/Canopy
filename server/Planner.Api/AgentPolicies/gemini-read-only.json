@@ -1,0 +1,6 @@
+{
+  "toolPermission": "request-review",
+  "permissions": {
+    "deny": ["write_file(*)", "command(*)", "unsandboxed(*)", "mcp(*)", "read_url(*)", "execute_url(*)"]
+  }
+}

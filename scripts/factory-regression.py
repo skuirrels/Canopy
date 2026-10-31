@@ -118,9 +118,9 @@ with tempfile.TemporaryDirectory(prefix='canopy-factory-') as directory:
         second = change(updated, 'publish')
         task = call(task_endpoint)
         check(task['version'] == version and task['updateAvailable'], 'publishing version two advertises an update without adopting it')
-        override = dict(stageId=version['definition']['stages'][0]['id'], stepId=version['definition']['stages'][0]['steps'][0]['id'], instructions='Task-specific writing instructions', provider='codex', model='test-model')
+        override = dict(stageId=version['definition']['stages'][0]['id'], stepId=version['definition']['stages'][0]['steps'][0]['id'], instructions='Task-specific writing instructions', provider='gemini', model='test-model')
         task = call(task_endpoint, 'PUT', dict(expectedRevision=revision(), pipelineVersionId=version['id'], overrides=dict(steps=[override])))
-        check(task['resolvedDefinition']['stages'][0]['steps'][0]['instructions'] == override['instructions'] and task['version'] == version, 'explicit task overrides resolve without changing the version')
+        check(task['resolvedDefinition']['stages'][0]['steps'][0]['instructions'] == override['instructions'] and task['resolvedDefinition']['stages'][0]['steps'][0]['provider'] == 'gemini' and task['version'] == version, 'explicit task overrides resolve without changing the version')
         for steps in [[dict(override, stepId='missing')], [override, override], [dict(override, provider='unknown')]]:
             call(task_endpoint, 'PUT', dict(expectedRevision=revision(), pipelineVersionId=version['id'], overrides=dict(steps=steps)), 400)
         check(call(task_endpoint) == task, 'invalid override references, duplicates and providers roll back atomically')
