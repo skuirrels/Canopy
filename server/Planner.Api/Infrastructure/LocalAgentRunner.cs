@@ -22,6 +22,7 @@ public sealed class AgentOptions
     public int GitTimeoutSeconds { get; set; }
     public Dictionary<string, List<string>> EffortLevels { get; set; } = [];
     public Dictionary<string, List<string>> ConfiguredModels { get; set; } = [];
+    public Dictionary<string, Dictionary<string, string>> ConfiguredModelNames { get; set; } = [];
     public int ModelCatalogueTimeoutSeconds { get; set; }
     public int ModelCatalogueCacheMinutes { get; set; }
     public string FolderPickerExecutable { get; set; } = "";
@@ -35,6 +36,8 @@ public sealed class AgentOptions
             throw new InvalidOperationException("Configure the supported effort levels for Codex, Claude and Gemini (Antigravity).");
         if (ModelCatalogueTimeoutSeconds < 1 || ModelCatalogueCacheMinutes < 0 || ConfiguredModels.Any(entry => entry.Key is not ("codex" or "claude" or "gemini") || entry.Value.Any(string.IsNullOrWhiteSpace) || entry.Value.Count != entry.Value.Distinct().Count()))
             throw new InvalidOperationException("Configure the model catalogue timeout, cache duration and distinct configured models for known agents.");
+        if (ConfiguredModelNames.Any(entry => !ConfiguredModels.TryGetValue(entry.Key, out var ids) || entry.Value.Any(name => !ids.Contains(name.Key) || string.IsNullOrWhiteSpace(name.Value))))
+            throw new InvalidOperationException("Configure names only for configured models.");
         if (FolderPickerTimeoutSeconds < 1 || (string.IsNullOrWhiteSpace(FolderPickerExecutable) && FolderPickerArguments.Count > 0))
             throw new InvalidOperationException("Configure the folder picker timeout, and set folder picker arguments only with a folder picker executable.");
     }
@@ -54,7 +57,7 @@ public sealed class LocalAgentEnvironment(AgentOptions options) : IAgentEnvironm
         var configured = options.ConfiguredModels.GetValueOrDefault(provider) ?? [];
         string[]? arguments = provider switch { "codex" => ["debug", "models"], "gemini" => ["models"], _ => null };
         AgentModelCatalogue catalogue;
-        if (arguments is null) catalogue = new(provider, configured.Count > 0 ? "configuration" : "none", configured.Select(id => new AgentModel(id, id)).ToList(), null);
+        if (arguments is null) catalogue = new(provider, configured.Count > 0 ? "configuration" : "none", configured.Select(id => new AgentModel(id, options.ConfiguredModelNames.GetValueOrDefault(provider)?.GetValueOrDefault(id) ?? id)).ToList(), null);
         else if (Resolve(executable) is not { } path) catalogue = new(provider, "none", [], "The agent executable is unavailable.");
         else
         {
@@ -199,7 +202,7 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
             var code = await AgentProcess.Run(environment.Executable(run.Provider), workspace, arguments, input,
                 async line =>
                 {
-                    string? session = null; var progress = gemini is null ? line : line + "\n"; AgentUsageObservation? usage = null;
+                    string? session = null, model = null; var progress = gemini is null ? line : line + "\n"; AgentUsageObservation? usage = null;
                     try
                     {
                         using var document = JsonDocument.Parse(line); var root = document.RootElement;
@@ -214,6 +217,8 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
                             if (root.TryGetProperty("session_id", out var sessionValue)) session = sessionValue.GetString();
                             var type = root.TryGetProperty("type", out var typeValue) ? typeValue.GetString() : "event";
                             progress = type + "\n";
+                            // Claude names the resolved model, not the requested alias, when its session starts.
+                            if (type == "system" && root.TryGetProperty("model", out var reported) && reported.ValueKind == JsonValueKind.String) model = reported.GetString();
                             if (root.TryGetProperty("item", out var item))
                             {
                                 if (item.TryGetProperty("text", out var text)) { progress = text.GetString() ?? ""; if (item.TryGetProperty("type", out var itemType) && itemType.GetString() == "agent_message") result = progress; }
@@ -234,7 +239,7 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
                         if (gemini is not null) session = gemini.SessionId;
                     }
                     catch (Exception error) when (error is JsonException or InvalidOperationException) { /* Preserve unrecognized protocol diagnostics. */ }
-                    await store.WriteAsync(data => { var current = AgentService.Find(data, run.Id); current.ObserveUsage(usage, options.MaxUsageEvents, options.MaxOutputCharacters); if (session is not null) current.RecordSession(session); current.Progress(progress + (gemini is null ? "\n" : ""), options.MaxOutputCharacters); }, CancellationToken.None);
+                    await store.WriteAsync(data => { var current = AgentService.Find(data, run.Id); current.ObserveUsage(usage, options.MaxUsageEvents, options.MaxOutputCharacters); current.ObserveModel(model); if (session is not null) current.RecordSession(session); current.Progress(progress + (gemini is null ? "\n" : ""), options.MaxOutputCharacters); }, CancellationToken.None);
                 },
                 line => Append(run.Id, line), ct, agentClient: true);
             // Calibration owns a complete file audit and exact permitted-target

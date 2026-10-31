@@ -5946,6 +5946,13 @@
               "string"
             ]
           },
+          "observedModel": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Exact model the agent reported using, which resolves aliases such as Claude's opus. Null until the agent reports it."
+          },
           "projectInstructions": {
             "type": "string"
           },
@@ -14211,6 +14218,13 @@
           },
           "name": {
             "type": "string"
+          },
+          "lastRan": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Exact model the latest run with this choice reported using, when it differs from the ID."
           }
         }
       },
@@ -14240,6 +14254,13 @@
               "null",
               "string"
             ]
+          },
+          "defaultLastRan": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Exact model the latest run using the agent default reported using."
           }
         }
       },
