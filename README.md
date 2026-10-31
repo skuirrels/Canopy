@@ -2,6 +2,9 @@
 
 A single-user project planner with a draggable Kanban board, an interactive mind map, a Gantt timeline, and a horizontal Components view over the same persistent tasks. Built for personal validation; authentication and team membership are phase 2.
 
+For the delivered Software Factory features and step-by-step instructions with
+screenshots, start with the [Phase 1 quick start](docs/PHASE1-QUICKSTART.md).
+
 ## Run
 
 Clone the repository and enter the checkout:

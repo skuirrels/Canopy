@@ -4,6 +4,10 @@ Implemented as an opt-in extension of verified delivery. No project policy or
 canonical edit roots are enabled by default. See the [validation record](FACTORY-CALIBRATION-VALIDATION.md)
 for process fixtures, browser checks and the limits of that evidence.
 
+The [Canopy factory skill pack](FACTORY-CANOPY-SKILLS.md) supplies a self-contained
+calibrator plus QA/review targets. Its local registration preserves manual start
+and adoption and restricts edit roots to those two target folders.
+
 ## Source and existing owners
 
 The selected reference is Super Board's [post-run calibration contract](https://github.com/EricTechPro/super-board/blob/d0b7d5a6850614ca809477c1af43d5d7da408726/skills/super-board/references/calibration.md).
