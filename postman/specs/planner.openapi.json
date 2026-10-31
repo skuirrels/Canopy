@@ -719,12 +719,42 @@
         "tags": [
           "Planner.Api"
         ],
-        "description": "Reads a local repository's current branch and local branches (most recently committed first, up to 200) so Base Git ref can be pre-filled and suggested. The path travels in the body to keep it out of URLs. isRoot is false when the folder is inside a repository rather than its root. Returns 400 when the folder is missing, relative or not a Git repository.",
+        "description": "Reads a local folder's Git state so Base Git ref can be pre-filled and suggested, and so the browser can offer to initialise Git. isRepository is false for a plain folder; hasCommits is false for a repository with no commits; hasFiles reports entries other than .git. Branches are local, most recently committed first, up to 200. The path travels in the body to keep it out of URLs. Returns 400 when the folder is missing or relative.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ReadRepositoryRefs"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryRefs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/repository-init": {
+      "post": {
+        "tags": [
+          "Planner.Api"
+        ],
+        "description": "Prepares a folder for agent work: runs git init when it is not a repository (using the person's init.defaultBranch), optionally git add --all, then creates the first commit. Does nothing when the repository already has commits. Returns 409 when the folder is inside another repository. Git errors, such as a missing commit identity, are returned as 400.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitialiseRepository"
               }
             }
           },
@@ -14333,7 +14363,10 @@
       "RepositoryRefs": {
         "required": [
           "root",
+          "isRepository",
           "isRoot",
+          "hasCommits",
+          "hasFiles",
           "current",
           "branches"
         ],
@@ -14342,7 +14375,16 @@
           "root": {
             "type": "string"
           },
+          "isRepository": {
+            "type": "boolean"
+          },
           "isRoot": {
+            "type": "boolean"
+          },
+          "hasCommits": {
+            "type": "boolean"
+          },
+          "hasFiles": {
             "type": "boolean"
           },
           "current": {
@@ -14357,6 +14399,23 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "InitialiseRepository": {
+        "required": [
+          "path",
+          "includeFiles"
+        ],
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Absolute local folder."
+          },
+          "includeFiles": {
+            "type": "boolean",
+            "description": "Commit the folder's current files in the first commit. Otherwise the first commit is empty."
           }
         }
       }

@@ -117,6 +117,7 @@ else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'r
         'Database__Path': str(scratch / 'workspace.duckdb'), 'Agents__WorkspaceRoot': str(scratch / 'worktrees'),
         'Agents__CodexExecutable': str(fake), 'Agents__ClaudeExecutable': str(fake), 'Agents__GeminiExecutable': str(fake), 'Agents__PollIntervalMs': '250',
         'Agents__FolderPickerExecutable': str(fake), 'Agents__FolderPickerArguments__0': 'folder-picker',
+        'GIT_AUTHOR_NAME': 'Canopy regression', 'GIT_AUTHOR_EMAIL': 'regression@example.invalid', 'GIT_COMMITTER_NAME': 'Canopy regression', 'GIT_COMMITTER_EMAIL': 'regression@example.invalid',
     }
     log = open(scratch / 'server.log', 'w+')
     process = None
@@ -196,8 +197,31 @@ else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'r
         (repo / 'nested').mkdir()
         check(not call('/api/agents/repository-refs', 'POST', {'path': str(repo / 'nested')})['isRoot'], 'Repository refs flag a folder inside the repository instead of its root')
         (repo / 'nested').rmdir()
-        call('/api/agents/repository-refs', 'POST', {'path': str(scratch)}, 400)
         call('/api/agents/repository-refs', 'POST', {'path': 'relative/path'}, 400)
+        def git_out(folder, *args):
+            return subprocess.run(['git', '-C', str(folder), *args], check=True, capture_output=True, text=True).stdout.strip()
+        fresh = scratch / 'fresh project'
+        fresh.mkdir()
+        plain = call('/api/agents/repository-refs', 'POST', {'path': str(fresh)})
+        check(not plain['isRepository'] and not plain['hasFiles'] and not plain['hasCommits'], 'Repository refs report a plain empty folder instead of failing')
+        ready = call('/api/agents/repository-init', 'POST', {'path': str(fresh), 'includeFiles': False})
+        check(ready['isRepository'] and ready['isRoot'] and ready['hasCommits'] and ready['current'] and ready['branches'] == [ready['current']] and git_out(fresh, 'rev-list', '--count', 'HEAD') == '1', 'Initialising an empty folder creates a repository with one first commit on the default branch')
+        check(call('/api/agents/repository-init', 'POST', {'path': str(fresh), 'includeFiles': True}) == ready and git_out(fresh, 'rev-list', '--count', 'HEAD') == '1', 'Initialising an existing repository with commits changes nothing')
+        existing = scratch / 'existing project'
+        existing.mkdir()
+        (existing / 'notes.md').write_text('# Existing work\n')
+        check(call('/api/agents/repository-refs', 'POST', {'path': str(existing)})['hasFiles'], 'Repository refs report files that a first commit could include')
+        call('/api/agents/repository-init', 'POST', {'path': str(existing), 'includeFiles': True})
+        check(git_out(existing, 'ls-files') == 'notes.md', 'Including files commits the folder contents in the first commit')
+        unborn = scratch / 'unborn project'
+        subprocess.run(['git', 'init', '-q', str(unborn)], check=True)
+        (unborn / 'draft.md').write_text('Draft\n')
+        before = call('/api/agents/repository-refs', 'POST', {'path': str(unborn)})
+        after = call('/api/agents/repository-init', 'POST', {'path': str(unborn), 'includeFiles': False})
+        check(before['isRepository'] and not before['hasCommits'] and after['hasCommits'] and git_out(unborn, 'ls-files') == '', 'A repository without commits gets an empty first commit unless files are included')
+        (repo / 'nested').mkdir()
+        call('/api/agents/repository-init', 'POST', {'path': str(repo / 'nested'), 'includeFiles': False}, 409)
+        (repo / 'nested').rmdir()
         picker_mode = fake.with_name('picker-mode')
         picker_mode.write_text('choose')
         check(call('/api/agents/providers')['folderPicker'] and call('/api/agents/folder-picker', 'POST', {'start': str(repo)}) == {'path': str(repo)}, 'Folder picker starts at the current folder and returns the chosen absolute path')
@@ -208,7 +232,7 @@ else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'r
         call('/api/agents/folder-picker', 'POST', {'start': str(repo)}, headers={'Origin': 'https://example.invalid'}, expected=403)
         start_run(expected=400)
         binding = dict(expectedRevision=revision(), repositoryPath=str(repo), baseRef='HEAD', provider='codex', model=None, instructions='Test fixture instructions')
-        call(f'/api/agents/projects/{pid}/connection', 'PUT', binding | {'repositoryPath': str(scratch)}, 400)
+        check('not a Git repository' in call(f'/api/agents/projects/{pid}/connection', 'PUT', binding | {'repositoryPath': str(scratch)}, 400)['title'], 'Saving a folder that is not a repository explains how to initialise it')
         call(f'/api/agents/projects/{pid}/connection', 'PUT', binding | {'baseRef': 'missing-ref'}, 400)
         call(f'/api/agents/projects/{pid}/connection', 'PUT', binding, headers={'Origin': 'https://example.invalid'}, expected=403)
         connection = call(f'/api/agents/projects/{pid}/connection', 'PUT', binding)
