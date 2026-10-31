@@ -95,6 +95,23 @@ for i in range(5 if 'OVERFLOW_USAGE' in prompt else 2 if 'MIXED_USAGE' in prompt
     def alive(pid):
         try:os.kill(pid,0);return True
         except ProcessLookupError:return False
+    def crash_ownership():
+        global process
+        prepared=prepare(definition([agent(instructions='WAIT_FOR_REVOCATION')]));before=len(rows());dispatch(prepared)
+        until=time.monotonic()+25
+        while len(rows())==before:
+            assert time.monotonic()<until;time.sleep(.1)
+        child_pid=rows()[-1]['pid'];process.kill();process.wait(timeout=25)
+        try:
+            until=time.monotonic()+4
+            while alive(child_pid) and time.monotonic()<until:time.sleep(.1)
+            check(not alive(child_pid),'abrupt backend death closes the owner lease and stops its active child')
+        finally:
+            if alive(child_pid):
+                observed=subprocess.run(['ps','-p',str(child_pid),'-o','command='],capture_output=True,text=True)
+                if str(fake) in observed.stdout:os.kill(child_pid,9)
+        start();saved=read(prepared)
+        check(saved['run']['state']=='interrupted' and saved['budget']['reservedAgentInvocations']==1 and len(rows())==before+1,'crash recovery retains the reservation and never replays the stopped child')
     try:
         start();state=call('/api/projects','POST',dict(name='Routing regression',description='Temporary test input',color='#477fa1'));pid=state['projects'][0]['id']
         state=call(f'/api/projects/{pid}/items','POST',dict(expectedRevision=revision(),title='Explicit routing fixture'));tid=state['items'][0]['id']
@@ -109,6 +126,8 @@ for i in range(5 if 'OVERFLOW_USAGE' in prompt else 2 if 'MIXED_USAGE' in prompt
         call(f'/api/agents/projects/{pid}/connection','PUT',dict(expectedRevision=revision(),repositoryPath=str(repo),baseRef='HEAD',provider='codex',settings={'codex':{'model':'fixture-project-codex','effort':'low'},'claude':{'model':'fixture-project-claude','effort':'medium'}},instructions='Caller settings.'))
         stale=revision();saved=adopt(policy());call(policy_path,'PUT',dict(expectedRevision=stale,policy=policy()),409)
         check(saved['policy']['routes'][0]['model']=='fixture-role-model','policy persists caller model IDs with optimistic concurrency')
+        if '--crash-ownership-only' in sys.argv:
+            crash_ownership();call(f'/api/projects/{pid}?expectedRevision={revision()}','DELETE');print('Crash ownership checks passed.');sys.exit(0)
         steps=[manual(),agent('routed'),agent('explicit',provider='claude'),agent('effort',effort='medium'),agent('missing',instructions='MISSING_USAGE'),agent('invalid',instructions='INVALID_USAGE'),agent('overflow',instructions='OVERFLOW_USAGE'),agent('model',model='fixture-step-model'),agent('task-override'),command('print("Actual command fixture")')]
         prepared=prepare(definition(steps),{'steps':[dict(stageId='stage',stepId='task-override',provider='claude',model='fixture-task-model',effort='low')]});before=call('/api/workspace');capture=prepared['run']['snapshot']['execution'];routes=capture['routes']
         check(not rows() and prepared['budget']['reservedAgentInvocations']==0,'policy, readiness and preparation execute no provider process and reserve no calls')
@@ -188,10 +207,11 @@ for i in range(5 if 'OVERFLOW_USAGE' in prompt else 2 if 'MIXED_USAGE' in prompt
         process.terminate();process.wait(timeout=30);start();interrupted=read(prepared)
         check(interrupted['run']['state']=='interrupted' and interrupted['budget']['reservedAgentInvocations']==reserved and len(rows())==count,'restart retains reservations and never replays waiting or interrupted work')
         dispatch(interrupted,409)
+        adopt(policy());crash_ownership()
         adopt(policy(enabled=False,routes=[]));check(call(policy_path)['policy']['enabled'] is False,'disabled policy preserves existing opt-in behavior')
         state=call(f'/api/projects/{pid}?expectedRevision={revision()}','DELETE');check(not state['projects'],'temporary project and its execution policy can be removed without orphan records')
         print(f'Factory routing regression: {checks} checks passed.')
-    except BaseException:
+    except Exception:
         log.flush();log.seek(0);print(log.read()[-20000:],file=sys.stderr);raise
     finally:
         if process is not None and process.poll() is None:

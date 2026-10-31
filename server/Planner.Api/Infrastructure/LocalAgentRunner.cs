@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO.Pipes;
 using System.Text;
 using System.Text.Json;
 using Planner.Api.Application;
@@ -71,13 +72,14 @@ internal static class AgentProcess
     public static async Task<int> Run(string executable, string directory, IReadOnlyList<string> arguments, string? input,
         Func<string, Task> stdout, Func<string, Task> stderr, CancellationToken ct, IReadOnlyDictionary<string, string>? environment = null, bool agentClient = false)
     {
-        var start = LocalProcessHost.Start(executable, directory, arguments);
+        using var ownerLease = LocalProcessHost.Supported ? new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.Inheritable) : null;
+        var start = LocalProcessHost.Start(executable, directory, arguments, ownerLease?.GetClientHandleAsString());
         start.UseShellExecute = false; start.RedirectStandardInput = true; start.RedirectStandardOutput = true; start.RedirectStandardError = true; start.CreateNoWindow = true;
         if (environment is not null) foreach (var entry in environment) start.Environment[entry.Key] = entry.Value;
         if (agentClient) start.Environment.Remove("CLAUDECODE"); // The worker is a separate CLI client, not a nested Claude tool call.
         using var process = new Process { StartInfo = start };
         ct.ThrowIfCancellationRequested();
-        process.Start();
+        process.Start(); ownerLease?.DisposeLocalCopyOfClientHandle();
         using var registration = ct.Register(() => LocalProcessHost.Stop(process));
         var readOut = Read(process.StandardOutput, stdout, ct); var readError = Read(process.StandardError, stderr, ct);
         try

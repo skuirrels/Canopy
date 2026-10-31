@@ -90,3 +90,8 @@ An enabled policy requires the owned-process lifetime adapter. Other operating
 systems report the elapsed-limit capability as unavailable and block preparation
 and dispatch, including captures moved from another machine. Existing policy-free
 operation retains its previous platform behavior.
+
+The supervisor holds an inherited local owner lease. An abrupt backend death closes
+the lease and terminates the active owned process group; startup then preserves
+interrupted state without replay. Lease plumbing follows the platform's
+[anonymous-pipe contract](https://learn.microsoft.com/en-us/dotnet/standard/io/how-to-use-anonymous-pipes-for-local-interprocess-communication).

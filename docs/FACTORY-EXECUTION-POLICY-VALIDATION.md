@@ -1,6 +1,6 @@
 # Model routing and execution policy validation
 
-Validated on 30 October 2026 using disposable repositories, native DuckDB databases,
+Validated on 30–31 October 2026 using disposable repositories, native DuckDB databases,
 real HTTP calls and owned local processes. Test-only provider executables implement
 CLI JSON protocols; these tests make no model calls and establish no account access,
 model quality, billing completeness or provider-internal spending ceiling.
@@ -10,7 +10,7 @@ model quality, billing completeness or provider-internal spending ceiling.
 - `npm test --prefix client`: 99 tests passed.
 - `npm run build --prefix client`: passed. The existing large-chunk warning remains.
 - `dotnet build Planner.sln`: passed with no warnings/errors.
-- `python3 scripts/factory-routing-regression.py --postman`: 41 checks and the saved
+- `python3 scripts/factory-routing-regression.py --postman`: 43 checks and the saved
   collection's four requests/eight assertions passed. Policy validation, optimistic
   revisions, same-origin controls, role/step/task precedence, provider isolation,
   actual model/effort arguments, unknown/invalid/mixed/truncated usage, stage-local
@@ -80,8 +80,14 @@ was introduced. Hard token/currency caps block preparation; explicit unmetered
 consent is required for agent steps under an enabled policy. Standalone assistance
 and normal planning retain their existing explicit controls.
 
-The shared supervisor change also passed the existing 36 factory execution checks
+The final owner-lease supervisor change also passed the existing 36 factory execution checks
 and 29 standalone-agent checks, preserving permissions, timeouts, cancellation,
 shutdown diff collection and restart recovery. The original required CI run passed
 before the inherited-output correction; merge requires a fresh run on the corrected
 head, including delivery and deployment integration coverage.
+
+The supervisor's abrupt-owner-death case was tested separately as a failure control:
+without an owner lease the active fixture child survived a killed backend. With the
+inherited lease the same child stops, and restart retains its consumed reservation
+and interrupted work order without another provider invocation. Both failing
+controls and corrected receipts are retained with the private validation evidence.
