@@ -51,6 +51,9 @@ print(json.dumps({'type':'item.completed','item':{'type':'agent_message','text':
 ''');fake.chmod(0o755)
     with socket.socket() as sock:sock.bind(('127.0.0.1',0));base=f'http://127.0.0.1:{sock.getsockname()[1]}'
     env=os.environ|{'Database__Path':str(scratch/'workspace.duckdb'),'Agents__WorkspaceRoot':str(scratch/'worktrees'),'Agents__PollIntervalMs':'250','Agents__CodexExecutable':str(fake),'REVIEW_TRACE':str(trace),'DELIVERY_FIXTURE_TOKEN':'isolated-token','Delivery__GitHubHost':'127.0.0.1','Delivery__TokenEnvironmentVariable':'DELIVERY_FIXTURE_TOKEN','Delivery__RequestTimeoutSeconds':'2'}
+    if '--calibration-only' in sys.argv:
+        from factory_calibration_cases import install_fixture
+        calibration_fixture=install_fixture(env,scratch,fake)
     log=(scratch/'server.log').open('w+');process=None
     def call(path,method='GET',body=None,expected=200,headers=None):
         request=urllib.request.Request(base+path,method=method,data=None if body is None else json.dumps(body).encode(),headers={'Content-Type':'application/json'}|(headers or {}))
@@ -353,6 +356,9 @@ if mode=='badExit':sys.exit(7)
         unchecked=copy.deepcopy(definition);unchecked['stages']=[unchecked['stages'][0],unchecked['stages'][2]];unchecked['stages'][1]['dependsOn']=['build'];unchecked['stages'][1]['steps'][0]['consumes']=['changes']
         p=call(f'/api/factory/projects/{pid}/pipelines','POST',dict(expectedRevision=revision(),name='No verification fixture',description='Test only',source='Explicit missing-evidence regression',definition=unchecked),201)
         unchecked_version=call('/api/factory/pipelines/'+p['pipeline']['id']+'/publish','POST',dict(expectedRevision=revision(),expectedDraftRevision=1))['versions'][0]
+        if '--calibration-only' in sys.argv:
+            from factory_calibration_cases import run as calibration_cases
+            calibration_cases(globals(),d);raise SystemExit(0)
         missing=source(without_checks=True);call('/api/factory/runs/'+missing['run']['id']+'/deliveries','POST',capture_body(missing),409);check('verification command' in ' '.join(lib(missing)['local']['errors']),'manual criterion waivers and review approval cannot replace actual current command verification')
         if '--serve-deployments' in sys.argv:verify_deployments(serve=True)
         if '--deployments-only' in sys.argv:verify_deployments()

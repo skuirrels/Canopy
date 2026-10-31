@@ -15,6 +15,7 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
     public Task<WorkspaceData> DeleteProject(Guid id, long revision, CancellationToken ct) => store.WriteAsync(data =>
     {
         var graph = data.Graph(id, revision);
+        if (data.CalibrationTriggers.Any(x => x.ProjectId == id && x.State == "observing") || data.Calibrations.Any(x => x.ProjectId == id && (x.Active || x.State == "needsAttention"))) throw new RuleException("Finish or reconcile active calibration before deleting the project.", 409);
         if ((((data.Deployments.Any(x => x.ProjectId == id && x.Open) || data.Deliveries.Any(x => x.ProjectId == id && x.Open)) || data.RepairLoops.Any(x => x.ProjectId == id && x.Open)) || data.AgentRuns.Any(x => x.ProjectId == id && x.Active) || data.FactoryRuns.Any(x => x.ProjectId == id && x.Active))) throw new RuleException("Stop active runs and repair loops, and close open deployments and deliveries before deleting this project.", 409);
         if (data.IntakeCollections.Any(x => x.ProjectId == id && x.State == "running")) throw new RuleException("Wait for the active intake collection before deleting this project.", 409);
         var intakeIds = data.IntakeCandidates.Where(x => x.ProjectId == id).Select(x => x.Id).ToHashSet();
@@ -27,6 +28,7 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
         data.SpecFiles.RemoveAll(x => x.ProjectId == id);
         data.TaskFactoryConfigurations.RemoveAll(x => x.ProjectId == id);
         data.PipelineVersions.RemoveAll(x => x.ProjectId == id); data.FactoryPipelines.RemoveAll(x => x.ProjectId == id);
+        data.CalibrationPolicies.RemoveAll(x => x.Id == id);
         data.ExecutionPolicies.RemoveAll(x => x.Id == id); data.RepairPolicies.RemoveAll(x => x.Id == id); data.DeliveryPolicies.RemoveAll(x => x.Id == id);
         data.AcceptanceCriteria.RemoveAll(x => x.ProjectId == id);
         data.Dependencies.RemoveAll(x => x.ProjectId == id); data.Items.RemoveAll(x => x.ProjectId == id);
@@ -56,6 +58,7 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
     public Task<WorkspaceData> DeleteItem(Guid id, long revision, CancellationToken ct) => store.WriteAsync(data =>
     {
         var graph = data.ForItem(id, revision); var deleted = graph.Subtree(id);
+        if (deleted.Any(data.CalibrationBusy) || data.CalibrationTriggers.Any(x => deleted.Contains(x.ItemId) && x.State == "observing")) throw new RuleException("Finish or reconcile active calibration before deleting these tasks.", 409);
         if ((((data.Deployments.Any(x => deleted.Contains(x.ItemId) && x.Open) || data.Deliveries.Any(x => deleted.Contains(x.ItemId) && x.Open)) || data.RepairLoops.Any(x => deleted.Contains(x.ItemId) && x.Open)) || data.AgentRuns.Any(x => deleted.Contains(x.ItemId) && x.Active) || data.FactoryRuns.Any(x => deleted.Contains(x.ItemId) && x.Active))) throw new RuleException("Stop active runs and repair loops, and close open deployments and deliveries before deleting these tasks.", 409);
         data.RemoveFactoryRuns(data.FactoryRuns.Where(x => deleted.Contains(x.ItemId)).Select(x => x.Id));
         data.AgentRuns.RemoveAll(x => deleted.Contains(x.ItemId));

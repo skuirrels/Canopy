@@ -29,6 +29,11 @@ var factoryTemplatePath = builder.Configuration["Factory:TemplatesPath"] ?? thro
 var factoryTemplates = FactoryTemplateLoader.Load(Path.GetFullPath(factoryTemplatePath, builder.Environment.ContentRootPath));
 builder.Services.AddSingleton<IReadOnlyList<FactoryTemplate>>(factoryTemplates);
 builder.Services.AddScoped<FactoryService>();
+var calibrationOptions = builder.Configuration.GetSection("Factory:Calibration").Get<FactoryCalibrationOptions>() ?? throw new InvalidOperationException("Configure Factory:Calibration.");
+calibrationOptions.Validate(); builder.Services.AddSingleton(calibrationOptions);
+builder.Services.AddSingleton<ICalibrationWorkspace, LocalCalibrationWorkspace>();
+builder.Services.AddSingleton<FactoryCalibrationService>();
+builder.Services.AddHostedService<LocalCalibrationRunner>();
 var parallelOptions = builder.Configuration.GetSection("Factory:Parallel").Get<FactoryParallelOptions>() ?? throw new InvalidOperationException("Configure Factory:Parallel.");
 parallelOptions.Validate(); builder.Services.AddSingleton(parallelOptions);
 builder.Services.AddSingleton<IFactoryEnvironment, LocalFactoryEnvironment>();

@@ -30,3 +30,15 @@ must never repeat a lost merge mutation.
 No remote Postman workspace push or mock deployment is needed. Inspect the
 simulation NDJSON request events to establish that the actual adapter used this
 provider. Restart the simulation after editing the handler; mocks do not reload.
+
+Merged publication-branch cleanup preserves the actual head OID captured from the
+real Git ref at PR creation. REST and GraphQL continue to identify that commit
+after its branch is deleted. This is PR metadata, not an invented SHA fallback.
+Calibration uses the reviewed commit's check runs after branch cleanup and proves
+current target ancestry again through this same provider simulation.
+
+The local-only `holdCalibrationPr` fixture control pauses the repository observation
+for one actually merged PR and signals a filesystem barrier. The regression edits
+the native automatic policy during that real request, then releases it. This
+proves that stale automatic authority cannot queue a learner after fresh I/O; it
+does not bypass the adapter or inject a delivered/calibration record.

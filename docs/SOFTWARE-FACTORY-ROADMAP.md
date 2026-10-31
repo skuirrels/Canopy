@@ -206,6 +206,23 @@ See [parallel execution](FACTORY-PARALLEL-EXECUTION.md) and
 [validation](FACTORY-PARALLEL-VALIDATION.md). Concurrency is opt-in; ignored build
 outputs and physical artifacts are not distributed as source.
 
+## Post-delivery skill calibration
+
+- [x] Explicit installed calibrator, selected existing skill targets, administrator
+  edit roots and a separate bounded model policy; disabled by default.
+- [x] Fresh verified merge/check/QA/review evidence, bounded selected-delivery
+  packets, duplicate-safe capture and future-delivery automatic observations.
+- [x] Retained isolated repositories, real file/path/permission and diff audits,
+  owned process cancellation, policy revocation and restart without replay.
+- [x] Exact proposal review, guarded host adoption, per-file write journals and
+  explicit reconciliation/acknowledgment of partial or uncertain outcomes.
+
+See [calibration setup and contract](FACTORY-CALIBRATION.md) and
+[validation](FACTORY-CALIBRATION-VALIDATION.md). Path and hash verification does not
+judge semantic lesson quality. No real calibrator or canonical edit scope is
+installed or enabled by this phase; private skills, memory and publication remain
+under separate authority.
+
 ## Operating constraints
 
 Planning, specification assistance and factory execution remain independent
@@ -230,7 +247,7 @@ Named deployment targets, separate revision-bound approvals and explicit recover
 are delivered as an extension of controlled delivery. See
 [deployment environments](FACTORY-DEPLOYMENTS.md) and
 [validation](FACTORY-DEPLOYMENTS-VALIDATION.md). Authentication and team access remain a separate deployment
-track. Automatic skill calibration remains deferred.
+track.
 
 ## Design references
 

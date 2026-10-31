@@ -73,7 +73,7 @@ def workspace_regression():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--suite', choices=('all', 'core', 'providers', 'deployments', 'parallel'), default='all')
+    parser.add_argument('--suite', choices=('all', 'core', 'providers', 'deployments', 'parallel', 'calibration'), default='all')
     suite = parser.parse_args().suite
     if suite in ('all', 'core'):
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.StoreRegression', '--',
@@ -83,6 +83,7 @@ if __name__ == '__main__':
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.ErrorIntakeMigrationRegression')
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.AnalyticsMigrationRegression')
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.ParallelMigrationRegression')
+        run('dotnet', 'run', '--project', ROOT / 'tests/Planner.CalibrationMigrationRegression')
         workspace_regression()
     core = (
         'spec-file', 'agent', 'factory', 'factory-run', 'factory-execution',
@@ -98,11 +99,11 @@ if __name__ == '__main__':
     if suite in ('all', 'providers'):
         run(sys.executable, ROOT / 'scripts/regression-processes-test.py')
         run(sys.executable, ROOT / 'scripts/factory-routing-regression.py', '--postman')
-    selected = core if suite == 'core' else providers if suite == 'providers' else deployments if suite == 'deployments' else ('factory-parallel',) if suite == 'parallel' else core + providers + deployments + ('factory-parallel',)
+    selected = core if suite == 'core' else providers if suite == 'providers' else deployments if suite == 'deployments' else ('factory-parallel',) if suite == 'parallel' else ('factory-calibration',) if suite == 'calibration' else core + providers + deployments + ('factory-parallel', 'factory-calibration')
     for name in selected:
-        run(sys.executable, ROOT / f'scripts/{name}-regression.py', *(['--postman'] if name in ('factory-parallel', 'factory-error-intake', 'factory-analytics-intake') else []))
-    for name in (() if suite == 'core' else ('Factory parallel regression',) if suite == 'parallel' else ('Factory deployment regression',) if suite == 'deployments' else ('Planner API', 'Planner regression', 'Factory regression',
-                 'Factory parallel regression', 'Factory review regression', 'Factory repair regression',
+        run(sys.executable, ROOT / f'scripts/{name}-regression.py', *(['--postman'] if name in ('factory-calibration', 'factory-parallel', 'factory-error-intake', 'factory-analytics-intake') else []))
+    for name in (() if suite == 'core' else ('Factory calibration regression',) if suite == 'calibration' else ('Factory parallel regression',) if suite == 'parallel' else ('Factory deployment regression',) if suite == 'deployments' else ('Planner API', 'Planner regression', 'Factory regression',
+                 'Factory calibration regression', 'Factory parallel regression', 'Factory review regression', 'Factory repair regression',
                  'Factory delivery regression', 'Factory intake regression',
                  'Factory skills regression', 'Factory routing regression', 'Factory error intake regression', 'Factory analytics intake regression')):
         run('postman', 'collection', 'lint', ROOT / 'postman/collections' / name,
