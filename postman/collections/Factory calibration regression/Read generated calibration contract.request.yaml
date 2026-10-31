@@ -1,0 +1,16 @@
+$kind: http-request
+name: Read generated calibration contract
+method: GET
+url: '{{baseUrl}}/openapi/v1.json'
+order: 6000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('baseUrl')) throw new Error('Supply isolated fixtureMode and baseUrl.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Actual OpenAPI generation succeeds',()=>pm.response.to.have.status(200));const d=pm.response.json();
+      pm.test('Calibration contract includes explicit policy and actions',()=>{pm.expect(d.paths).to.have.property('/api/factory/projects/{id}/calibration-policy');pm.expect(d.paths).to.have.property('/api/factory/calibrations/{id}/actions')});
+      pm.test('Canonical journal timestamps have a real schema',()=>pm.expect(d.components.schemas.CalibrationWrite.properties.recordedAt.format).to.eql('date-time'));

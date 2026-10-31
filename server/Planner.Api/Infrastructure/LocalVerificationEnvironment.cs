@@ -106,7 +106,7 @@ public sealed class LocalVerificationEnvironment( IMarkdownFiles markdown, Agent
         }
         return result.ToString();
     }
-    internal Task<string> ReadGit(string directory, string[] arguments, CancellationToken ct) => Git(directory, arguments, ct);
+    internal Task<string> ReadGit(string directory, string[] arguments, CancellationToken ct, bool acceptDiff = false) => Git(directory, arguments, ct, acceptDiff);
     private async Task<string> Git(string directory, string[] arguments, CancellationToken ct, bool acceptDiff = false, int? limit = null)
     {
         // Fingerprints must not use the runner's truncated human-readable Git output.

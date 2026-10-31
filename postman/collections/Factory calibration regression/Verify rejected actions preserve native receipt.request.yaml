@@ -1,0 +1,15 @@
+$kind: http-request
+name: Verify rejected actions preserve native receipt
+method: GET
+url: '{{baseUrl}}/api/factory/calibrations/{{calibrationId}}'
+order: 4000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('baseUrl')||!pm.variables.get('projectId')||!pm.variables.get('calibrationId')) throw new Error('Supply isolated fixtureMode, baseUrl, projectId and calibrationId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Job remains readable',()=>pm.response.to.have.status(200));
+      pm.test('Rejected actions leave all native evidence and revision unchanged',()=>pm.expect(pm.response.json()).to.deep.eql(JSON.parse(pm.collectionVariables.get('savedJob'))));

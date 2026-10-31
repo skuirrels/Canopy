@@ -1,0 +1,15 @@
+$kind: http-request
+name: Read configured calibration capabilities
+method: GET
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/calibration-policy'
+order: 5000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('baseUrl')||!pm.variables.get('projectId')||!pm.variables.get('calibrationId')) throw new Error('Supply isolated fixtureMode, baseUrl, projectId and calibrationId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Policy readable',()=>pm.response.to.have.status(200));const d=pm.response.json();
+      pm.test('Capabilities and configured route are explicit',()=>{pm.expect(d.editableScopeConfigured).to.eql(true);pm.expect(d.processLifetimeSupported).to.eql(true);pm.expect(d.policy.enabled).to.eql(true);pm.expect(d.policy.execution.maxAgentInvocations).to.eql(1);pm.expect(d.policy.execution.maxCommandInvocations).to.eql(0);pm.expect(d.policy.execution.routes[0].model).to.be.a('string').and.not.empty});

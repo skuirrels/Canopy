@@ -1,0 +1,21 @@
+$kind: http-request
+name: Reject unknown calibration action fields
+method: POST
+url: '{{baseUrl}}/api/factory/calibrations/{{calibrationId}}/actions'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"requestId":"{{$guid}}","expectedRevision":0,"action":"apply","unexpected":true}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('baseUrl')||!pm.variables.get('projectId')||!pm.variables.get('calibrationId')) throw new Error('Supply isolated fixtureMode, baseUrl, projectId and calibrationId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Closed action schema rejects unexpected authority',()=>pm.response.to.have.status(400));

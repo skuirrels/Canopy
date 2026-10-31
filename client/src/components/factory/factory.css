@@ -159,6 +159,9 @@
 .factory-task-actions>.text-button{font-size:11px}
 .factory-inherited{font-size:11px;line-height:1.7;margin-top:15px;color:var(--secondary-text)}
 .factory-inherited summary{cursor:pointer}
+.factory-calibration,.factory-calibration-confirmation{min-width:0;overflow-wrap:anywhere}
+.factory-calibration code,.factory-calibration-confirmation code{white-space:normal;overflow-wrap:anywhere}
+.factory-calibration-confirmation li code{display:block;margin:4px 0 12px}
 .factory-inherited pre{background:var(--surface-subtle);border:1px solid var(--line);border-radius:6px;padding:10px;margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:10px;max-height:240px;overflow:auto}
 .inspector .inspector-tabs{gap:16px}
 @container (max-width:740px){.factory-editor-body{grid-template-columns:minmax(0,1fr)280px}.factory-editor-heading{padding:15px}.factory-actions{padding:9px 13px}.factory-canvas-tools>span{display:none}.factory-property-panel{padding:15px}.factory-editor-heading h2{font-size:18px}.factory-version-label{min-width:120px;max-width:170px}}

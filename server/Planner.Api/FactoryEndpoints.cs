@@ -19,6 +19,12 @@ public static class FactoryEndpoints
             http.Response.Headers.CacheControl = "no-store";
             return await next(context);
         });
+        group.MapGet("/projects/{id:guid}/calibration-policy", (Guid id, FactoryCalibrationService service, CancellationToken ct) => service.Policy(id, ct)).WithSummary("Read opt-in calibration settings and actual edit/process capabilities");
+        group.MapPut("/projects/{id:guid}/calibration-policy", (Guid id, EditCalibrationPolicy input, FactoryCalibrationService service, CancellationToken ct) => service.EditPolicy(id, input, ct)).WithSummary("Adopt explicit installed-skill calibration scope and limits without dispatch");
+        group.MapGet("/deliveries/{id:guid}/calibrations", (Guid id, FactoryCalibrationService service, CancellationToken ct) => service.Library(id, ct)).WithSummary("Observe completed-delivery eligibility and retained calibration jobs without execution");
+        group.MapPost("/deliveries/{id:guid}/calibrations", async (Guid id, PrepareCalibration input, FactoryCalibrationService service, CancellationToken ct) => { var value = await service.Prepare(id, input, ct); return Results.Created($"/api/factory/calibrations/{value.Id}", value); }).WithSummary("Capture a bounded verified delivery and installed skill proposal work item without dispatch");
+        group.MapGet("/calibrations/{id:guid}", (Guid id, FactoryCalibrationService service, CancellationToken ct) => service.Read(id, ct));
+        group.MapPost("/calibrations/{id:guid}/actions", (Guid id, ActOnCalibration input, FactoryCalibrationService service, CancellationToken ct) => input.Action == "reconcile" ? service.Reconcile(id, input, ct) : service.Act(id, input, ct)).WithSummary("Explicitly start, stop, adopt, reconcile or acknowledge a captured calibration outcome");
         group.MapGet("/projects/{id:guid}/execution-policy", (Guid id, FactoryExecutionPolicyService service, CancellationToken ct) => service.Read(id, ct))
             .WithSummary("Read model routes, invocation limits and enforcement capabilities").ProducesProblem(403).ProducesProblem(404);
         group.MapPut("/projects/{id:guid}/execution-policy", (Guid id, EditFactoryExecutionPolicy input, FactoryExecutionPolicyService service, CancellationToken ct) => service.Edit(id, input, ct))

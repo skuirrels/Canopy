@@ -24,6 +24,10 @@ public sealed record EditPerson(string Name);
 public sealed record WorkflowDefault(string Name, string Color, bool IsCompleted);
 public sealed class WorkspaceData
 {
+    [JsonIgnore] public List<CalibrationTriggerReceipt> CalibrationTriggers { get; init; } = [];
+    [JsonIgnore] public List<ProjectCalibrationPolicy> CalibrationPolicies { get; init; } = [];
+    [JsonIgnore] public List<FactoryCalibration> Calibrations { get; init; } = [];
+    public bool CalibrationBusy(Guid itemId) => Calibrations.Any(x => x.ItemId == itemId && (x.Active || x.State == "needsAttention"));
     [JsonIgnore] public List<FactoryDeployment> Deployments { get; init; } = [];
     [JsonIgnore] public List<FactoryDeploymentOperation> DeploymentOperations { get; init; } = [];
     [JsonIgnore] public List<FactoryParallelRun> ParallelRuns { get; init; } = [];
@@ -67,6 +71,11 @@ public sealed class WorkspaceData
     public void RemoveFactoryRuns(IEnumerable<Guid> runIds)
     {
         var ids = runIds.ToHashSet();
+        var calibrationIds = Calibrations.Where(x => ids.Contains(x.RunId)).Select(x => x.Id).ToHashSet();
+        AgentRuns.RemoveAll(x => x.CalibrationJobId.HasValue && calibrationIds.Contains(x.CalibrationJobId.Value));
+        Calibrations.RemoveAll(x => ids.Contains(x.RunId));
+        var calibrationDeliveries = Deliveries.Where(x => ids.Contains(x.RunId)).Select(x => x.Id).ToHashSet();
+        CalibrationTriggers.RemoveAll(x => calibrationDeliveries.Contains(x.DeliveryId));
         ParallelStages.RemoveAll(x => ids.Contains(x.RunId)); ParallelRuns.RemoveAll(x => ids.Contains(x.Id));
         var deliveryIds = Deliveries.Where(x => ids.Contains(x.RunId)).Select(x => x.Id).ToHashSet();
         var deploymentIds = Deployments.Where(x => deliveryIds.Contains(x.DeliveryId)).Select(x => x.Id).ToHashSet();

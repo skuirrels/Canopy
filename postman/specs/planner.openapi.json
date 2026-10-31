@@ -5168,6 +5168,210 @@
           }
         }
       }
+    },
+    "/api/factory/projects/{id}/calibration-policy": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Read opt-in calibration settings and actual edit/process capabilities",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalibrationPolicyDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Adopt explicit installed-skill calibration scope and limits without dispatch",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditCalibrationPolicy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalibrationPolicyDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/deliveries/{id}/calibrations": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Observe completed-delivery eligibility and retained calibration jobs without execution",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalibrationLibrary"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Capture a bounded verified delivery and installed skill proposal work item without dispatch",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepareCalibration"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/factory/calibrations/{id}": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactoryCalibration"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/calibrations/{id}/actions": {
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Explicitly start, stop, adopt, reconcile or acknowledge a captured calibration outcome",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActOnCalibration"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactoryCalibration"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5211,6 +5415,32 @@
           "itemId": {
             "type": "string",
             "format": "uuid"
+          },
+          "calibrationJobId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "factoryStepRunId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "factoryPermission": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "executionPermission": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "previousRunId": {
             "type": [
@@ -5296,6 +5526,9 @@
               "string"
             ]
           },
+          "usage": {
+            "$ref": "#/components/schemas/AgentUsage"
+          },
           "output": {
             "type": "string"
           },
@@ -5331,28 +5564,6 @@
           },
           "active": {
             "type": "boolean"
-          },
-          "factoryStepRunId": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "uuid"
-          },
-          "factoryPermission": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "executionPermission": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "usage": {
-            "$ref": "#/components/schemas/AgentUsage"
           }
         }
       },
@@ -12619,6 +12830,635 @@
             }
           }
         }
+      },
+      "ActOnCalibration": {
+        "required": [
+          "requestId",
+          "expectedRevision",
+          "action"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "action": {
+            "type": "string"
+          },
+          "proposalHash": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "CalibrationAction": {
+        "required": [
+          "requestId",
+          "kind",
+          "hash",
+          "note",
+          "recordedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CalibrationCapture": {
+        "required": [
+          "deliveryBinding",
+          "deliveryRevision",
+          "repositoryPath",
+          "remoteName",
+          "targetBranch",
+          "mergeSha",
+          "policy",
+          "calibrator",
+          "targets",
+          "evidenceJson",
+          "evidenceHash",
+          "scopeHash",
+          "verifiedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "deliveryBinding": {
+            "type": "string"
+          },
+          "deliveryRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "repositoryPath": {
+            "type": "string"
+          },
+          "remoteName": {
+            "type": "string"
+          },
+          "targetBranch": {
+            "type": "string"
+          },
+          "mergeSha": {
+            "type": "string"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/CalibrationPolicy"
+          },
+          "calibrator": {
+            "$ref": "#/components/schemas/CalibrationSkill"
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalibrationSkill"
+            }
+          },
+          "evidenceJson": {
+            "type": "string"
+          },
+          "evidenceHash": {
+            "type": "string"
+          },
+          "scopeHash": {
+            "type": "string"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CalibrationEdit": {
+        "required": [
+          "target",
+          "beforeHash",
+          "afterHash",
+          "markdown",
+          "diff"
+        ],
+        "type": "object",
+        "properties": {
+          "target": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "beforeHash": {
+            "type": "string"
+          },
+          "afterHash": {
+            "type": "string"
+          },
+          "markdown": {
+            "type": "string"
+          },
+          "diff": {
+            "type": "string"
+          }
+        }
+      },
+      "CalibrationLibrary": {
+        "required": [
+          "readiness",
+          "jobs",
+          "triggers",
+          "pollIntervalMs"
+        ],
+        "type": "object",
+        "properties": {
+          "readiness": {
+            "$ref": "#/components/schemas/CalibrationReadiness"
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryCalibration"
+            }
+          },
+          "triggers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalibrationTriggerReceipt"
+            }
+          },
+          "pollIntervalMs": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "CalibrationPolicy": {
+        "required": [
+          "enabled",
+          "autoRun",
+          "autoApply",
+          "calibrator",
+          "targets",
+          "execution"
+        ],
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "autoRun": {
+            "type": "boolean"
+          },
+          "autoApply": {
+            "type": "boolean"
+          },
+          "calibrator": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/FactorySkill"
+              }
+            ]
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactorySkill"
+            }
+          },
+          "execution": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/FactoryExecutionPolicy"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "CalibrationPolicyDetail": {
+        "required": [
+          "projectRevision",
+          "policy",
+          "providers",
+          "editableScopeConfigured",
+          "processLifetimeSupported"
+        ],
+        "type": "object",
+        "properties": {
+          "projectRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "policy": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CalibrationPolicy"
+              }
+            ]
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentProvider"
+            }
+          },
+          "editableScopeConfigured": {
+            "type": "boolean"
+          },
+          "processLifetimeSupported": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CalibrationReadiness": {
+        "required": [
+          "deliveryId",
+          "deliveryRevision",
+          "ready",
+          "errors"
+        ],
+        "type": "object",
+        "properties": {
+          "deliveryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deliveryRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CalibrationSkill": {
+        "required": [
+          "reference",
+          "path",
+          "hash",
+          "markdown"
+        ],
+        "type": "object",
+        "properties": {
+          "reference": {
+            "$ref": "#/components/schemas/FactorySkill"
+          },
+          "path": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string"
+          },
+          "markdown": {
+            "type": "string"
+          }
+        }
+      },
+      "CalibrationTriggerReceipt": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deliveryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyHash": {
+            "type": "string"
+          },
+          "scopeHash": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "jobId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finishedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "CalibrationWorkspaceInput": {
+        "required": [
+          "tree",
+          "files"
+        ],
+        "type": "object",
+        "properties": {
+          "tree": {
+            "type": "string"
+          },
+          "files": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CalibrationWrite": {
+        "required": [
+          "target",
+          "state",
+          "actualHash",
+          "error",
+          "recordedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "target": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "state": {
+            "type": "string"
+          },
+          "actualHash": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "EditCalibrationPolicy": {
+        "required": [
+          "expectedRevision",
+          "policy"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/CalibrationPolicy"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FactoryCalibration": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deliveryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestHash": {
+            "type": "string"
+          },
+          "policyHash": {
+            "type": "string"
+          },
+          "revision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "state": {
+            "type": "string"
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "workspacePath": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "input": {
+            "$ref": "#/components/schemas/CalibrationWorkspaceInput"
+          },
+          "agentRunId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "startedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "finishedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "capture": {
+            "$ref": "#/components/schemas/CalibrationCapture"
+          },
+          "edits": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CalibrationEdit"
+            }
+          },
+          "writes": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CalibrationWrite"
+            }
+          },
+          "actions": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CalibrationAction"
+            }
+          },
+          "proposalHash": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PrepareCalibration": {
+        "required": [
+          "requestId",
+          "expectedRevision"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
       }
     }
   },

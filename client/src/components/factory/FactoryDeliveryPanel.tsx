@@ -6,6 +6,7 @@ import type { DeliveryDetail, DeliveryLibrary, DeliveryPolicyDetail } from '../.
 import { useWorkspace } from '../../lib/workspace';
 import { Button } from '../ui/button';
 import { Dialog } from '../ui/dialog';
+import { FactoryCalibrationPanel } from './FactoryCalibrationPanel';
 import { FactoryDeploymentPanel } from './FactoryDeploymentPanel';
 
 type SavedRequest = { path: string; body: object; capture?: boolean };
@@ -56,7 +57,7 @@ export function FactoryDeliveryPanel({ detail, onOpenRun }: { detail: FactoryRun
  {current.mergeErrors.length > 0 && delivery.remote && !delivery.remote.mergeSha && <ul className="factory-help">{current.mergeErrors.map(x => <li key={x}>{x}</li>)}</ul>}
  <p className="factory-help">Refresh reads saved state. Reconcile observes GitHub and configured probes. A lost response or restart never grants permission to repeat a mutation.</p></>}
  <details className="factory-inherited"><summary>Delivery operations · {current.operations.length}</summary>{current.operations.map(op => <article key={op.id}><strong>{actionLabels[op.kind] ?? op.kind} · {op.state}</strong><p>{op.error}</p>{op.approvalNote && <p>{op.approvalNote}</p>}<pre tabIndex={0}>{JSON.stringify(op.result, null, 2)}</pre></article>)}</details><details className="factory-inherited"><summary>Captured policy, QA/review and provider facts</summary><pre tabIndex={0}>{JSON.stringify(delivery, null, 2)}</pre></details></article>}
- {delivery?.remote?.mergeSha && <FactoryDeploymentPanel key={delivery.id} delivery={delivery}/>}
+ {delivery?.remote?.mergeSha && <><FactoryCalibrationPanel key={delivery.id} deliveryId={delivery.id} projectId={detail.run.projectId}/><FactoryDeploymentPanel key={delivery.id} delivery={delivery}/></>}
  {editing && library && <PolicyEditor projectId={detail.run.projectId} value={library.policy} onClose={() => setEditing(false)} onSaved={() => { setEditing(false); void refresh(); void refreshWorkspace().catch(cause => { if (alive.current) setError((cause as Error).message); }); }}/>}
  <Dialog open={!!action} onOpenChange={open => { if (!busy && !open) setAction(null); }} title={actionLabels[action ?? ''] ?? 'Delivery action'} description={action === 'publish' ? 'Create a new remote branch and draft PR with this local account. Existing branch heads will not be overwritten.' : action === 'close' ? 'Close local tracking and retain all receipts. This does not close a remote PR, reverse a merge or undo a pending external request.' : action?.includes('PostMerge') || action === 'postMerge' ? 'Authorize only the administrator-configured post-merge action for this recorded merge. Health, changed instance identity and intact persistence must be observed.' : 'Authorize only this captured head and target base. Required GitHub checks and server-side protection are checked again before merge.'}>
  <p>{delivery?.policy.repository} · {delivery?.capture.branchName} · {delivery?.policy.environment}</p>

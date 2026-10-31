@@ -41,7 +41,7 @@ public sealed class GitHubDeliveryProvider(GitHubApiClient api, DeliveryOptions 
                 if (matching.Count == 1) pull = ParsePull(matching[0], policy, capture.BranchName);
             }
             if (pull is { State: "merged" }) pull = await MergedPull(policy, pull, ct);
-            if (branchSha == capture.HeadSha)
+            if (branchSha == capture.HeadSha || pull is { State: "merged" } && pull.HeadSha == capture.HeadSha)
             {
                 var checkRuns = await Pages(root + "/commits/" + capture.HeadSha + "/check-runs?filter=latest", "check_runs", ct);
                 foreach (var check in checkRuns) runs.Add(new(check.GetProperty("id").GetInt64(), Text(check, "name"), check.GetProperty("app").GetProperty("id").GetInt64(), Sha(check, "head_sha"), Text(check, "status"), Optional(check, "conclusion")));

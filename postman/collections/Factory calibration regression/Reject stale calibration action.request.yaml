@@ -1,0 +1,21 @@
+$kind: http-request
+name: Reject stale calibration action
+method: POST
+url: '{{baseUrl}}/api/factory/calibrations/{{calibrationId}}/actions'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"requestId":"{{$guid}}","expectedRevision":0,"action":"apply","proposalHash":"stale"}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('baseUrl')||!pm.variables.get('projectId')||!pm.variables.get('calibrationId')) throw new Error('Supply isolated fixtureMode, baseUrl, projectId and calibrationId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Stale action is rejected',()=>pm.response.to.have.status(409));

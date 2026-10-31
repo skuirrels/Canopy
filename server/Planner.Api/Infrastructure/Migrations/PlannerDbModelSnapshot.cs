@@ -29,6 +29,9 @@ namespace Planner.Api.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("VARCHAR");
 
+                    b.Property<Guid?>("CalibrationJobId")
+                        .HasColumnType("UUID");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TIMESTAMP");
 
@@ -143,6 +146,52 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("AgentRuns");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.CalibrationTriggerReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<Guid>("DeliveryId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid?>("JobId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("PolicyHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ScopeHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeliveryId", "PolicyHash", "ScopeHash")
+                        .IsUnique();
+
+                    b.ToTable("CalibrationTriggers");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.Dependency", b =>
                 {
                     b.Property<Guid>("Id")
@@ -243,6 +292,90 @@ namespace Planner.Api.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("FactoryArtifacts");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.FactoryCalibration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ActionsJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid?>("AgentRunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("CaptureJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<Guid>("DeliveryId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("EditsJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("InputJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("PolicyHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("UUID");
+
+                    b.Property<long>("Revision")
+                        .HasColumnType("BIGINT");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("UUID");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("WorkspacePath")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("WritesJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique();
+
+                    b.HasIndex("DeliveryId", "PolicyHash")
+                        .IsUnique();
+
+                    b.ToTable("Calibrations");
                 });
 
             modelBuilder.Entity("Planner.Api.Domain.FactoryCriterionVerdict", b =>
@@ -1435,6 +1568,23 @@ namespace Planner.Api.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("AgentConnections");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.ProjectCalibrationPolicy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<DateTime>("ActivatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<string>("PolicyJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CalibrationPolicies");
                 });
 
             modelBuilder.Entity("Planner.Api.Domain.ProjectDeliveryPolicy", b =>

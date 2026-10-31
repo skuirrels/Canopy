@@ -1,0 +1,18 @@
+$kind: http-request
+name: Read canonical adoption receipt
+method: GET
+url: '{{baseUrl}}/api/factory/calibrations/{{calibrationId}}'
+order: 1000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('baseUrl')||!pm.variables.get('projectId')||!pm.variables.get('calibrationId')) throw new Error('Supply isolated fixtureMode, baseUrl, projectId and calibrationId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Native job is readable',()=>pm.response.to.have.status(200));const d=pm.response.json();
+      pm.test('Applied result has actual per-file proof',()=>{pm.expect(d.state).to.eql('applied');pm.expect(d.active).to.eql(false);pm.expect(d.edits).to.have.length(1);pm.expect(d.writes).to.have.length(1);pm.expect(d.writes[0].state).to.eql('applied');pm.expect(d.writes[0].actualHash).to.eql(d.edits[0].afterHash)});
+      pm.test('Captured inputs preserve delivery and installed source identity',()=>{pm.expect(d.capture.mergeSha).to.match(/^[a-f0-9]{40}$/);pm.expect(d.capture.calibrator.reference.id).to.eql('calibrator');pm.expect(d.capture.targets).to.have.length(2);pm.expect(d.capture.evidenceHash).to.be.a('string').and.not.empty;pm.expect(d.input.tree).to.match(/^[a-f0-9]{40}$/)});
+      pm.test('Proposal retains actual diff and canonical before identity',()=>{pm.expect(d.edits[0].diff).to.include('Caller evidence-based lesson');pm.expect(d.edits[0].beforeHash).to.eql(d.capture.targets[0].hash);pm.expect(d.edits[0].afterHash).not.to.eql(d.edits[0].beforeHash)});
+      pm.collectionVariables.set('savedJob',JSON.stringify(d));

@@ -78,6 +78,7 @@ public sealed class FactoryDispatchService(IWorkspaceStore store, IFactoryEnviro
     private static void CheckCurrent(WorkspaceData data, FactoryRun run)
     {
         FactoryExecutionPolicyService.Require(data, run);
+        if (data.CalibrationBusy(run.ItemId)) throw new RuleException("Finish or reconcile active task calibration first.", 409);
         if (!data.Items.Any(x => x.Id == run.ItemId)) throw new RuleException("Task not found.", 404);
         var connection = data.AgentConnections.SingleOrDefault(x => x.ProjectId == run.ProjectId);
         if (connection is null || connection.RepositoryPath != run.Snapshot.Environment.RepositoryPath) throw new RuleException("Connect the project to the captured repository before starting.");

@@ -1,0 +1,8 @@
+import type { FactorySkill } from './factory';
+import type { ExecutionPolicy } from './factory-execution';
+export type CalibrationPolicy = { enabled: boolean; autoRun: boolean; autoApply: boolean; calibrator: FactorySkill | null; targets: FactorySkill[]; execution: ExecutionPolicy | null };
+export type CalibrationPolicyDetail = { projectRevision: number; policy: CalibrationPolicy | null; editableScopeConfigured: boolean; processLifetimeSupported: boolean; providers: { id: string; name: string; available: boolean; effortLevels: string[] }[] };
+export type CalibrationSkill = { reference: FactorySkill; path: string; hash: string; markdown: string };
+export type CalibrationEdit = { target: number; beforeHash: string; afterHash: string; markdown: string; diff: string };
+export type CalibrationJob = { id: string; revision: number; state: string; active: boolean; error: string | null; workspacePath: string | null; agentRunId: string | null; createdAt: string; startedAt: string | null; finishedAt: string | null; proposalHash: string; capture: { deliveryBinding: string; mergeSha: string; evidenceJson: string; evidenceHash: string; verifiedAt: string; policy: CalibrationPolicy; calibrator: CalibrationSkill; targets: CalibrationSkill[] }; edits: CalibrationEdit[]; writes: { target: number; state: string; actualHash: string | null; error: string | null }[] };
+export type CalibrationLibrary = { readiness: { deliveryId: string; deliveryRevision: number; ready: boolean; errors: string[] }; jobs: CalibrationJob[]; triggers: { id: string; state: string; error: string | null; createdAt: string; jobId: string | null }[]; pollIntervalMs: number };

@@ -22,6 +22,8 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             var deployments = data.Deployments.ToList(); var deploymentOperations = data.DeploymentOperations.ToList();
             var projects = data.Projects.ToList(); var items = data.Items.ToList(); var statuses = data.Statuses.ToList(); var dependencies = data.Dependencies.ToList(); var people = data.People.ToList();
             var connections = data.AgentConnections.ToList(); var runs = data.AgentRuns.ToList();
+            var calibrationTriggers = data.CalibrationTriggers.ToList();
+            var calibrationPolicies = data.CalibrationPolicies.ToList(); var calibrations = data.Calibrations.ToList();
             var parallelRuns = data.ParallelRuns.ToList(); var parallelStages = data.ParallelStages.ToList();
             var analyticsReceipts = data.AnalyticsReceipts.ToList(); var analyticsReports = data.AnalyticsReportIdentities.ToList();
             var errorReceipts = data.ErrorFeedReceipts.ToList(); var errorEvents = data.ErrorEventIdentities.ToList();
@@ -39,6 +41,8 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             Sync(db, deployments, data.Deployments); Sync(db, deploymentOperations, data.DeploymentOperations);
             Sync(db, projects, data.Projects); Sync(db, items, data.Items); Sync(db, statuses, data.Statuses); Sync(db, dependencies, data.Dependencies); Sync(db, people, data.People);
             Sync(db, connections, data.AgentConnections); Sync(db, runs, data.AgentRuns);
+            Sync(db, calibrationTriggers, data.CalibrationTriggers);
+            Sync(db, calibrationPolicies, data.CalibrationPolicies); Sync(db, calibrations, data.Calibrations);
             Sync(db, parallelRuns, data.ParallelRuns); Sync(db, parallelStages, data.ParallelStages);
             Sync(db, analyticsReceipts, data.AnalyticsReceipts); Sync(db, analyticsReports, data.AnalyticsReportIdentities);
             Sync(db, errorReceipts, data.ErrorFeedReceipts); Sync(db, errorEvents, data.ErrorEventIdentities);
@@ -66,6 +70,8 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
     private static async Task<WorkspaceData> Load(PlannerDb db, CancellationToken ct) => new()
     {
         Deployments = await db.Deployments.ToListAsync(ct), DeploymentOperations = await db.DeploymentOperations.ToListAsync(ct),
+        CalibrationTriggers = await db.CalibrationTriggers.OrderBy(x => x.CreatedAt).ToListAsync(ct),
+        CalibrationPolicies = await db.CalibrationPolicies.ToListAsync(ct), Calibrations = await db.Calibrations.OrderBy(x => x.CreatedAt).ToListAsync(ct),
         ParallelRuns = await db.ParallelRuns.ToListAsync(ct), ParallelStages = await db.ParallelStages.ToListAsync(ct),
         AnalyticsReceipts = await db.AnalyticsReceipts.ToListAsync(ct), AnalyticsReportIdentities = await db.AnalyticsReportIdentities.ToListAsync(ct),
         ErrorFeedReceipts = await db.ErrorFeedReceipts.ToListAsync(ct), ErrorEventIdentities = await db.ErrorEventIdentities.ToListAsync(ct),

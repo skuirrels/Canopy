@@ -50,9 +50,10 @@ public sealed class AgentRun
     public Guid RequestId { get; private set; }
     public Guid ProjectId { get; private set; }
     public Guid ItemId { get; private set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Guid? CalibrationJobId { get; private set; }
     public Guid? FactoryStepRunId { get; private set; }
     public string? FactoryPermission { get; private set; }
-    public string ExecutionPermission => FactoryPermission ?? (Purpose == "implementation" ? "workspace-write" : "read-only");
+    public string ExecutionPermission => CalibrationJobId.HasValue ? "workspace-write" : FactoryPermission ?? (Purpose == "implementation" ? "workspace-write" : "read-only");
     public Guid? PreviousRunId { get; private set; }
     public string Provider { get; private set; } = "";
     public string Purpose { get; private set; } = "";
@@ -97,7 +98,7 @@ public sealed class AgentRun
         RequireProvider(provider);
         if (requestId == Guid.Empty) throw new RuleException("A unique request ID is required.");
         if (purpose is not ("spec" or "documentation" or "implementation")) throw new RuleException("Choose a specification, documentation or implementation run.");
-        if (previous?.FactoryStepRunId is not null) throw new RuleException("Factory step sessions belong to their work order. Start independent work or prepare a new factory run.", 409);
+        if (previous?.FactoryStepRunId is not null || previous?.CalibrationJobId is not null) throw new RuleException("Factory step sessions belong to their work order. Start independent work or prepare a new factory run.", 409);
         var prompt = Text(instructions, "Run instructions");
         if (purpose == "implementation" && !HasSpec(item.SpecJson)) throw new RuleException("Write a specification before running an implementation.");
         if (purpose != "implementation" && prompt.Length == 0) throw new RuleException("Describe what you want the agent to write.");
@@ -130,6 +131,15 @@ public sealed class AgentRun
             RepositoryPath = snapshot.Environment.RepositoryPath, BaseRef = executionBase ?? snapshot.Environment.BaseCommit, BaseCommit = executionBase ?? snapshot.Environment.BaseCommit,
             WorkspacePath = run.WorkspacePath, Model = step.Model, Effort = step.Effort,
             ProjectInstructions = snapshot.Environment.ProjectInstructions, Instructions = instructions, CreatedAt = DateTime.UtcNow };
+    }
+    public static AgentRun ForCalibration(FactoryCalibration job, string instructions)
+    {
+        var route = job.Capture.Policy.Execution!.Routes.Single(); RequireProvider(route.Provider);
+        if (job.State != "preparing" || job.WorkspacePath is null) throw new RuleException("Calibration workspace is not preparing.");
+        return new() { Id = Guid.NewGuid(), RequestId = Guid.NewGuid(), CalibrationJobId = job.Id, ProjectId = job.ProjectId, ItemId = job.ItemId,
+            Provider = route.Provider, Purpose = "documentation", Title = "Post-delivery skill calibration", SpecJson = "{}", Model = route.Model, Effort = route.Effort,
+            RepositoryPath = job.Capture.RepositoryPath, BaseRef = job.Capture.MergeSha, BaseCommit = job.Capture.MergeSha,
+            WorkspacePath = job.WorkspacePath, Instructions = Text(instructions, "Calibration instructions"), CreatedAt = DateTime.UtcNow };
     }
     internal static bool HasSpec(string json)
     {

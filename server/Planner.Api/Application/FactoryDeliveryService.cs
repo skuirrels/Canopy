@@ -217,6 +217,7 @@ public sealed class FactoryDeliveryService(IWorkspaceStore store, FactoryQuality
     private static DeliveryLocalReadiness Local(WorkspaceData data, FactoryRun run, FactoryQualityDetail q)
     {
         q = FactoryQualityService.Detail(data, run, q.Context, q.ContextError); var errors = new List<string>();
+        if (data.CalibrationBusy(run.ItemId)) errors.Add("Finish or reconcile active task calibration first.");
         if (run.State != "succeeded") errors.Add("Finish a successful factory run before delivery.");
         if (q.Context is null) errors.Add(q.ContextError ?? "Current verification context is unavailable.");
         if (q.SourceChanged) errors.Add("Task specification, criteria or attachment changed; prepare current work.");

@@ -6,6 +6,8 @@ public sealed class StartupRunRecovery(IWorkspaceStore store)
 {
     public Task Recover(CancellationToken ct) => store.WriteAsync(data =>
     {
+        foreach (var receipt in data.CalibrationTriggers.Where(x => x.State == "observing")) receipt.End("interrupted", null, "Backend restarted. Eligibility observation was not replayed.");
+        foreach (var calibration in data.Calibrations.Where(x => x.Active)) calibration.Stop("interrupted", "Backend restarted. Calibration and canonical writes were not replayed; reconcile any file adoption intents.");
         foreach (var operation in data.DeploymentOperations.Where(x => x.Pending))
         {
             operation.End("uncertain", new { interrupted = true }, "Backend restarted. Deployment commands were not replayed.");

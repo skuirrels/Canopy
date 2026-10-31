@@ -35,6 +35,7 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
         if (((data.Deliveries.Any(x => x.ItemId == itemId && x.Open) || data.RepairLoops.Any(x => x.ItemId == itemId && x.Open)) || data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) checks.Add(new("task.busy", "error", "Stop the repair loop or close the delivery, or wait for active execution."));
         if (data.Dependencies.Where(x => x.ItemId == itemId).Any(d => !data.Statuses.Single(s => s.Id == data.Items.Single(i => i.Id == d.DependsOnId).StatusId).IsCompleted))
             checks.Add(new("task.blocked", "error", "Complete prerequisite tasks before preparing pipeline work."));
+        if (data.CalibrationBusy(itemId)) checks.Add(new("task.calibration", "error", "Finish or reconcile active task calibration first."));
         var definition = FactoryRules.Resolve(version.Definition, attachment.Overrides);
         if (definition.Stages.Any(s => s.Steps.Any(step => step.Kind == "agent" && step.Role == "implementation")) && !AgentRun.HasSpec(item.SpecJson))
             checks.Add(new("task.specification", "error", "Write a task specification before preparing implementation work."));
@@ -65,6 +66,7 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
             if (existing is not null) { Replay(data, existing, itemId); return; }
             data.ForItem(itemId, input.ExpectedRevision);
             if (((data.Deliveries.Any(x => x.ItemId == itemId && x.Open) || data.RepairLoops.Any(x => x.ItemId == itemId && x.Open)) || data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) throw new RuleException("Stop the repair loop or close the delivery, or wait for active execution.", 409);
+            if (data.CalibrationBusy(itemId)) throw new RuleException("Finish or reconcile active task calibration first.", 409);
             FactoryExecutionPolicyService.RequireCurrent(data, item.ProjectId, snapshot.Execution);
             data.FactoryRuns.Add(run);
             foreach (var stage in snapshot.Environment.Definition.Stages)

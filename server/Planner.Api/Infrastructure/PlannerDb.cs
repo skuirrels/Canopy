@@ -4,6 +4,9 @@ namespace Planner.Api.Infrastructure;
 
 public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(options)
 {
+    public DbSet<CalibrationTriggerReceipt> CalibrationTriggers => Set<CalibrationTriggerReceipt>();
+    public DbSet<ProjectCalibrationPolicy> CalibrationPolicies => Set<ProjectCalibrationPolicy>();
+    public DbSet<FactoryCalibration> Calibrations => Set<FactoryCalibration>();
     public DbSet<FactoryDeployment> Deployments => Set<FactoryDeployment>();
     public DbSet<FactoryDeploymentOperation> DeploymentOperations => Set<FactoryDeploymentOperation>();
     public DbSet<FactoryParallelRun> ParallelRuns => Set<FactoryParallelRun>();
@@ -47,6 +50,17 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<TaskFactoryConfiguration> TaskFactoryConfigurations => Set<TaskFactoryConfiguration>();
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.Ignore<CalibrationPolicy>(); model.Ignore<CalibrationCapture>(); model.Ignore<CalibrationSkill>(); model.Ignore<CalibrationWorkspaceInput>(); model.Ignore<CalibrationEdit>(); model.Ignore<CalibrationWrite>(); model.Ignore<CalibrationAction>();
+        model.Entity<CalibrationTriggerReceipt>().HasKey(x => x.Id); model.Entity<CalibrationTriggerReceipt>().HasIndex(x => new { x.DeliveryId, x.PolicyHash, x.ScopeHash }).IsUnique();
+        model.Entity<CalibrationTriggerReceipt>().Property(x => x.CreatedAt).HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+        model.Entity<CalibrationTriggerReceipt>().Property(x => x.FinishedAt).HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : (DateTime?)null);
+        model.Entity<ProjectCalibrationPolicy>().HasKey(x => x.Id); model.Entity<ProjectCalibrationPolicy>().Ignore(x => x.Policy);
+        model.Entity<ProjectCalibrationPolicy>().Property(x => x.ActivatedAt).HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+        model.Entity<FactoryCalibration>().HasKey(x => x.Id); model.Entity<FactoryCalibration>().HasIndex(x => x.RequestId).IsUnique(); model.Entity<FactoryCalibration>().HasIndex(x => new { x.DeliveryId, x.PolicyHash }).IsUnique();
+        model.Entity<FactoryCalibration>().Ignore(x => x.Active).Ignore(x => x.Capture).Ignore(x => x.Input).Ignore(x => x.Edits).Ignore(x => x.Writes).Ignore(x => x.Actions).Ignore(x => x.ProposalHash);
+        model.Entity<FactoryCalibration>().Property(x => x.CreatedAt).HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+        model.Entity<FactoryCalibration>().Property(x => x.StartedAt).HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : (DateTime?)null);
+        model.Entity<FactoryCalibration>().Property(x => x.FinishedAt).HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : (DateTime?)null);
         model.Ignore<ParallelTree>(); model.Ignore<ParallelStepCheckpoint>();
         model.Ignore<DeploymentTarget>(); model.Ignore<DeploymentCapture>();
         model.Entity<FactoryDeployment>().HasKey(x => x.Id); model.Entity<FactoryDeployment>().HasIndex(x => x.RequestId).IsUnique(); model.Entity<FactoryDeployment>().HasIndex(x => x.DeliveryId);
