@@ -1,0 +1,20 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/agents/providers/claude/models'
+order: 1600
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Agent model choices are discoverable per provider', () => {
+        pm.response.to.have.status(200);
+        const value = pm.response.json();
+        pm.expect(value.provider).to.equal('claude');
+        pm.expect(value.source).to.be.oneOf(['cli', 'configuration', 'none']);
+        pm.expect(value.models).to.be.an('array');
+        value.models.forEach(m => {
+          pm.expect(m.id).to.be.a('string').that.is.not.empty;
+          pm.expect(m.name).to.be.a('string').that.is.not.empty;
+        });
+        if (value.source === 'none') pm.expect(value.models).to.be.empty;
+      });

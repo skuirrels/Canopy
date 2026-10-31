@@ -5,10 +5,13 @@ namespace Planner.Api.Application;
 public sealed record SaveAgentConnection(long ExpectedRevision, string RepositoryPath, string BaseRef, string Provider, string? Model, string Instructions, Dictionary<string, AgentExecutionSettings>? Settings = null);
 public sealed record StartAgentRun(Guid RequestId, long ExpectedRevision, string Provider, string Purpose, string Instructions, Guid? PreviousRunId, string? Model = null, string? Effort = null);
 public sealed record AgentProvider(string Id, string Name, bool Available, IReadOnlyList<string> EffortLevels);
+public sealed record AgentModel(string Id, string Name);
+public sealed record AgentModelCatalogue(string Provider, string Source, IReadOnlyList<AgentModel> Models, string? Error);
 public interface IAgentEnvironment
 {
     int PollIntervalMs { get; }
     IReadOnlyList<AgentProvider> Providers();
+    Task<AgentModelCatalogue> Models(string provider, CancellationToken ct);
     Task<string> ValidateRepository(string path, string gitRef, CancellationToken ct);
     void Cancel(Guid runId);
 }
@@ -16,6 +19,7 @@ public interface IAgentEnvironment
 public sealed class AgentService(IWorkspaceStore store, IAgentEnvironment environment)
 {
     public object Providers() => new { providers = environment.Providers(), pollIntervalMs = environment.PollIntervalMs };
+    public Task<AgentModelCatalogue> Models(string provider, CancellationToken ct) => environment.Models(provider, ct);
     public async Task<ProjectAgentConnection?> Connection(Guid projectId, CancellationToken ct)
     { var data = await store.ReadAsync(ct); data.Graph(projectId); return data.AgentConnections.SingleOrDefault(x => x.ProjectId == projectId); }
     public async Task<ProjectAgentConnection> SaveConnection(Guid projectId, SaveAgentConnection input, CancellationToken ct)

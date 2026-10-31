@@ -684,6 +684,36 @@
         }
       }
     },
+    "/api/agents/providers/{provider}/models": {
+      "get": {
+        "tags": [
+          "Planner.Api"
+        ],
+        "description": "Lists models the agent can be asked to use. Codex and Gemini (Antigravity) are read from their CLIs; Claude aliases come from configuration. A failed listing returns source none with an error, and callers can still send any model ID.",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentModelCatalogue"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/agents/projects/{id}/connection": {
       "get": {
         "tags": [
@@ -14138,6 +14168,50 @@
           }
         },
         "additionalProperties": false
+      },
+      "AgentModel": {
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "AgentModelCatalogue": {
+        "required": [
+          "provider",
+          "source",
+          "models",
+          "error"
+        ],
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "models": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentModel"
+            }
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
       }
     }
   },

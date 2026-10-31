@@ -21,21 +21,55 @@ public sealed class AgentOptions
     public int MaxUsageEvents { get; set; }
     public int GitTimeoutSeconds { get; set; }
     public Dictionary<string, List<string>> EffortLevels { get; set; } = [];
+    public Dictionary<string, List<string>> ConfiguredModels { get; set; } = [];
+    public int ModelCatalogueTimeoutSeconds { get; set; }
+    public int ModelCatalogueCacheMinutes { get; set; }
     public void Validate()
     {
         if (MaxUsageEvents < 1 || PollIntervalMs < 250 || MaxRunMinutes < 1 || MaxOutputCharacters < 1000 || GitTimeoutSeconds < 1 || string.IsNullOrWhiteSpace(WorkspaceRoot))
             throw new InvalidOperationException("Configure Agents polling, run timeout, output and usage retention limits, Git timeout and workspace root.");
         if (new[] { "codex", "claude", "gemini" }.Any(provider => !EffortLevels.TryGetValue(provider, out var levels) || levels.Count == 0 || levels.Any(string.IsNullOrWhiteSpace) || levels.Count != levels.Distinct().Count()))
             throw new InvalidOperationException("Configure the supported effort levels for Codex, Claude and Gemini (Antigravity).");
+        if (ModelCatalogueTimeoutSeconds < 1 || ModelCatalogueCacheMinutes < 0 || ConfiguredModels.Any(entry => entry.Key is not ("codex" or "claude" or "gemini") || entry.Value.Any(string.IsNullOrWhiteSpace) || entry.Value.Count != entry.Value.Distinct().Count()))
+            throw new InvalidOperationException("Configure the model catalogue timeout, cache duration and distinct configured models for known agents.");
     }
 }
 
 public sealed class LocalAgentEnvironment(AgentOptions options) : IAgentEnvironment
 {
     private readonly ConcurrentDictionary<Guid, CancellationTokenSource> active = new();
+    private readonly ConcurrentDictionary<string, (DateTimeOffset Expires, AgentModelCatalogue Catalogue)> models = new();
     public int PollIntervalMs => options.PollIntervalMs;
     public IReadOnlyList<AgentProvider> Providers() => [new("codex", "Codex", Resolve(options.CodexExecutable) is not null, options.EffortLevels["codex"]), new("claude", "Claude", Resolve(options.ClaudeExecutable) is not null, options.EffortLevels["claude"]), new("gemini", "Gemini (Antigravity)", Resolve(options.GeminiExecutable) is not null, options.EffortLevels["gemini"])];
     public string Executable(string provider) => Resolve(provider switch { "codex" => options.CodexExecutable, "claude" => options.ClaudeExecutable, "gemini" => options.GeminiExecutable, _ => throw new RuleException("Unknown agent provider.") }) ?? throw new RuleException("Agent executable unavailable.", 503);
+    public async Task<AgentModelCatalogue> Models(string provider, CancellationToken ct)
+    {
+        var executable = provider switch { "codex" => options.CodexExecutable, "claude" => options.ClaudeExecutable, "gemini" => options.GeminiExecutable, _ => throw new RuleException("Unknown agent provider.", 404) };
+        if (models.TryGetValue(provider, out var cached) && cached.Expires > DateTimeOffset.UtcNow) return cached.Catalogue;
+        var configured = options.ConfiguredModels.GetValueOrDefault(provider) ?? [];
+        string[]? arguments = provider switch { "codex" => ["debug", "models"], "gemini" => ["models"], _ => null };
+        AgentModelCatalogue catalogue;
+        if (arguments is null) catalogue = new(provider, configured.Count > 0 ? "configuration" : "none", configured.Select(id => new AgentModel(id, id)).ToList(), null);
+        else if (Resolve(executable) is not { } path) catalogue = new(provider, "none", [], "The agent executable is unavailable.");
+        else
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct); timeout.CancelAfter(TimeSpan.FromSeconds(options.ModelCatalogueTimeoutSeconds));
+            var output = new StringBuilder(); var errors = new StringBuilder();
+            try
+            {
+                var code = await AgentProcess.Run(path, Path.GetTempPath(), arguments, null,
+                    line => { if (output.Length < options.MaxOutputCharacters * 10) output.AppendLine(line); return Task.CompletedTask; },
+                    line => { if (errors.Length < options.MaxOutputCharacters) errors.AppendLine(line); return Task.CompletedTask; }, timeout.Token, agentClient: true);
+                var listed = code == 0 ? AgentModelParser.Parse(provider, output.ToString()) : [];
+                catalogue = listed.Count > 0 ? new(provider, "cli", listed, null)
+                    : new(provider, "none", [], code == 0 ? "The agent did not list any models." : "The agent could not list models: " + AgentRun.Tail(errors.ToString(), 500).Trim());
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested) { catalogue = new(provider, "none", [], "The agent did not list models in time."); }
+        }
+        // Failed listings are not cached so signing in or updating the CLI takes effect on the next request.
+        if (catalogue.Models.Count > 0 && options.ModelCatalogueCacheMinutes > 0) models[provider] = (DateTimeOffset.UtcNow.AddMinutes(options.ModelCatalogueCacheMinutes), catalogue);
+        return catalogue;
+    }
     public static string? Resolve(string executable)
     {
         if (string.IsNullOrWhiteSpace(executable)) return null;
