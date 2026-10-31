@@ -714,6 +714,66 @@
         }
       }
     },
+    "/api/agents/repository-refs": {
+      "post": {
+        "tags": [
+          "Planner.Api"
+        ],
+        "description": "Reads a local folder's Git state so Base Git ref can be pre-filled and suggested, and so the browser can offer to initialise Git. isRepository is false for a plain folder; hasCommits is false for a repository with no commits; hasFiles reports entries other than .git. Branches are local, most recently committed first, up to 200. The path travels in the body to keep it out of URLs. Returns 400 when the folder is missing or relative.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReadRepositoryRefs"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryRefs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/repository-init": {
+      "post": {
+        "tags": [
+          "Planner.Api"
+        ],
+        "description": "Prepares a folder for agent work: runs git init when it is not a repository (using the person's init.defaultBranch), optionally git add --all, then creates the first commit. Does nothing when the repository already has commits. Returns 409 when the folder is inside another repository. Git errors, such as a missing commit identity, are returned as 400.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitialiseRepository"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryRefs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/agents/folder-picker": {
       "post": {
         "tags": [
@@ -14285,6 +14345,77 @@
               "string"
             ],
             "description": "Chosen absolute folder, or null when cancelled."
+          }
+        }
+      },
+      "ReadRepositoryRefs": {
+        "required": [
+          "path"
+        ],
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Absolute local folder."
+          }
+        }
+      },
+      "RepositoryRefs": {
+        "required": [
+          "root",
+          "isRepository",
+          "isRoot",
+          "hasCommits",
+          "hasFiles",
+          "current",
+          "branches"
+        ],
+        "type": "object",
+        "properties": {
+          "root": {
+            "type": "string"
+          },
+          "isRepository": {
+            "type": "boolean"
+          },
+          "isRoot": {
+            "type": "boolean"
+          },
+          "hasCommits": {
+            "type": "boolean"
+          },
+          "hasFiles": {
+            "type": "boolean"
+          },
+          "current": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Checked-out branch, or null for a detached HEAD."
+          },
+          "branches": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "InitialiseRepository": {
+        "required": [
+          "path",
+          "includeFiles"
+        ],
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Absolute local folder."
+          },
+          "includeFiles": {
+            "type": "boolean",
+            "description": "Commit the folder's current files in the first commit. Otherwise the first commit is empty."
           }
         }
       }

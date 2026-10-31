@@ -21,6 +21,9 @@ public static class AgentEndpoints
         });
         group.MapGet("/providers", (AgentService service) => Results.Ok(service.Providers()));
         group.MapGet("/providers/{provider}/models", (string provider, AgentService service, CancellationToken ct) => service.Models(provider, ct));
+        // POST keeps local filesystem paths out of URLs and request logs.
+        group.MapPost("/repository-refs", (ReadRepositoryRefs input, AgentService service, CancellationToken ct) => service.RepositoryRefs(input, ct));
+        group.MapPost("/repository-init", (InitialiseRepository input, AgentService service, CancellationToken ct) => service.InitialiseRepository(input, ct));
         group.MapPost("/folder-picker", (ChooseFolder input, AgentService service, CancellationToken ct) => service.ChooseFolder(input, ct));
         group.MapGet("/projects/{id:guid}/connection", (Guid id, AgentService service, CancellationToken ct) => service.Connection(id, ct));
         group.MapPut("/projects/{id:guid}/connection", (Guid id, SaveAgentConnection input, AgentService service, CancellationToken ct) => service.SaveConnection(id, input, ct));
