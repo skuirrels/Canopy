@@ -88,11 +88,40 @@ public sealed class LocalAgentEnvironment(AgentOptions options) : IAgentEnvironm
     {
         if (string.IsNullOrWhiteSpace(path) || !Path.IsPathRooted(path) || !Directory.Exists(path)) throw new RuleException("Choose an existing absolute repository directory.");
         var fullPath = Path.GetFullPath(path);
-        var root = (await Git(fullPath, ["rev-parse", "--show-toplevel"], ct)).Trim();
+        string root;
+        try { root = (await Git(fullPath, ["rev-parse", "--show-toplevel"], ct)).Trim(); }
+        catch (RuleException error) when (error.Status == 400) { throw new RuleException("This folder is not a Git repository. Use Initialise Git beside Repository folder, or choose another folder."); }
         if (!string.IsNullOrWhiteSpace(await Git(fullPath, ["rev-parse", "--show-prefix"], ct))) throw new RuleException("Choose the repository root directory.");
         if (string.IsNullOrWhiteSpace(gitRef) || gitRef.StartsWith('-')) throw new RuleException("Choose a valid base Git ref.");
         await Git(fullPath, ["rev-parse", "--verify", "--end-of-options", gitRef + "^{commit}"], ct);
         return root;
+    }
+    public async Task<RepositoryRefs> RepositoryRefs(string path, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !Path.IsPathRooted(path) || !Directory.Exists(path)) throw new RuleException("Choose an existing absolute repository directory.");
+        var fullPath = Path.GetFullPath(path);
+        // Agents start from committed files, so the browser needs to know whether there is anything to start from.
+        var hasFiles = Directory.EnumerateFileSystemEntries(fullPath).Any(entry => Path.GetFileName(entry) != ".git");
+        string root;
+        try { root = (await Git(fullPath, ["rev-parse", "--show-toplevel"], ct)).Trim(); }
+        catch (RuleException error) when (error.Status == 400) { return new(fullPath, false, false, false, hasFiles, null, []); }
+        var isRoot = string.IsNullOrWhiteSpace(await Git(fullPath, ["rev-parse", "--show-prefix"], ct));
+        var hasCommits = !string.IsNullOrWhiteSpace(await Git(fullPath, ["rev-list", "-n", "1", "--all"], ct));
+        var current = (await Git(fullPath, ["branch", "--show-current"], ct)).Trim();
+        var branches = await Git(fullPath, ["for-each-ref", "--sort=-committerdate", "--count=200", "--format=%(refname:short)", "refs/heads"], ct);
+        return new(root, true, isRoot, hasCommits, hasFiles, current.Length > 0 ? current : null, branches.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+    }
+    public async Task<RepositoryRefs> InitialiseRepository(string path, bool includeFiles, CancellationToken ct)
+    {
+        var refs = await RepositoryRefs(path, ct);
+        if (refs.IsRepository && !refs.IsRoot) throw new RuleException("This folder is inside another Git repository. Choose that repository's root instead.", 409);
+        if (refs.HasCommits) return refs;
+        var fullPath = Path.GetFullPath(path);
+        // git init uses the person's init.defaultBranch, so the first branch name is theirs, not Canopy's.
+        if (!refs.IsRepository) await Git(fullPath, ["init"], ct);
+        if (includeFiles) await Git(fullPath, ["add", "--all"], ct);
+        await Git(fullPath, ["commit", "--allow-empty", "-m", "Initial commit"], ct);
+        return await RepositoryRefs(fullPath, ct);
     }
     public async Task<string> Git(string directory, IReadOnlyList<string> arguments, CancellationToken ct, bool acceptDiff = false, IReadOnlyDictionary<string, string>? environment = null)
     {
