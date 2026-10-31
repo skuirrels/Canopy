@@ -77,6 +77,7 @@ agentOptions.Validate();
 builder.Services.AddSingleton(agentOptions);
 builder.Services.AddSingleton<LocalAgentEnvironment>();
 builder.Services.AddSingleton<IAgentEnvironment>(services => services.GetRequiredService<LocalAgentEnvironment>());
+builder.Services.AddSingleton<IFolderPicker, LocalFolderPicker>();
 builder.Services.AddScoped<AgentService>();
 builder.Services.AddHostedService<LocalAgentRunner>();
 builder.Services.AddHostedService<LocalFactoryRunner>();

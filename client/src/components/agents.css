@@ -29,3 +29,9 @@
  .agent-build-effects{margin-bottom:4px}
 }
 .model-picker{display:flex;flex-direction:column;min-width:0}.model-picker>label{display:flex;flex-direction:column;gap:7px;min-width:0}.model-picker label+label{margin-top:8px}.task-agents .model-picker{flex:1}.task-agents .model-picker label{margin:14px 0 0}.task-agents .model-picker label+label{margin-top:10px}.model-picker-note{color:var(--muted);font-size:11px;line-height:1.5;margin-top:6px;overflow-wrap:anywhere}
+.agent-connection-dialog .repository-folder{margin-bottom:16px}
+.agent-connection-dialog .repository-folder>label{margin-bottom:0}
+.agent-connection-dialog .repository-folder>div{display:flex;gap:8px;align-items:stretch;margin-top:7px}
+.agent-connection-dialog .repository-folder input:not([type=checkbox]):not([type=color]){flex:1;min-width:0;margin:0}
+.agent-connection-dialog .repository-folder button{flex-shrink:0;min-height:44px}
+.agent-connection-dialog .repository-folder .agent-note{margin:6px 0 0}

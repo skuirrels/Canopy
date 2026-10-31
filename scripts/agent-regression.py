@@ -39,6 +39,11 @@ import json, pathlib, sys, time, uuid
 args=sys.argv[1:]
 if args==['debug','models']:
  print(json.dumps({'models':[{'slug':'fixture-hidden','display_name':'Hidden','visibility':'hide','priority':1},{'slug':'fixture-deep','display_name':'Fixture Deep','visibility':'list','priority':9},{'slug':'fixture-fast','display_name':'Fixture Fast','visibility':'list','priority':2}]}),flush=True); sys.exit(0)
+if args[:1]==['folder-picker']:
+ mode=pathlib.Path(sys.argv[0]).with_name('picker-mode').read_text()
+ if mode=='cancel': print('execution error: User canceled. (-128)',file=sys.stderr); sys.exit(1)
+ if mode=='fail': print('Fixture picker failed',file=sys.stderr); sys.exit(3)
+ print(args[1]+'/',flush=True); sys.exit(0)
 if args==['models']:
  print('Fetching available models...'); print('fixture-gemini-high\tFixture Gemini (High)'); print('fixture-gemini-low\tFixture Gemini (Low)',flush=True); sys.exit(0)
 prompt=sys.stdin.read(); codex=args[0]=='exec'; gemini='--input-format' in args
@@ -111,6 +116,7 @@ else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'r
     env = os.environ | {
         'Database__Path': str(scratch / 'workspace.duckdb'), 'Agents__WorkspaceRoot': str(scratch / 'worktrees'),
         'Agents__CodexExecutable': str(fake), 'Agents__ClaudeExecutable': str(fake), 'Agents__GeminiExecutable': str(fake), 'Agents__PollIntervalMs': '250',
+        'Agents__FolderPickerExecutable': str(fake), 'Agents__FolderPickerArguments__0': 'folder-picker',
     }
     log = open(scratch / 'server.log', 'w+')
     process = None
@@ -183,6 +189,14 @@ else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'r
         claude_models = call('/api/agents/providers/claude/models')
         check(claude_models['source'] == 'configuration' and claude_models['models'] and all(m['id'] == m['name'] for m in claude_models['models']), 'Claude model aliases come from configuration because its CLI cannot list models')
         call('/api/agents/providers/unknown/models', expected=404)
+        picker_mode = fake.with_name('picker-mode')
+        picker_mode.write_text('choose')
+        check(call('/api/agents/providers')['folderPicker'] and call('/api/agents/folder-picker', 'POST', {'start': str(repo)}) == {'path': str(repo)}, 'Folder picker starts at the current folder and returns the chosen absolute path')
+        picker_mode.write_text('cancel')
+        check(call('/api/agents/folder-picker', 'POST', {'start': None}) == {'path': None}, 'Cancelling the folder picker leaves the path unchanged')
+        picker_mode.write_text('fail')
+        check('Fixture picker failed' in call('/api/agents/folder-picker', 'POST', {'start': str(repo)}, 502)['title'], 'Folder picker failures are reported instead of choosing a folder')
+        call('/api/agents/folder-picker', 'POST', {'start': str(repo)}, headers={'Origin': 'https://example.invalid'}, expected=403)
         start_run(expected=400)
         binding = dict(expectedRevision=revision(), repositoryPath=str(repo), baseRef='HEAD', provider='codex', model=None, instructions='Test fixture instructions')
         call(f'/api/agents/projects/{pid}/connection', 'PUT', binding | {'repositoryPath': str(scratch)}, 400)

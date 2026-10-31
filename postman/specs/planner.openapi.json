@@ -714,6 +714,36 @@
         }
       }
     },
+    "/api/agents/folder-picker": {
+      "post": {
+        "tags": [
+          "Planner.Api"
+        ],
+        "description": "Opens the operating system folder dialog on the machine running the backend and waits for a choice. Available only when the providers response reports folderPicker true. Returns path null when the dialog is cancelled. Only one dialog can be open at a time (409).",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChooseFolder"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderChoice"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/agents/projects/{id}/connection": {
       "get": {
         "tags": [
@@ -14210,6 +14240,30 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "ChooseFolder": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Existing absolute folder the dialog opens at."
+          }
+        }
+      },
+      "FolderChoice": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Chosen absolute folder, or null when cancelled."
           }
         }
       }

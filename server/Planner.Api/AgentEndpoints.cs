@@ -21,6 +21,7 @@ public static class AgentEndpoints
         });
         group.MapGet("/providers", (AgentService service) => Results.Ok(service.Providers()));
         group.MapGet("/providers/{provider}/models", (string provider, AgentService service, CancellationToken ct) => service.Models(provider, ct));
+        group.MapPost("/folder-picker", (ChooseFolder input, AgentService service, CancellationToken ct) => service.ChooseFolder(input, ct));
         group.MapGet("/projects/{id:guid}/connection", (Guid id, AgentService service, CancellationToken ct) => service.Connection(id, ct));
         group.MapPut("/projects/{id:guid}/connection", (Guid id, SaveAgentConnection input, AgentService service, CancellationToken ct) => service.SaveConnection(id, input, ct));
         group.MapDelete("/projects/{id:guid}/connection", async (Guid id, long expectedRevision, AgentService service, CancellationToken ct) =>

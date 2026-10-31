@@ -13,7 +13,7 @@ export type AgentRun = {
  projectInstructions: string; instructions: string; sessionId: string | null; workspacePath: string | null; baseCommit: string | null;
  usage?: AgentUsage; output: string; result: string; diff: string; error: string | null; createdAt: string; startedAt: string | null; finishedAt: string | null;
 };
-export type AgentProviders = { providers: { id: AgentId; name: string; available: boolean; effortLevels: string[] }[]; pollIntervalMs: number };
+export type AgentProviders = { providers: { id: AgentId; name: string; available: boolean; effortLevels: string[] }[]; pollIntervalMs: number; folderPicker?: boolean };
 export async function agentRequest<T>(path: string, method = 'GET', body?: unknown, signal?: AbortSignal): Promise<T> {
  const response = await fetch('/api/agents' + path, { method, headers: { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body), signal });
  if (!response.ok) { const problem = await response.json().catch(() => ({})); throw new Error(problem.title || `Agent request failed (${response.status}).`); }

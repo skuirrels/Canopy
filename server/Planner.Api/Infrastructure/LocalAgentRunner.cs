@@ -24,6 +24,9 @@ public sealed class AgentOptions
     public Dictionary<string, List<string>> ConfiguredModels { get; set; } = [];
     public int ModelCatalogueTimeoutSeconds { get; set; }
     public int ModelCatalogueCacheMinutes { get; set; }
+    public string FolderPickerExecutable { get; set; } = "";
+    public List<string> FolderPickerArguments { get; set; } = [];
+    public int FolderPickerTimeoutSeconds { get; set; }
     public void Validate()
     {
         if (MaxUsageEvents < 1 || PollIntervalMs < 250 || MaxRunMinutes < 1 || MaxOutputCharacters < 1000 || GitTimeoutSeconds < 1 || string.IsNullOrWhiteSpace(WorkspaceRoot))
@@ -32,6 +35,8 @@ public sealed class AgentOptions
             throw new InvalidOperationException("Configure the supported effort levels for Codex, Claude and Gemini (Antigravity).");
         if (ModelCatalogueTimeoutSeconds < 1 || ModelCatalogueCacheMinutes < 0 || ConfiguredModels.Any(entry => entry.Key is not ("codex" or "claude" or "gemini") || entry.Value.Any(string.IsNullOrWhiteSpace) || entry.Value.Count != entry.Value.Distinct().Count()))
             throw new InvalidOperationException("Configure the model catalogue timeout, cache duration and distinct configured models for known agents.");
+        if (FolderPickerTimeoutSeconds < 1 || (string.IsNullOrWhiteSpace(FolderPickerExecutable) && FolderPickerArguments.Count > 0))
+            throw new InvalidOperationException("Configure the folder picker timeout, and set folder picker arguments only with a folder picker executable.");
     }
 }
 
