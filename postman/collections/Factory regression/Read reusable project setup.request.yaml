@@ -1,0 +1,19 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/setup'
+order: 2500
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Reusable setup contract is available', () => pm.response.to.have.status(200));
+      const d = pm.response.json();
+      pm.test('A new project has no invented workflow', () => {
+        pm.expect(d.setup).to.equal(null);
+        pm.expect(d.version).to.equal(null);
+        pm.expect(d.available).to.equal(false);
+      });
+      pm.test('The default is sourced from an installed template', () => {
+        pm.expect(d.templates.some(t => t.id === d.defaults.defaultTemplateId)).to.equal(true);
+        pm.expect(d.projectRevision).to.be.a('number');
+      });

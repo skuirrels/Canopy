@@ -4,6 +4,7 @@ namespace Planner.Api.Infrastructure;
 
 public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(options)
 {
+    public DbSet<FactoryProjectSetup> FactoryProjectSetups => Set<FactoryProjectSetup>();
     public DbSet<CalibrationTriggerReceipt> CalibrationTriggers => Set<CalibrationTriggerReceipt>();
     public DbSet<ProjectCalibrationPolicy> CalibrationPolicies => Set<ProjectCalibrationPolicy>();
     public DbSet<FactoryCalibration> Calibrations => Set<FactoryCalibration>();
@@ -50,6 +51,7 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<TaskFactoryConfiguration> TaskFactoryConfigurations => Set<TaskFactoryConfiguration>();
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.Entity<FactoryProjectSetup>().HasKey(x => x.Id);
         model.Ignore<CalibrationPolicy>(); model.Ignore<CalibrationCapture>(); model.Ignore<CalibrationSkill>(); model.Ignore<CalibrationWorkspaceInput>(); model.Ignore<CalibrationEdit>(); model.Ignore<CalibrationWrite>(); model.Ignore<CalibrationAction>();
         model.Entity<CalibrationTriggerReceipt>().HasKey(x => x.Id); model.Entity<CalibrationTriggerReceipt>().HasIndex(x => new { x.DeliveryId, x.PolicyHash, x.ScopeHash }).IsUnique();
         model.Entity<CalibrationTriggerReceipt>().Property(x => x.CreatedAt).HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));

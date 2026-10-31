@@ -29,6 +29,10 @@ var factoryTemplatePath = builder.Configuration["Factory:TemplatesPath"] ?? thro
 var factoryTemplates = FactoryTemplateLoader.Load(Path.GetFullPath(factoryTemplatePath, builder.Environment.ContentRootPath));
 builder.Services.AddSingleton<IReadOnlyList<FactoryTemplate>>(factoryTemplates);
 builder.Services.AddScoped<FactoryService>();
+var setupOptions = builder.Configuration.GetSection("Factory:Setup").Get<FactorySetupOptions>() ?? throw new InvalidOperationException("Configure Factory:Setup.");
+if (setupOptions.SuggestedSkills is null || setupOptions.SuggestedSkills.Any(x => !FactoryRules.AgentRoles.Contains(x.Key) || x.Value is null || x.Value.Any(s => s is null)) || !factoryTemplates.Any(x => x.Id == setupOptions.DefaultTemplateId)) throw new InvalidOperationException("Configure an existing Factory:Setup:DefaultTemplateId.");
+builder.Services.AddSingleton(setupOptions);
+builder.Services.AddScoped<FactorySetupService>();
 var calibrationOptions = builder.Configuration.GetSection("Factory:Calibration").Get<FactoryCalibrationOptions>() ?? throw new InvalidOperationException("Configure Factory:Calibration.");
 calibrationOptions.Validate(); builder.Services.AddSingleton(calibrationOptions);
 builder.Services.AddSingleton<ICalibrationWorkspace, LocalCalibrationWorkspace>();

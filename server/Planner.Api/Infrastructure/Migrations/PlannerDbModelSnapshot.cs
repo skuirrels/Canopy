@@ -978,6 +978,23 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("FactoryPipelines");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.FactoryProjectSetup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("PipelineVersionId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("TemplateId")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FactoryProjectSetups");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.FactoryRepairAttempt", b =>
                 {
                     b.Property<Guid>("Id")

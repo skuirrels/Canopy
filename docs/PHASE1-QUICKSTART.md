@@ -30,35 +30,31 @@ Expand an image to read the controls; use your own repositories, commands and sk
    loopback: Phase 1 has one backend process owning native DuckDB; team login is
    a later phase.
 
-## 1 Configure a pipeline
+## 1 Set up your factory
 
-Open the project's **Software Factory** tab and choose **New pipeline**. Select an
-available template or **Custom pipeline**. A useful starting flow is implementation,
-verification commands and an independent read-only reviewer.
+Open **Software Factory → Set up automatically**. Reuse the project's repository
+and agent, choose a work type and enter its actual build/test commands with their
+directories and timeouts. Review the generated stages and installed skills, then
+save the project workflow. Nothing executes. [Guided setup](FACTORY-SETUP.md).
 
-Select a stage or step to edit instructions, permissions, agent settings and skills.
-Command steps need an executable, arguments, working directory and timeout.
-Dependencies control order; dragging boxes changes layout.
-For PR delivery, include committing the candidate in the implementation
-instructions, before the verification stage.
+For custom stages and detailed settings, use **Advanced → Pipeline designer**.
+The existing designer supports configured templates, custom pipelines, dependencies
+and task overrides; publishing still creates an immutable version.
 
-Choose **Validate → Save draft → Publish version**. Published versions are
-immutable; later edits become a new version.
-
-[![Pipeline canvas with implementation, QA and review stages and the step inspector](images/phase1/01-pipeline.png)](images/phase1/01-pipeline.png)
 
 ## 2 Attach a task and prepare work
 
 1. Open a task and write its **Specification**.
-2. In **Factory**, select the pipeline and published version. Add task-specific
-   overrides if needed, then **Apply configuration**.
+2. In **Factory**, choose **Set up automatically → Use workflow for this task**.
+   If the project has no workflow, complete setup and choose **Create workflow &
+   use for task**. Other pipelines and overrides remain under **Advanced configuration**.
 3. Add **Acceptance criteria**: description, observable expected result and
    verification method. Clear **Needs clarification** once the criterion is
    testable, then **Save criteria**.
-4. Choose **Check readiness**, resolve errors, then **Prepare run**. This captures
+4. Choose **Prepare build** and resolve any prerequisite errors. This captures
    the task, pipeline, settings and skill versions. It does not execute them.
 
-[![Task Factory settings showing the attached published version and acceptance criterion](images/phase1/02-task.png)](images/phase1/02-task.png)
+[![Focused factory task view with attached workflow and explicit missing-input guidance](images/factory-setup/task.png)](images/factory-setup/task.png)
 
 ## 3 Execute and inspect
 
@@ -99,10 +95,10 @@ the result; execution, review and merge leave that decision to you. [Delivery de
 
 | Feature | How to use it |
 | --- | --- |
-| Problem intake | Open **Problem intake → Add source → Collect signals**. Inspect coverage and evidence, enter a rationale, **Verify current evidence**, then preview filing or linking. Error and analytics feeds need backend producer configuration first. [Setup](FACTORY-INTAKE.md) |
-| Routing and parallelism | Open **Model routing & budgets**. Adopt explicit role routes and invocation/time limits; enable concurrent stages only when wanted. Unsupported hard token/currency caps block dispatch; uncapped cost needs explicit consent. [Policy](FACTORY-EXECUTION-POLICY.md) · [Parallel stages](FACTORY-PARALLEL-EXECUTION.md) |
+| Problem intake | Open **Advanced → Problem intake → Add source → Collect signals**. Inspect coverage and evidence, enter a rationale, **Verify current evidence**, then preview filing or linking. Error and analytics feeds need backend producer configuration first. [Setup](FACTORY-INTAKE.md) |
+| Routing and parallelism | Open **Advanced → Model routing & budgets**. Adopt explicit role routes and invocation/time limits; enable concurrent stages only when wanted. Unsupported hard token/currency caps block dispatch; uncapped cost needs explicit consent. [Policy](FACTORY-EXECUTION-POLICY.md) · [Parallel stages](FACTORY-PARALLEL-EXECUTION.md) |
 | Bounded repair | In the run overview, open **Bounded repair and verification**. Configure published repair plans and limits, select failed criteria/findings, prepare and explicitly start. Recheck QA and review for each attempt. [Setup](FACTORY-REPAIR.md) |
-| Skill calibration | Open **Skill calibration** to select an installed calibrator, existing targets and execution limits. After verified delivery, prepare/start from the delivery inspector, review the diff and adopt explicitly. Backend edit roots are required; it is disabled by default. [Setup](FACTORY-CALIBRATION.md) |
+| Skill calibration | Open **Advanced → Skill calibration** to select an installed calibrator, existing targets and execution limits. After verified delivery, prepare/start from the delivery inspector, review the diff and adopt explicitly. Backend edit roots are required; it is disabled by default. [Setup](FACTORY-CALIBRATION.md) |
 
 [![Structured error intake showing source coverage and captured candidate evidence](images/phase1/05-intake.png)](images/phase1/05-intake.png)
 

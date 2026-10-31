@@ -35,3 +35,10 @@ The database uses logical relationships validated in the domain aggregate and co
 Linked local Markdown files use `/api/spec-files` endpoints and add `specFiles` to workspace snapshots. See [linked specification contract](LINKED-SPECIFICATIONS.md) for preview/load/write/unlink payloads, local access rules and filesystem conflict semantics.
 
 Agent providers include `codex`, `claude` and `gemini`. Project connection `settings` stores independent model defaults for each provider. Gemini uses the installed Antigravity CLI (`agy`) and its authentication. `/api/agents/providers` advertises configured effort levels; unsupported effort inputs return 400. Dispatch, continuation, cancellation, review and revision rules are shared across providers. See [agent execution](AGENT-WORKFLOW.md#gemini-through-antigravity-cli).
+
+### Guided factory setup
+
+See [guided setup and transaction semantics](FACTORY-SETUP.md#contract-and-validation).
+Preview saves nothing; setup publishes and optionally attaches a task atomically.
+Reusing a reviewed setup never starts execution or changes planning/task status.
+The generated OpenAPI document contains the four setup operations and typed inputs.

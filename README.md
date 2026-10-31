@@ -5,6 +5,8 @@ A single-user project planner with a draggable Kanban board, an interactive mind
 For the delivered Software Factory features and step-by-step instructions with
 screenshots, start with the [Phase 1 quick start](docs/PHASE1-QUICKSTART.md).
 
+Factory setup: [configure once, reuse across tasks](docs/FACTORY-SETUP.md).
+
 ## Run
 
 Clone the repository and enter the checkout:
