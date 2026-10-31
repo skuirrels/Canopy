@@ -7,6 +7,7 @@ import { useBuildPreferences } from '../lib/build-preferences';
 import type { AgentConnection, AgentExecutionSettings, AgentId, AgentProviders } from '../lib/agents';
 import { Dialog } from './ui/dialog';
 import { Button } from './ui/button';
+import { ModelPicker } from './ModelPicker';
 import './agents.css';
 
 export function AgentConnectionDialog({ projectId, onClose }: { projectId: string; onClose: () => void }) {
@@ -48,8 +49,8 @@ export function AgentConnectionDialog({ projectId, onClose }: { projectId: strin
    <label>Project instructions <span className="optional">optional</span><textarea rows={6} maxLength={100000} value={instructions} onChange={e => setInstructions(e.target.value)} placeholder="Shared context, conventions and verification requirements"/></label>
    </div>
    <fieldset className="agent-project-defaults"><legend>Model and effort defaults <span className="optional">optional</span></legend>
-    {providers?.providers.map(agent => <div key={agent.id} className="agent-default-row"><h4>{agent.name}</h4><div className="form-row"><label>{agent.name} model<input aria-label={`${agent.name} default model`} maxLength={200} value={settings[agent.id].model ?? ''} onChange={e => setSettings(current => ({ ...current, [agent.id]: { ...current[agent.id], model: e.target.value || null } }))} placeholder="Agent default"/></label><label>{agent.name} effort<select disabled={agent.effortLevels.length === 0} aria-label={`${agent.name} default effort`} value={settings[agent.id].effort ?? ''} onChange={e => setSettings(current => ({ ...current, [agent.id]: { ...current[agent.id], effort: e.target.value || null } }))}><option value="">{agent.effortLevels.length ? 'Agent default' : 'Managed by CLI'}</option>{agent.effortLevels.map(effort => <option key={effort} value={effort}>{effort}</option>)}</select></label></div></div>)}
-    <p className="agent-note">Enter a model ID or alias available to your account. Effort support depends on the chosen model.</p>
+    {providers?.providers.map(agent => <div key={agent.id} className="agent-default-row"><h4>{agent.name}</h4><div className="form-row"><ModelPicker provider={agent.id} label={`${agent.name} model`} presets={[{ key: 'default', label: 'Agent default' }]} selection={settings[agent.id].model === null ? { preset: 'default' } : { model: settings[agent.id].model! }} onChange={selection => setSettings(current => ({ ...current, [agent.id]: { ...current[agent.id], model: 'model' in selection ? selection.model : null } }))}/><label>{agent.name} effort<select disabled={agent.effortLevels.length === 0} aria-label={`${agent.name} default effort`} value={settings[agent.id].effort ?? ''} onChange={e => setSettings(current => ({ ...current, [agent.id]: { ...current[agent.id], effort: e.target.value || null } }))}><option value="">{agent.effortLevels.length ? 'Agent default' : 'Managed by CLI'}</option>{agent.effortLevels.map(effort => <option key={effort} value={effort}>{effort}</option>)}</select></label></div></div>)}
+    <p className="agent-note">Choose a model the agent lists, or Other model for any ID or alias your account can use. Each run can still pick a different model. Effort support depends on the chosen model.</p>
    </fieldset>
    <p className="agent-note">Uses the installed CLI’s sign-in. Implementation changes stay in a separate Git worktree for review.</p>
    {error && <p role="alert" className="agent-error">{error}</p>}

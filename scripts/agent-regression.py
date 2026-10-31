@@ -36,7 +36,12 @@ with tempfile.TemporaryDirectory(prefix='canopy-agents-') as directory:
     fake = scratch / 'fixture-agent'
     fake.write_text('''#!/usr/bin/env python3
 import json, pathlib, sys, time, uuid
-args=sys.argv[1:]; prompt=sys.stdin.read(); codex=args[0]=='exec'; gemini='--input-format' in args
+args=sys.argv[1:]
+if args==['debug','models']:
+ print(json.dumps({'models':[{'slug':'fixture-hidden','display_name':'Hidden','visibility':'hide','priority':1},{'slug':'fixture-deep','display_name':'Fixture Deep','visibility':'list','priority':9},{'slug':'fixture-fast','display_name':'Fixture Fast','visibility':'list','priority':2}]}),flush=True); sys.exit(0)
+if args==['models']:
+ print('Fetching available models...'); print('fixture-gemini-high\tFixture Gemini (High)'); print('fixture-gemini-low\tFixture Gemini (Low)',flush=True); sys.exit(0)
+prompt=sys.stdin.read(); codex=args[0]=='exec'; gemini='--input-format' in args
 assert not any('dangerously' in value for value in args)
 if gemini:
  message=json.loads(prompt); assert message['event']=='user'; prompt=message['message']['content']
@@ -171,6 +176,13 @@ else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'r
         task = next(i for i in state()['items'] if i['projectId'] == pid)
         tid = task['id']
         check(call(f'/api/agents/projects/{pid}/connection') is None, 'Ordinary projects have no agent connection')
+        codex_models = call('/api/agents/providers/codex/models')
+        check(codex_models['source'] == 'cli' and [m['id'] for m in codex_models['models']] == ['fixture-fast', 'fixture-deep'] and codex_models['models'][0]['name'] == 'Fixture Fast', 'Codex models come from the CLI catalogue in priority order without hidden entries')
+        gemini_models = call('/api/agents/providers/gemini/models')
+        check(gemini_models['source'] == 'cli' and gemini_models['models'] == [{'id': 'fixture-gemini-high', 'name': 'Fixture Gemini (High)'}, {'id': 'fixture-gemini-low', 'name': 'Fixture Gemini (Low)'}], 'Gemini (Antigravity) models come from the CLI listing')
+        claude_models = call('/api/agents/providers/claude/models')
+        check(claude_models['source'] == 'configuration' and claude_models['models'] and all(m['id'] == m['name'] for m in claude_models['models']), 'Claude model aliases come from configuration because its CLI cannot list models')
+        call('/api/agents/providers/unknown/models', expected=404)
         start_run(expected=400)
         binding = dict(expectedRevision=revision(), repositoryPath=str(repo), baseRef='HEAD', provider='codex', model=None, instructions='Test fixture instructions')
         call(f'/api/agents/projects/{pid}/connection', 'PUT', binding | {'repositoryPath': str(scratch)}, 400)
