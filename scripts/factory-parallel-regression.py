@@ -168,9 +168,13 @@ print(json.dumps({'type':'item.completed','item':{'type':'agent_message','text':
   root=Path(d['run']['workspacePath'])
   check(d['run']['state']=='succeeded' and not (root/'remove.bin').exists() and not (root/'mode.txt').exists() and (root/'added.bin').read_bytes()==bytes(range(255,-1,-1)) and ((root/'renamed.txt').stat().st_mode&0o777)==0o750,'binary bytes, deletion, rename and full executable permissions integrate intact')
 
-  slow="import time;from pathlib import Path;time.sleep(2);Path('slow.txt').write_text('sibling completed')"
+  sibling_started=trace/'gate-sibling-started';sibling_release=trace/'gate-sibling-release'
+  slow="import time;from pathlib import Path;Path("+repr(str(sibling_started))+").touch();deadline=time.monotonic()+30\nwhile not Path("+repr(str(sibling_release))+").exists():\n assert time.monotonic()<deadline,'Caller never released the approval fixture'\n time.sleep(.02)\nPath('slow.txt').write_text('sibling completed')"
   r=prepare([stage('gated',[manual(),cstep('after',"from pathlib import Path;Path('approved.txt').write_text('approved')")]),stage('slow',[cstep('slow',slow)])]);dispatch(r)
-  r=until(r['run']['id'],lambda d:any(x['state']=='waiting' for x in d['steps']) and d['run']['state']=='running');approve(r,'gated');d=wait(r['run']['id'])
+  r=until(r['run']['id'],lambda d:any(x['state']=='waiting' for x in d['steps']) and d['run']['state']=='running' and sibling_started.exists())
+  gate=next(x for x in r['steps'] if x['state']=='waiting');call('/api/factory/runs/'+r['run']['id']+'/steps/'+gate['id']+'/decision','POST',dict(requestId=uid(),expectedRevision=r['run']['revision']-1,approved=True),409)
+  check(read(r['run']['id'])==r,'stale parallel approval is rejected without changing the run or gate')
+  approve(r,'gated');sibling_release.touch();d=wait(r['run']['id'])
   check(d['run']['state']=='succeeded','stage-local approval while a sibling runs continues without stranding the parent')
   r=prepare([stage('one',[manual()]),stage('two',[manual()])]);dispatch(r);r=wait(r['run']['id']);check(r['run']['state']=='waiting' and len([s for s in r['steps'] if s['state']=='waiting'])==2,'multiple stage gates pause only when no runnable work remains')
   approve(r,'two');r=until(r['run']['id'],lambda d:d['run']['state']=='waiting' and next(s for s in d['stages'] if s['stageId']=='two')['state']=='succeeded');approve(r,'one');d=wait(r['run']['id']);check(d['run']['state']=='succeeded','independent decisions resume only their own stages and completed steps never replay')

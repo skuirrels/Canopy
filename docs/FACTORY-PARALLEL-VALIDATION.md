@@ -7,7 +7,7 @@ fixtures; they establish process/workspace behavior, not live-model quality or c
 
 ## Local results (31 October 2026)
 
-- Parallel native/API/process checks: **37 passed**; saved Postman assertions:
+- Parallel native/API/process checks: **38 passed**; saved Postman assertions:
   **9 passed** against the real isolated API.
 - Existing serial execution: **36 passed**; independent review: **28 passed**.
 - Execution-policy repair: **16 passed** through the serial runner and **16 passed**
@@ -34,8 +34,8 @@ nonoverlapping same-file merges; content and full-mode conflicts without a winne
 binary bytes, renames, deletions and executable/full permissions; retained stage
 commits, staged changes and portable split-index checkpoints; final initial-index
 normalization; exact final QA/review context; multiple approvals and decisions
-while siblings run; gate/root edit rejection; private-ref integrity; declined-gate
-command descendant cleanup; cancellation, revocation and abrupt-death process
+while siblings run; stale decisions rejected without mutation; gate/root edit
+rejection; private-ref integrity; declined-gate command descendant cleanup; cancellation, revocation and abrupt-death process
 ownership; elapsed waits, host capacity, index/patch bounds and legacy serial
 response compatibility. Native restart preserves terminal records and interrupts
 unfinished work without replay. Test projects clean up through public APIs.
