@@ -5064,6 +5064,58 @@
           }
         }
       }
+    },
+    "/api/factory/projects/{id}/intake/error-feeds": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Read explicitly configured structured-error feeds",
+        "description": "Read-only catalogue; paths remain server configuration. No feed, levels or runtime events are adopted by default. Collection requires complete sanitized snapshots, bounded freshness and distinct upstream identities.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorFeedCatalogue"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -10750,7 +10802,8 @@
         "required": [
           "preview",
           "observations",
-          "decisions"
+          "decisions",
+          "errorFeedReceipts"
         ],
         "type": "object",
         "properties": {
@@ -10767,6 +10820,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/IntakeDecision"
+            }
+          },
+          "errorFeedReceipts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryErrorFeedReceipt"
             }
           }
         }
@@ -10845,6 +10904,21 @@
             "items": {
               "type": "string"
             }
+          },
+          "errorFeedId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "levels": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
           }
         },
         "additionalProperties": false
@@ -10895,7 +10969,9 @@
           "projectRevision",
           "sources",
           "collections",
-          "candidates"
+          "candidates",
+          "errorFeedReceipts",
+          "errorFeeds"
         ],
         "type": "object",
         "properties": {
@@ -10924,6 +11000,15 @@
             "items": {
               "$ref": "#/components/schemas/IntakeCandidatePreview"
             }
+          },
+          "errorFeedReceipts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryErrorFeedReceipt"
+            }
+          },
+          "errorFeeds": {
+            "$ref": "#/components/schemas/ErrorFeedCatalogue"
           }
         }
       },
@@ -11859,6 +11944,186 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "ErrorFeedCatalogue": {
+        "required": [
+          "feeds",
+          "supported"
+        ],
+        "type": "object",
+        "properties": {
+          "feeds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ErrorFeedChoice"
+            }
+          },
+          "supported": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ErrorFeedChoice": {
+        "required": [
+          "id",
+          "name",
+          "identity",
+          "levels",
+          "maxAgeSeconds",
+          "maxWindowSeconds"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "identity": {
+            "$ref": "#/components/schemas/ErrorFeedIdentity"
+          },
+          "levels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "maxAgeSeconds": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "maxWindowSeconds": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ErrorFeedIdentity": {
+        "required": [
+          "sourceId",
+          "application",
+          "environment"
+        ],
+        "type": "object",
+        "properties": {
+          "sourceId": {
+            "type": "string"
+          },
+          "application": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          }
+        }
+      },
+      "FactoryErrorFeedReceipt": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/ErrorFeedCoverage"
+          }
+        }
+      },
+      "ErrorFeedCoverage": {
+        "required": [
+          "feedId",
+          "identity",
+          "fileHash",
+          "bytes",
+          "generatedAt",
+          "windowStart",
+          "windowEnd",
+          "rawEvents",
+          "distinctEvents",
+          "selectedEvents",
+          "eligibleGroups"
+        ],
+        "type": "object",
+        "properties": {
+          "feedId": {
+            "type": "string"
+          },
+          "identity": {
+            "$ref": "#/components/schemas/ErrorFeedIdentity"
+          },
+          "fileHash": {
+            "type": "string"
+          },
+          "bytes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "windowStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "windowEnd": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rawEvents": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "distinctEvents": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "selectedEvents": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "eligibleGroups": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       }

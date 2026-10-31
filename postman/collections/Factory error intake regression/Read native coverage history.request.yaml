@@ -1,0 +1,14 @@
+$kind: http-request
+name: Read native coverage history
+method: GET
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/intake'
+order: 2000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('baseUrl')||!pm.variables.get('projectId')||!pm.variables.get('sourceId')||!pm.variables.get('candidateId'))throw new Error('Supply explicit isolated fixture mode and identities.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Intake readable',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('Successful snapshots retain native coverage',()=>{pm.expect(d.errorFeedReceipts.length).to.be.above(0);d.errorFeedReceipts.forEach(r=>{pm.expect(r.coverage.fileHash).to.match(/^[A-F0-9]{64}$/);pm.expect(r.coverage.distinctEvents).to.be.at.most(r.coverage.rawEvents)})});

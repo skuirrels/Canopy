@@ -6,6 +6,8 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
 {
     public DbSet<FactoryDeployment> Deployments => Set<FactoryDeployment>();
     public DbSet<FactoryDeploymentOperation> DeploymentOperations => Set<FactoryDeploymentOperation>();
+    public DbSet<FactoryErrorEventIdentity> ErrorEventIdentities => Set<FactoryErrorEventIdentity>();
+    public DbSet<FactoryErrorFeedReceipt> ErrorFeedReceipts => Set<FactoryErrorFeedReceipt>();
     public DbSet<FactoryIntakeSource> IntakeSources => Set<FactoryIntakeSource>();
     public DbSet<FactoryIntakeCollection> IntakeCollections => Set<FactoryIntakeCollection>();
     public DbSet<FactoryIntakeCandidate> IntakeCandidates => Set<FactoryIntakeCandidate>();
@@ -50,6 +52,11 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
         model.Entity<FactoryDeploymentOperation>().Property(x => x.CreatedAt).HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
         model.Entity<FactoryDeploymentOperation>().Property(x => x.FinishedAt).HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : (DateTime?)null);
         model.Ignore<IntakeConfiguration>(); model.Ignore<IntakeSignal>();
+        model.Entity<FactoryErrorEventIdentity>().HasKey(x => x.Id);
+        model.Entity<FactoryErrorEventIdentity>().HasIndex(x => new { x.ProjectId, x.Scope, x.EventId }).IsUnique();
+        model.Entity<FactoryErrorFeedReceipt>().HasKey(x => x.Id);
+        model.Entity<FactoryErrorFeedReceipt>().Ignore(x => x.Coverage);
+        model.Entity<FactoryErrorFeedReceipt>().HasIndex(x => x.ProjectId);
         model.Entity<FactoryIntakeSource>().HasKey(x => x.Id); model.Entity<FactoryIntakeSource>().Ignore(x => x.Configuration);
         model.Entity<FactoryIntakeSource>().HasIndex(x => new { x.ProjectId, x.Scope }).IsUnique();
         model.Entity<FactoryIntakeCollection>().HasKey(x => x.Id); model.Entity<FactoryIntakeCollection>().HasIndex(x => x.RequestId).IsUnique();

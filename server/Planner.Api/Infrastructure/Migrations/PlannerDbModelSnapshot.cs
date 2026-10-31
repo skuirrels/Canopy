@@ -490,6 +490,60 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("DeploymentOperations");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.FactoryErrorEventIdentity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("EventId")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("FactHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("GroupId")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId", "Scope", "EventId")
+                        .IsUnique();
+
+                    b.ToTable("ErrorEventIdentities");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.FactoryErrorFeedReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("CoverageJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("SourceId")
+                        .HasColumnType("UUID");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("ErrorFeedReceipts");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.FactoryIntakeCandidate", b =>
                 {
                     b.Property<Guid>("Id")

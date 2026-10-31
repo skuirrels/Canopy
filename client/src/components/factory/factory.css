@@ -291,3 +291,7 @@
 .factory-execution-policy { width: 760px; }
 .factory-policy-limits { grid-template-columns: repeat(3,minmax(0,1fr)); }
 @media(max-width:700px){.factory-policy-limits { grid-template-columns:minmax(0,1fr); }}
+
+.error-feed-coverage,.error-group-evidence { border-left:3px solid var(--line); padding:8px 14px; margin:12px 0; min-width:0; overflow-wrap:anywhere; font-size:13px; }
+.error-feed-coverage h4,.error-group-evidence h4 { margin:0 0 8px; }
+.error-feed-coverage code { white-space:normal; overflow-wrap:anywhere; }

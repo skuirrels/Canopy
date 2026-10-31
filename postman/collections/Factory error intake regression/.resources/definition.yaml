@@ -1,0 +1,12 @@
+$kind: collection
+name: Factory error intake regression
+description: Real isolated structured-feed/native intake observations. No model calls or source-file writes.
+variables:
+  - key: baseUrl
+    value: ''
+  - key: projectId
+    value: ''
+  - key: sourceId
+    value: ''
+  - key: candidateId
+    value: ''
