@@ -34,6 +34,16 @@ The database uses logical relationships validated in the domain aggregate and co
 
 Linked local Markdown files use `/api/spec-files` endpoints and add `specFiles` to workspace snapshots. See [linked specification contract](LINKED-SPECIFICATIONS.md) for preview/load/write/unlink payloads, local access rules and filesystem conflict semantics.
 
+## Import a plan draft
+
+`POST /api/projects/{id}/plan-imports` accepts `expectedRevision`, `source` (a stable, nonempty plan name), `sourceHash` (lowercase SHA-256 of the original Markdown) and a nonempty `items` array. Each item supplies `key`, `title`, `parentKey` (null for components), `specJson`, `priority`, `dependencyKeys` and native `criteria`. An optional `existingItemId` explicitly adopts an existing task in this project without editing it. Parent and dependency keys refer to entries in this draft; they need not be ordered.
+
+The entire import uses one `IWorkspaceStore` transaction. Missing references, invalid criteria, repeated keys, hierarchy/dependency cycles or a stale revision reject the whole import. New items use the configured initial workflow status, with no inferred dates, estimates or assignees. Acceptance criteria use the existing factory criterion contract; incomplete criteria remain flagged for clarification.
+
+Workspace snapshots expose `planImports[{id,projectId,itemId,source,sourceHash,key}]`. The tuple `(projectId,source,key)` identifies an imported item independently of its editable text and progress. Subsequent imports preserve that item, including its specification, hierarchy, assignments, acceptance criteria and dependency links. A changed source hash remains visible against the original receipt; changed or removed requirements are **not automatically reconciled**. Additional keys create additional work. Deleting a task/subtree or project removes the associated identities. An interrupted response must be reconciled by reading the workspace before retrying.
+
+The browser extracts requirement/task tables, numbered steps and Markdown checklists locally, then submits the reviewed structured draft. Narrative-only plans need an explicit breakdown first. Source labels such as P0 are preserved in specifications rather than silently mapped onto app priorities. Dependencies are extracted only from explicit dependency columns or `Depends on:` text and can be edited in the preview. The complete source plan is preserved in the first component specification.
+
 Agent providers include `codex`, `claude` and `gemini`. Project connection `settings` stores independent model defaults for each provider. Gemini uses the installed Antigravity CLI (`agy`) and its authentication. `/api/agents/providers` advertises configured effort levels; unsupported effort inputs return 400. Dispatch, continuation, cancellation, review and revision rules are shared across providers. See [agent execution](AGENT-WORKFLOW.md#gemini-through-antigravity-cli).
 
 ### Guided factory setup

@@ -1,0 +1,14 @@
+.dialog-content.plan-import-dialog{width:960px;display:flex;flex-direction:column;max-height:calc(100dvh - 32px)}
+.plan-import-dialog>label textarea{max-height:24vh}
+.plan-import-note,.plan-import-notes{font-size:12px;color:var(--body-text);line-height:1.6}
+.plan-import-summary{display:flex;flex-direction:column;gap:5px;margin:12px 0}
+.plan-import-summary span{font-size:12px;color:var(--body-text)}
+.plan-import-notes{margin:4px 0 12px}.plan-import-notes summary{cursor:pointer}.plan-import-notes p{margin:8px 0}
+.plan-import-preview{overflow:auto;min-height:140px;border:1px solid var(--line);border-radius:10px}
+.plan-import-preview details{border-bottom:1px solid var(--line)}
+.plan-import-preview summary{cursor:pointer;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13px}
+.plan-import-preview summary span{overflow-wrap:anywhere}.plan-import-preview small{font-size:11px;color:var(--body-text);flex-shrink:0}
+.plan-component>summary{background:var(--surface);font-weight:600}.plan-task>summary{padding-left:28px}
+.plan-draft-fields{padding:0 14px 14px}.plan-draft-fields select[multiple]{min-height:90px;max-height:180px}
+.plan-import-dialog .dialog-footer{flex-shrink:0;margin-top:16px}
+@media(max-width:600px){.plan-import-preview summary{align-items:flex-start;flex-direction:column;gap:4px}.plan-import-dialog .form-row{flex-direction:column}.plan-import-dialog .dialog-footer{flex-wrap:wrap}}

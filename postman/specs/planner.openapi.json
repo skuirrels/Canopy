@@ -5373,6 +5373,78 @@
         }
       }
     },
+    "/api/projects/{id}/plan-imports": {
+      "post": {
+        "tags": [
+          "Planner.Api"
+        ],
+        "summary": "Import a reviewed plan draft",
+        "description": "Atomically creates components, tasks, acceptance criteria and dependencies. Source and item keys identify previous imports, which are preserved. Explicit existingItemId adopts a task in this project without editing it. Unknown references, hierarchy/dependency cycles and stale revisions reject the entire import.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportPlan"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/factory/projects/{id}/setup": {
       "get": {
         "tags": [
@@ -6769,6 +6841,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Person"
+            }
+          },
+          "planImports": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlanImportEntry"
             }
           }
         }
@@ -13775,6 +13853,116 @@
           }
         },
         "additionalProperties": false
+      },
+      "ImportPlan": {
+        "required": [
+          "expectedRevision",
+          "source",
+          "sourceHash",
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "source": {
+            "type": "string"
+          },
+          "sourceHash": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlanDraftItem"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "PlanDraftItem": {
+        "required": [
+          "key",
+          "title",
+          "parentKey",
+          "specJson",
+          "priority",
+          "dependencyKeys",
+          "criteria"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "parentKey": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "specJson": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "dependencyKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "criteria": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AcceptanceCriterion"
+            }
+          },
+          "existingItemId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PlanImportEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source": {
+            "type": "string"
+          },
+          "sourceHash": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
+        }
       },
       "ConfigureFactorySetup": {
         "required": [
