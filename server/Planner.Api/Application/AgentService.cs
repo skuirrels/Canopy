@@ -5,8 +5,8 @@ namespace Planner.Api.Application;
 public sealed record SaveAgentConnection(long ExpectedRevision, string RepositoryPath, string BaseRef, string Provider, string? Model, string Instructions, Dictionary<string, AgentExecutionSettings>? Settings = null);
 public sealed record StartAgentRun(Guid RequestId, long ExpectedRevision, string Provider, string Purpose, string Instructions, Guid? PreviousRunId, string? Model = null, string? Effort = null);
 public sealed record AgentProvider(string Id, string Name, bool Available, IReadOnlyList<string> EffortLevels);
-public sealed record AgentModel(string Id, string Name);
-public sealed record AgentModelCatalogue(string Provider, string Source, IReadOnlyList<AgentModel> Models, string? Error);
+public sealed record AgentModel(string Id, string Name, string? LastRan = null);
+public sealed record AgentModelCatalogue(string Provider, string Source, IReadOnlyList<AgentModel> Models, string? Error, string? DefaultLastRan = null);
 public sealed record ChooseFolder(string? Start);
 public sealed record FolderChoice(string? Path);
 public interface IFolderPicker
@@ -27,7 +27,18 @@ public sealed class AgentService(IWorkspaceStore store, IAgentEnvironment enviro
 {
     public object Providers() => new { providers = environment.Providers(), pollIntervalMs = environment.PollIntervalMs, folderPicker = folders.Available };
     public Task<FolderChoice> ChooseFolder(ChooseFolder input, CancellationToken ct) => folders.Choose(input.Start, ct);
-    public Task<AgentModelCatalogue> Models(string provider, CancellationToken ct) => environment.Models(provider, ct);
+    public async Task<AgentModelCatalogue> Models(string provider, CancellationToken ct)
+    {
+        var catalogue = await environment.Models(provider, ct);
+        // The latest run that reported its model shows what each choice, including the agent default, actually ran.
+        var observed = (await store.ReadAsync(ct)).AgentRuns.Where(x => x.Provider == provider && x.ObservedModel is not null)
+            .OrderByDescending(x => x.StartedAt ?? x.CreatedAt).GroupBy(x => x.Model ?? "").ToDictionary(x => x.Key, x => x.First().ObservedModel!);
+        return catalogue with
+        {
+            Models = catalogue.Models.Select(model => observed.TryGetValue(model.Id, out var ran) && ran != model.Id ? model with { LastRan = ran } : model).ToList(),
+            DefaultLastRan = observed.GetValueOrDefault("")
+        };
+    }
     public async Task<ProjectAgentConnection?> Connection(Guid projectId, CancellationToken ct)
     { var data = await store.ReadAsync(ct); data.Graph(projectId); return data.AgentConnections.SingleOrDefault(x => x.ProjectId == projectId); }
     public async Task<ProjectAgentConnection> SaveConnection(Guid projectId, SaveAgentConnection input, CancellationToken ct)

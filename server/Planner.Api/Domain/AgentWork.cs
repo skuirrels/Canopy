@@ -70,6 +70,8 @@ public sealed class AgentRun
     public string? Effort { get; private set; }
     public string? RequestedModel { get; private set; }
     public string? RequestedEffort { get; private set; }
+    /// <summary>The exact model the agent reported using, which resolves aliases such as Claude's opus.</summary>
+    public string? ObservedModel { get; private set; }
     public string ProjectInstructions { get; private set; } = "";
     public string Instructions { get; private set; } = "";
     public string? SessionId { get; private set; }
@@ -77,6 +79,11 @@ public sealed class AgentRun
     public string? BaseCommit { get; private set; }
     [System.Text.Json.Serialization.JsonIgnore] public string UsageJson { get; private set; } = "";
     public AgentUsage Usage => UsageJson.Length == 0 ? AgentUsage.Empty : System.Text.Json.JsonSerializer.Deserialize<AgentUsage>(UsageJson, FactoryRules.Json)!;
+    public void ObserveModel(string? model)
+    {
+        var value = model?.Trim();
+        if (!string.IsNullOrEmpty(value) && value.Length <= 200) ObservedModel = value;
+    }
     public void ObserveUsage(AgentUsageObservation? observation, int maxEvents, int maxCharacters)
     { var before = Usage; var after = before.Append(observation, maxEvents, maxCharacters); if (!ReferenceEquals(before, after)) UsageJson = FactoryRules.Serialize(after); }
     public string Output { get; private set; } = "";

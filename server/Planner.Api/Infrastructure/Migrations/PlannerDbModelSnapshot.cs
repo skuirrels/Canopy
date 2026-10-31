@@ -64,6 +64,9 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.Property<string>("Model")
                         .HasColumnType("VARCHAR");
 
+                    b.Property<string>("ObservedModel")
+                        .HasColumnType("VARCHAR");
+
                     b.Property<string>("Output")
                         .IsRequired()
                         .HasColumnType("VARCHAR");
