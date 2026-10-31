@@ -85,6 +85,7 @@ if __name__ == '__main__':
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.AnalyticsMigrationRegression')
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.ParallelMigrationRegression')
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.CalibrationMigrationRegression')
+        run('dotnet', 'run', '--project', ROOT / 'tests/Planner.GeminiMigrationRegression')
         workspace_regression()
     core = (
         'spec-file', 'agent', 'factory', 'factory-run', 'factory-execution',

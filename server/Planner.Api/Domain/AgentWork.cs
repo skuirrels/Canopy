@@ -20,13 +20,15 @@ public sealed class ProjectAgentConnection
     [JsonIgnore] public string? CodexEffort { get; private set; }
     [JsonIgnore] public string? ClaudeModel { get; private set; }
     [JsonIgnore] public string? ClaudeEffort { get; private set; }
+    [JsonIgnore] public string? GeminiModel { get; private set; }
+    [JsonIgnore] public string? GeminiEffort { get; private set; }
     public string? Model => For(Provider).Model;
     public IReadOnlyDictionary<string, AgentExecutionSettings> Settings => new Dictionary<string, AgentExecutionSettings>
-    { ["codex"] = new(CodexModel, CodexEffort), ["claude"] = new(ClaudeModel, ClaudeEffort) };
+    { ["codex"] = new(CodexModel, CodexEffort), ["claude"] = new(ClaudeModel, ClaudeEffort), ["gemini"] = new(GeminiModel, GeminiEffort) };
     public string Instructions { get; private set; } = "";
     public static ProjectAgentConnection Create(Guid projectId) => new() { Id = Guid.NewGuid(), ProjectId = projectId };
     public AgentExecutionSettings For(string provider)
-    { AgentRun.RequireProvider(provider); return provider == "codex" ? new(CodexModel, CodexEffort) : new(ClaudeModel, ClaudeEffort); }
+    { AgentRun.RequireProvider(provider); return provider switch { "codex" => new(CodexModel, CodexEffort), "claude" => new(ClaudeModel, ClaudeEffort), _ => new(GeminiModel, GeminiEffort) }; }
     public void Configure(string repositoryPath, string baseRef, string provider, string? model, string instructions, IReadOnlyDictionary<string, AgentExecutionSettings>? settings = null)
     {
         AgentRun.RequireProvider(provider);
@@ -39,7 +41,8 @@ public sealed class ProjectAgentConnection
     {
         AgentRun.RequireProvider(provider); var normalized = settings.Normalize();
         if (provider == "codex") { CodexModel = normalized.Model; CodexEffort = normalized.Effort; }
-        else { ClaudeModel = normalized.Model; ClaudeEffort = normalized.Effort; }
+        else if (provider == "claude") { ClaudeModel = normalized.Model; ClaudeEffort = normalized.Effort; }
+        else { GeminiModel = normalized.Model; GeminiEffort = normalized.Effort; }
     }
 }
 
@@ -85,7 +88,7 @@ public sealed class AgentRun
     public DateTime? FinishedAt { get; private set; }
     public bool Active => State is "queued" or "running" or "cancelling";
     public static void RequireProvider(string provider)
-    { if (provider is not ("codex" or "claude")) throw new RuleException("Choose Codex or Claude."); }
+    { if (provider is not ("codex" or "claude" or "gemini")) throw new RuleException("Choose Codex, Claude or Gemini."); }
     public static string Text(string? value, string label)
     {
         var text = value?.Trim() ?? "";

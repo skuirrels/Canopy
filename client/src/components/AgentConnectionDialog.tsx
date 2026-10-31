@@ -15,7 +15,7 @@ export function AgentConnectionDialog({ projectId, onClose }: { projectId: strin
  const [connection, setConnection] = useState<AgentConnection | null>(null);
  const [providers, setProviders] = useState<AgentProviders | null>(null);
  const [path, setPath] = useState(''); const [baseRef, setBaseRef] = useState(''); const [provider, setProvider] = useState<AgentId | ''>('');
- const [settings, setSettings] = useState<Record<AgentId, AgentExecutionSettings>>({ codex: { model: null, effort: null }, claude: { model: null, effort: null } }); const [instructions, setInstructions] = useState('');
+ const [settings, setSettings] = useState<Record<AgentId, AgentExecutionSettings>>({ codex: { model: null, effort: null }, claude: { model: null, effort: null }, gemini: { model: null, effort: null } }); const [instructions, setInstructions] = useState('');
  const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
  useEffect(() => {
   const controller = new AbortController();
@@ -40,7 +40,7 @@ export function AgentConnectionDialog({ projectId, onClose }: { projectId: strin
      <label><input type="checkbox" role="switch" aria-label="Build graphics" checked={enabled} onChange={event => setEnabled(event.target.checked)}/><span>Build graphics</span><small aria-hidden="true">{enabled ? 'On' : 'Off'}</small></label>
      <label><input type="checkbox" role="switch" aria-label="Build sound" checked={enabled && soundWanted} disabled={!enabled} onChange={event => setSoundWanted(event.target.checked)}/><span>Build sound</span><small aria-hidden="true">{enabled && soundWanted ? 'On' : 'Off'}</small></label>
     </div>
-    <p className="agent-note">Graphics and sound during Codex and Claude builds. Saves immediately for all projects in this browser. Turning effects off keeps builds running.</p>
+    <p className="agent-note">Graphics and sound during agent builds. Saves immediately for all projects in this browser. Turning effects off keeps builds running.</p>
    </fieldset>
    <div className="agent-connection-workspace">
    <label>Repository folder<input required value={path} onChange={e => setPath(e.target.value)} placeholder="Absolute path to the repository" autoComplete="off"/></label>
@@ -48,7 +48,7 @@ export function AgentConnectionDialog({ projectId, onClose }: { projectId: strin
    <label>Project instructions <span className="optional">optional</span><textarea rows={6} maxLength={100000} value={instructions} onChange={e => setInstructions(e.target.value)} placeholder="Shared context, conventions and verification requirements"/></label>
    </div>
    <fieldset className="agent-project-defaults"><legend>Model and effort defaults <span className="optional">optional</span></legend>
-    {providers?.providers.map(agent => <div key={agent.id} className="agent-default-row"><h4>{agent.name}</h4><div className="form-row"><label>{agent.name} model<input aria-label={`${agent.name} default model`} maxLength={200} value={settings[agent.id].model ?? ''} onChange={e => setSettings(current => ({ ...current, [agent.id]: { ...current[agent.id], model: e.target.value || null } }))} placeholder="Agent default"/></label><label>{agent.name} effort<select aria-label={`${agent.name} default effort`} value={settings[agent.id].effort ?? ''} onChange={e => setSettings(current => ({ ...current, [agent.id]: { ...current[agent.id], effort: e.target.value || null } }))}><option value="">Agent default</option>{agent.effortLevels.map(effort => <option key={effort} value={effort}>{effort}</option>)}</select></label></div></div>)}
+    {providers?.providers.map(agent => <div key={agent.id} className="agent-default-row"><h4>{agent.name}</h4><div className="form-row"><label>{agent.name} model<input aria-label={`${agent.name} default model`} maxLength={200} value={settings[agent.id].model ?? ''} onChange={e => setSettings(current => ({ ...current, [agent.id]: { ...current[agent.id], model: e.target.value || null } }))} placeholder="Agent default"/></label><label>{agent.name} effort<select disabled={agent.effortLevels.length === 0} aria-label={`${agent.name} default effort`} value={settings[agent.id].effort ?? ''} onChange={e => setSettings(current => ({ ...current, [agent.id]: { ...current[agent.id], effort: e.target.value || null } }))}><option value="">{agent.effortLevels.length ? 'Agent default' : 'Managed by CLI'}</option>{agent.effortLevels.map(effort => <option key={effort} value={effort}>{effort}</option>)}</select></label></div></div>)}
     <p className="agent-note">Enter a model ID or alias available to your account. Effort support depends on the chosen model.</p>
    </fieldset>
    <p className="agent-note">Uses the installed CLI’s sign-in. Implementation changes stay in a separate Git worktree for review.</p>

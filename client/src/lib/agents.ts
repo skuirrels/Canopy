@@ -1,5 +1,6 @@
 import type { AgentUsage } from './factory-execution';
-export type AgentId = 'codex' | 'claude';
+export type AgentId = 'codex' | 'claude' | 'gemini';
+export const agentNames: Record<AgentId, string> = { codex: 'Codex', claude: 'Claude', gemini: 'Gemini (Antigravity)' };
 export type AgentPurpose = 'spec' | 'documentation' | 'implementation';
 export type AgentExecutionSettings = { model: string | null; effort: string | null };
 export type AgentDraft = { provider: AgentId | ''; purpose: AgentPurpose; instructions: string; previousId: string | null; modelMode: 'inherit' | 'default' | 'custom'; model: string; effort: string | null };

@@ -73,7 +73,7 @@ public static partial class FactoryRules
                     if (!AgentRoles.Contains(step.Role ?? "")) StepError("agent.role", "Choose an agent role.", "role");
                     if (step.Permission is not ("read-only" or "workspace-write")) StepError("agent.permission", "Choose read-only or workspace-write.", "permission");
                     if (step.Role == "review" && step.Permission != "read-only") StepError("review.permission", "Review must use read-only permissions.", "permission");
-                    if (step.Provider is not (null or "codex" or "claude")) StepError("agent.provider", "Choose codex, claude or inherit the project setting with null.", "provider");
+                    if (step.Provider is not (null or "codex" or "claude" or "gemini")) StepError("agent.provider", "Choose codex, claude, gemini or inherit the project setting with null.", "provider");
                     var skills = step.Skills ?? [];
                     if (skills.Any(s => s is null || !Name(s.Id) || !Name(s.Source)) || skills.Where(s => s is not null).Select(s => s.Id).Distinct().Count() != skills.Length)
                         StepError("skills.invalid", "Skills require unique IDs and explicit sources (1–200 characters each).", "skills");

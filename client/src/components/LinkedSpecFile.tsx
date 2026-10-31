@@ -36,13 +36,13 @@ export function LinkedSpecFile({ item, beforeChange, getSpec }: { item: Item; be
  function startLink() { setPath(link?.path ?? ''); setPreview(null); setError(''); setOpen(true); }
  return <div className="linked-spec-file">
   {link ? <>
-   <div className="linked-spec-heading"><Link2 size={14}/><strong>Linked Markdown file</strong><button className="icon-button" aria-label="Copy linked Markdown path" data-tooltip="Copy path for Codex / Claude" onClick={() => { void navigator.clipboard.writeText(link.path).then(() => toast.success('File path copied')).catch(() => toast.error('Could not copy the path. Select and copy it below.')); }}><Copy size={13}/></button></div>
+   <div className="linked-spec-heading"><Link2 size={14}/><strong>Linked Markdown file</strong><button className="icon-button" aria-label="Copy linked Markdown path" data-tooltip="Copy path for Codex / Claude / Gemini" onClick={() => { void navigator.clipboard.writeText(link.path).then(() => toast.success('File path copied')).catch(() => toast.error('Could not copy the path. Select and copy it below.')); }}><Copy size={13}/></button></div>
    <code className="linked-spec-path" title={link.path}>{link.path}</code>
-   <p>Share this path with Codex or Claude. Refresh to load their edits; save to write yours.</p>
+   <p>Share this path with Codex, Claude or Gemini. Refresh to load their edits; save to write yours.</p>
    <div className="linked-spec-actions"><button className="text-button" disabled={busy} onClick={() => { setPreview(null); setPath(link.path); setError(''); setOpen(true); void previewFile(true); }}><RefreshCw size={13}/>Refresh from file</button><button className="text-button" disabled={busy} onClick={() => { setError(''); void run(async () => { await beforeChange(); setOutgoing(toMarkdown(JSON.parse(getSpec()))); setAction('write'); }); }}><Save size={13}/>Save to file</button><button className="text-button" disabled={busy} onClick={() => { setError(''); setAction('unlink'); }}><Unlink size={13}/>Unlink</button></div>
   </> : <button className="text-button" onClick={startLink}><Link2 size={13}/>Link Markdown file</button>}
   {error && !open && !action && <p role="alert" className="linked-spec-error">{error}</p>}
-  <Dialog open={open} onOpenChange={value => { if (!busy) { setOpen(value); setError(''); } }} title="Link a Markdown file" description="Use the same file on disk in Canopy, Codex and Claude. Loading replaces this task’s specification; it does not change the file.">
+  <Dialog open={open} onOpenChange={value => { if (!busy) { setOpen(value); setError(''); } }} title="Link a Markdown file" description="Use the same file on disk in Canopy, Codex, Claude and Gemini. Loading replaces this task’s specification; it does not change the file.">
    <label>File path<input autoFocus value={path} disabled={busy} placeholder="Absolute path to an existing .md file" onChange={event => { setPath(event.target.value); setPreview(null); setError(''); }}/></label>
    <p className="muted">Paste the full path on this machine. Files must be UTF-8 Markdown, up to 2 MB. Edits autosave in Canopy; writing to disk is explicit.</p>
    <Button variant="secondary" disabled={busy || !path.trim()} onClick={() => { void previewFile(); }}>{busy && <Loader2 size={13} className="spin"/>}Preview file</Button>

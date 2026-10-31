@@ -12,6 +12,7 @@ public sealed class AgentOptions
 {
     public string CodexExecutable { get; set; } = "";
     public string ClaudeExecutable { get; set; } = "";
+    public string GeminiExecutable { get; set; } = "";
     public string GitExecutable { get; set; } = "";
     public string WorkspaceRoot { get; set; } = "";
     public int PollIntervalMs { get; set; }
@@ -24,8 +25,8 @@ public sealed class AgentOptions
     {
         if (MaxUsageEvents < 1 || PollIntervalMs < 250 || MaxRunMinutes < 1 || MaxOutputCharacters < 1000 || GitTimeoutSeconds < 1 || string.IsNullOrWhiteSpace(WorkspaceRoot))
             throw new InvalidOperationException("Configure Agents polling, run timeout, output and usage retention limits, Git timeout and workspace root.");
-        if (new[] { "codex", "claude" }.Any(provider => !EffortLevels.TryGetValue(provider, out var levels) || levels.Count == 0 || levels.Any(string.IsNullOrWhiteSpace) || levels.Count != levels.Distinct().Count()))
-            throw new InvalidOperationException("Configure the supported effort levels for Codex and Claude.");
+        if (new[] { "codex", "claude", "gemini" }.Any(provider => !EffortLevels.TryGetValue(provider, out var levels) || levels.Count == 0 || levels.Any(string.IsNullOrWhiteSpace) || levels.Count != levels.Distinct().Count()))
+            throw new InvalidOperationException("Configure the supported effort levels for Codex, Claude and Gemini (Antigravity).");
     }
 }
 
@@ -33,8 +34,8 @@ public sealed class LocalAgentEnvironment(AgentOptions options) : IAgentEnvironm
 {
     private readonly ConcurrentDictionary<Guid, CancellationTokenSource> active = new();
     public int PollIntervalMs => options.PollIntervalMs;
-    public IReadOnlyList<AgentProvider> Providers() => [new("codex", "Codex", Resolve(options.CodexExecutable) is not null, options.EffortLevels["codex"]), new("claude", "Claude", Resolve(options.ClaudeExecutable) is not null, options.EffortLevels["claude"])];
-    public string Executable(string provider) => Resolve(provider == "codex" ? options.CodexExecutable : options.ClaudeExecutable) ?? throw new RuleException("Agent executable unavailable.", 503);
+    public IReadOnlyList<AgentProvider> Providers() => [new("codex", "Codex", Resolve(options.CodexExecutable) is not null, options.EffortLevels["codex"]), new("claude", "Claude", Resolve(options.ClaudeExecutable) is not null, options.EffortLevels["claude"]), new("gemini", "Gemini (Antigravity)", Resolve(options.GeminiExecutable) is not null, options.EffortLevels["gemini"])];
+    public string Executable(string provider) => Resolve(provider switch { "codex" => options.CodexExecutable, "claude" => options.ClaudeExecutable, "gemini" => options.GeminiExecutable, _ => throw new RuleException("Unknown agent provider.") }) ?? throw new RuleException("Agent executable unavailable.", 503);
     public static string? Resolve(string executable)
     {
         if (string.IsNullOrWhiteSpace(executable)) return null;
@@ -130,6 +131,7 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
         using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
         lifetime.CancelAfter(TimeSpan.FromMinutes(options.MaxRunMinutes)); environment.Register(run.Id, lifetime);
         var result = ""; var diff = ""; string? providerError = null;
+        var gemini = run.Provider == "gemini" ? new LocalGeminiOutput(options.MaxOutputCharacters) : null;
         var workspace = run.WorkspacePath ?? (run.ExecutionPermission == "workspace-write" ? Path.Combine(options.WorkspaceRoot, run.Id.ToString()) : run.RepositoryPath);
         try
         {
@@ -154,37 +156,46 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
             }
             if (!Directory.Exists(workspace)) throw new RuleException("This run’s workspace is missing. Start a new run instead of resuming.");
             var arguments = Arguments(run);
-            var code = await AgentProcess.Run(environment.Executable(run.Provider), workspace, arguments, Prompt(run),
+            var input = run.Provider == "gemini" ? JsonSerializer.Serialize(new { @event = "user", message = new { content = Prompt(run) } }) + "\n" : Prompt(run);
+            var code = await AgentProcess.Run(environment.Executable(run.Provider), workspace, arguments, input,
                 async line =>
                 {
-                    string? session = null; var progress = line; AgentUsageObservation? usage = null;
+                    string? session = null; var progress = gemini is null ? line : line + "\n"; AgentUsageObservation? usage = null;
                     try
                     {
                         using var document = JsonDocument.Parse(line); var root = document.RootElement;
                         usage = LocalAgentUsage.Read(run.Provider, root);
-                        if (root.TryGetProperty("thread_id", out var thread)) session = thread.GetString();
-                        if (root.TryGetProperty("session_id", out var sessionValue)) session = sessionValue.GetString();
-                        var type = root.TryGetProperty("type", out var typeValue) ? typeValue.GetString() : "event";
-                        progress = type + "\n";
-                        if (root.TryGetProperty("item", out var item))
+                        if (gemini is not null)
                         {
-                            if (item.TryGetProperty("text", out var text)) { progress = text.GetString() ?? ""; if (item.TryGetProperty("type", out var itemType) && itemType.GetString() == "agent_message") result = progress; }
-                            else if (item.TryGetProperty("command", out var command)) progress = command.GetString() ?? "";
-                            if (item.TryGetProperty("aggregated_output", out var commandOutput)) progress += "\n" + commandOutput.GetString();
+                            progress = gemini.Read(root); result = gemini.Result; providerError = gemini.Error;
                         }
-                        if (type == "assistant" && root.TryGetProperty("message", out var message) && message.TryGetProperty("content", out var blocks))
-                            progress = string.Join("\n", blocks.EnumerateArray().Select(block => block.TryGetProperty("text", out var text) ? text.GetString() : block.TryGetProperty("name", out var name) ? "Tool: " + name.GetString() : ""));
-                        if (type == "result")
+                        else
                         {
-                            if (root.TryGetProperty("result", out var final)) result = final.GetString() ?? "";
-                            if (root.TryGetProperty("is_error", out var errorFlag) && errorFlag.GetBoolean()) providerError = result.Length > 0 ? result : "The agent reported an error.";
-                            if (root.TryGetProperty("permission_denials", out var denials) && denials.GetArrayLength() > 0) providerError = "The agent could not obtain required tool permissions. Review the output and continue with revised instructions.";
-                            progress = result;
+                            if (root.TryGetProperty("thread_id", out var thread)) session = thread.GetString();
+                            if (root.TryGetProperty("session_id", out var sessionValue)) session = sessionValue.GetString();
+                            var type = root.TryGetProperty("type", out var typeValue) ? typeValue.GetString() : "event";
+                            progress = type + "\n";
+                            if (root.TryGetProperty("item", out var item))
+                            {
+                                if (item.TryGetProperty("text", out var text)) { progress = text.GetString() ?? ""; if (item.TryGetProperty("type", out var itemType) && itemType.GetString() == "agent_message") result = progress; }
+                                else if (item.TryGetProperty("command", out var command)) progress = command.GetString() ?? "";
+                                if (item.TryGetProperty("aggregated_output", out var commandOutput)) progress += "\n" + commandOutput.GetString();
+                            }
+                            if (type == "assistant" && root.TryGetProperty("message", out var message) && message.TryGetProperty("content", out var blocks))
+                                progress = string.Join("\n", blocks.EnumerateArray().Select(block => block.TryGetProperty("text", out var text) ? text.GetString() : block.TryGetProperty("name", out var name) ? "Tool: " + name.GetString() : ""));
+                            if (type == "result")
+                            {
+                                if (root.TryGetProperty("result", out var final)) result = final.GetString() ?? "";
+                                if (root.TryGetProperty("is_error", out var errorFlag) && errorFlag.GetBoolean()) providerError = result.Length > 0 ? result : "The agent reported an error.";
+                                if (root.TryGetProperty("permission_denials", out var denials) && denials.GetArrayLength() > 0) providerError = "The agent could not obtain required tool permissions. Review the output and continue with revised instructions.";
+                                progress = result;
+                            }
+                            if (type is "turn.failed" or "error") { providerError = line; progress = line; }
                         }
-                        if (type is "turn.failed" or "error") { providerError = line; progress = line; }
+                        if (gemini is not null) session = gemini.SessionId;
                     }
                     catch (Exception error) when (error is JsonException or InvalidOperationException) { /* Preserve unrecognized protocol diagnostics. */ }
-                    await store.WriteAsync(data => { var current = AgentService.Find(data, run.Id); current.ObserveUsage(usage, options.MaxUsageEvents, options.MaxOutputCharacters); if (session is not null) current.RecordSession(session); current.Progress(progress + "\n", options.MaxOutputCharacters); }, CancellationToken.None);
+                    await store.WriteAsync(data => { var current = AgentService.Find(data, run.Id); current.ObserveUsage(usage, options.MaxUsageEvents, options.MaxOutputCharacters); if (session is not null) current.RecordSession(session); current.Progress(progress + (gemini is null ? "\n" : ""), options.MaxOutputCharacters); }, CancellationToken.None);
                 },
                 line => Append(run.Id, line), ct, agentClient: true);
             // Calibration owns a complete file audit and exact permitted-target
@@ -192,7 +203,7 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
             // files; do not feed those to the human-readable Git diff collector.
             if (run.ExecutionPermission == "workspace-write" && run.CalibrationJobId is null) diff = await CaptureDiff(workspace, commit, ct);
             if (result.Length > options.MaxOutputCharacters) { result = ""; providerError = "The result exceeded the configured output limit. Review the activity output or increase Agents:MaxOutputCharacters before retrying."; }
-            var succeeded = code == 0 && providerError is null && !string.IsNullOrWhiteSpace(result);
+            var succeeded = code == 0 && providerError is null && (gemini is null || gemini.Completed) && !string.IsNullOrWhiteSpace(result);
             await Finish(run.Id, succeeded ? "succeeded" : "failed", result, diff, succeeded ? null : providerError ?? $"Agent exited with code {code}. No completed result was received; inspect the output.");
         }
         catch (OperationCanceledException)
@@ -239,6 +250,16 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
             if (run.Effort is not null) args.AddRange(["-c", "model_reasoning_effort=" + JsonSerializer.Serialize(run.Effort)]);
             args.Add("-");
         }
+        else if (run.Provider == "gemini")
+        {
+            args.AddRange(["--input-format", "stream-json", "--output-format", "stream-json", "--disable-slash-commands", "--settings",
+                Path.Combine(AppContext.BaseDirectory, "AgentPolicies", implementation ? "gemini-workspace-write.json" : "gemini-read-only.json")]);
+            if (implementation) args.AddRange(["--mode", "accept-edits", "--sandbox"]);
+            if (run.PreviousRunId.HasValue) args.AddRange(["--conversation", run.SessionId!]);
+            if (run.Model is not null) args.AddRange(["--model", run.Model]);
+            if (run.Effort is not null) args.AddRange(["--effort", run.Effort]);
+            // Antigravity NDJSON stdin keeps the captured work order out of argv.
+        }
         else
         {
             args.AddRange(["--print", "--safe-mode", "--restricted", "--strict-mcp-config", "--mcp-config", "{\"mcpServers\":{}}", "--output-format", "stream-json", "--verbose", "--permission-prompts", "none", "--tools", implementation ? "Read,Glob,Grep,Edit,Write,Bash" : "Read,Glob,Grep", "--allowedTools", "Read,Glob,Grep", "--permission-mode", implementation ? "acceptEdits" : "dontAsk"]);
@@ -251,7 +272,7 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
     }
     private static string Prompt(AgentRun run) => $"""
         You are working on an explicitly dispatched Canopy task.
-        Read applicable AGENTS.md and CLAUDE.md repository instructions before acting.
+        Read applicable AGENTS.md, CLAUDE.md and GEMINI.md repository instructions before acting.
         Project instructions:
         {run.ProjectInstructions}
 

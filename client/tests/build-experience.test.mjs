@@ -39,7 +39,7 @@ test('loss of polling stops the active presentation without inventing a failed o
 test('both provider feeds can pulse for changed bounded output of the same length', () => {
  assert.notEqual(buildActivityKey('command one'), buildActivityKey('command two'));
  assert.equal(buildActivityKey('unchanged'), buildActivityKey('unchanged'));
- for (const provider of ['codex', 'claude']) {
+ for (const provider of ['codex', 'claude', 'gemini']) {
   const view = describeBuild(run('running', { provider, output: 'Starting\nTool: Read\n\n', sessionId: 'test-session' }));
   assert.equal(view.latestActivity, 'Tool: Read'); assert.equal(view.label, 'Agent working');
  }

@@ -36,8 +36,10 @@ with tempfile.TemporaryDirectory(prefix='canopy-agents-') as directory:
     fake = scratch / 'fixture-agent'
     fake.write_text('''#!/usr/bin/env python3
 import json, pathlib, sys, time, uuid
-args=sys.argv[1:]; prompt=sys.stdin.read(); codex=args[0]=='exec'
+args=sys.argv[1:]; prompt=sys.stdin.read(); codex=args[0]=='exec'; gemini='--input-format' in args
 assert not any('dangerously' in value for value in args)
+if gemini:
+ message=json.loads(prompt); assert message['event']=='user'; prompt=message['message']['content']
 implementation='Purpose: implementation' in prompt
 if codex:
  assert '--ignore-user-config' in args
@@ -48,13 +50,26 @@ if codex:
   assert args.index('approval_policy="never"') > resume
   assert args.index('sandbox_mode="'+('workspace-write' if implementation else 'read-only')+'"') > resume
  if 'Refine this result' in prompt: assert 'resume' in args
+elif gemini:
+ policy=pathlib.Path(args[args.index('--settings')+1])
+ settings=json.loads(policy.read_text())
+ deny=settings['permissions']['deny']
+ assert all(rule in deny for rule in ['unsandboxed(*)','mcp(*)','read_url(*)','execute_url(*)'])
+ assert ('command(*)' in deny)==(not implementation)
+ assert ('write_file(*)' in deny)==(not implementation)
+ assert settings['toolPermission']==('proceed-in-sandbox' if implementation else 'request-review')
+ assert ('--sandbox' in args)==implementation
+ if implementation: assert args[args.index('--mode')+1]=='accept-edits'
+ assert args[args.index('--input-format')+1]=='stream-json' and '--disable-slash-commands' in args
+ assert '--yolo' not in args and '--admin-policy' not in args
+ if 'Refine this result' in prompt or 'Refine this implementation' in prompt: assert args[args.index('--conversation')+1]=='19799227-aec9-4f79-aac2-98b42488b8a0'
 else:
  assert '--safe-mode' in args and '--restricted' in args and '--strict-mcp-config' in args
  tools=args[args.index('--tools')+1]
  assert ('Bash' in tools) == implementation
  if implementation: assert '"allowUnsandboxedCommands":false' in args[args.index('--settings')+1]
 session='19799227-aec9-4f79-aac2-98b42488b8a0'
-print(json.dumps({'type':'thread.started','thread_id':session} if codex else {'type':'system','session_id':session}),flush=True)
+print(json.dumps({'type':'thread.started','thread_id':session} if codex else ({'event':'init','conversation_id':session} if gemini else {'type':'system','session_id':session})),flush=True)
 if 'REGRESSION_WAIT' in prompt: time.sleep(120)
 if 'EXPECT_SETTINGS: ' in prompt:
  expected=json.loads(prompt.split('EXPECT_SETTINGS: ',1)[1].splitlines()[0])
@@ -71,7 +86,16 @@ if 'Purpose: implementation' in prompt:
 result='# Fixture result\\n\\n- [x] Retained Markdown formatting'
 if 'REGRESSION_FAILURE' in prompt:
  print('Fixture provider failed',file=sys.stderr,flush=True); sys.exit(7)
-if codex: print(json.dumps({'type':'item.completed','item':{'type':'agent_message','text':result}}),flush=True)
+if gemini:
+ for text in ['Intermediate ', 'commentary', '\\n']:
+  print(json.dumps({'event':'step_update','step_update':{'conversation_id':session,'step_type':'agent_response','text_delta':text,'state':'ACTIVE'}}),flush=True)
+ if 'REGRESSION_MISSING_RESULT' in prompt: sys.exit(0)
+ status='ERROR' if 'REGRESSION_RESULT_ERROR' in prompt else 'SUCCESS'
+ event={'event':'result','result':{'conversation_id':session,'status':status,'response':result}}
+ if 'REGRESSION_MISSING_USAGE' not in prompt: event['result']['usage']={'input_tokens':23,'output_tokens':11,'cache_read_tokens':5,'total_tokens':34}
+ if status=='ERROR': event['result']['error']='Fixture terminal error'
+ print(json.dumps(event),flush=True)
+elif codex: print(json.dumps({'type':'item.completed','item':{'type':'agent_message','text':result}}),flush=True)
 else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'result':result,'permission_denials':[]}),flush=True)
 ''')
     fake.chmod(0o755)
@@ -81,7 +105,7 @@ else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'r
     base = f'http://127.0.0.1:{port}'
     env = os.environ | {
         'Database__Path': str(scratch / 'workspace.duckdb'), 'Agents__WorkspaceRoot': str(scratch / 'worktrees'),
-        'Agents__CodexExecutable': str(fake), 'Agents__ClaudeExecutable': str(fake), 'Agents__PollIntervalMs': '250',
+        'Agents__CodexExecutable': str(fake), 'Agents__ClaudeExecutable': str(fake), 'Agents__GeminiExecutable': str(fake), 'Agents__PollIntervalMs': '250',
     }
     log = open(scratch / 'server.log', 'w+')
     process = None
@@ -208,7 +232,7 @@ else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'r
         check(wait_run(waiting['id'])['state'] == 'cancelled', 'Cancellation terminates a live process; active tasks cannot be deleted or disconnected')
         capabilities = {p['id']: p for p in call('/api/agents/providers')['providers']}
         codex_levels = capabilities['codex']['effortLevels']; claude_levels = capabilities['claude']['effortLevels']
-        settings = {'codex': {'model': 'fixture-codex-default', 'effort': codex_levels[0]}, 'claude': {'model': 'fixture-claude-default', 'effort': claude_levels[0]}}
+        settings = {'codex': {'model': 'fixture-codex-default', 'effort': codex_levels[0]}, 'claude': {'model': 'fixture-claude-default', 'effort': claude_levels[0]}, 'gemini': {'model': 'fixture-gemini-default', 'effort': capabilities['gemini']['effortLevels'][0]}}
 
         def save_settings(values):
             return call(f'/api/agents/projects/{pid}/connection', 'PUT', binding | {'expectedRevision': revision(), 'settings': values})
@@ -217,7 +241,7 @@ else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'r
         check(connection['settings'] == settings and connection['model'] == settings['codex']['model'], 'Project defaults are independent for each agent with the legacy model alias preserved')
 
         def expect_settings(provider, resolved, **overrides):
-            run, payload = start_run(provider=provider, instructions='EXPECT_SETTINGS: ' + json.dumps(resolved), **overrides)
+            run, payload = start_run(provider=provider, instructions=overrides.pop('instructions', 'EXPECT_SETTINGS: ' + json.dumps(resolved)), **overrides)
             value = wait_run(run['id'])
             assert value['state'] == 'succeeded', (value['error'], value['output'])
             assert value['model'] == resolved['model'] and value['effort'] == resolved['effort'], value
@@ -240,6 +264,31 @@ else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'r
         claude_run, _ = expect_settings('claude', settings['claude'])
         check(claude_run['model'] != inherited['model'], 'Claude uses its own defaults and receives the --effort flag')
         expect_settings('claude', {'model': None, 'effort': None}, model='', effort='')
+        check(capabilities['gemini']['available'] and capabilities['gemini']['effortLevels'], 'Gemini through Antigravity advertises configured effort levels')
+        gemini_run, _ = expect_settings('gemini', settings['gemini'])
+        check(gemini_run['result'] == '# Fixture result\n\n- [x] Retained Markdown formatting' and gemini_run['sessionId'], 'Antigravity terminal response supplies Markdown without partial activity text')
+        check('Intermediate commentary\n' in gemini_run['output'], 'Antigravity streamed activity preserves fragments without inserting word-breaking newlines')
+        usage = gemini_run['usage']['observations'][0]
+        check(usage['inputTokens'] == 23 and usage['outputTokens'] == 11 and 'cache_read_tokens' in usage['payload'], 'Gemini completion usage preserves provider counters and raw usage')
+        expect_settings('gemini', settings['gemini'], previous=gemini_run['id'], instructions='Refine this result\nEXPECT_SETTINGS: ' + json.dumps(settings['gemini']))
+        expect_settings('gemini', {'model': None, 'effort': None}, model='', effort='')
+        gemini_impl, _ = start_run('implementation', 'gemini', '')
+        gemini_impl = wait_run(gemini_impl['id'])
+        check(gemini_impl['state'] == 'succeeded' and 'implemented.md' in gemini_impl['diff'] and not (repo / 'implemented.md').exists(), 'Gemini implementation uses sandboxed tools in a separate worktree')
+        gemini_resume, _ = start_run('implementation', 'gemini', 'Refine this implementation', previous=gemini_impl['id'])
+        gemini_resume = wait_run(gemini_resume['id'])
+        check(gemini_resume['state'] == 'succeeded' and gemini_resume['workspacePath'] == gemini_impl['workspacePath'], 'Gemini implementation resumes the saved session and workspace with the same permissions')
+        start_run(provider='gemini', effort='unsupported-effort', expected=400)
+        for marker in ['REGRESSION_MISSING_RESULT', 'REGRESSION_RESULT_ERROR']:
+            run, _ = start_run(provider='gemini', instructions=marker)
+            value = wait_run(run['id'])
+            check(value['state'] == 'failed' and value['error'], 'Gemini partial text cannot hide ' + marker)
+        missing, _ = start_run(provider='gemini', instructions='REGRESSION_MISSING_USAGE')
+        check(wait_run(missing['id'])['usage']['status'] == 'unknown', 'Missing Gemini usage stays unknown')
+        waiting_gemini, _ = start_run(provider='gemini', instructions='REGRESSION_WAIT')
+        wait_run(waiting_gemini['id'], terminal=False)
+        call(f"/api/agents/runs/{waiting_gemini['id']}/cancel", 'POST')
+        check(wait_run(waiting_gemini['id'])['state'] == 'cancelled', 'Gemini cancellation terminates the active process')
         invalid = dict(changed, claude={'model': 'fixture-claude-default', 'effort': 'unsupported-effort'})
         saved_connection = call(f'/api/agents/projects/{pid}/connection')
         call(f'/api/agents/projects/{pid}/connection', 'PUT', binding | {'expectedRevision': revision(), 'settings': invalid}, 400)
@@ -251,6 +300,7 @@ else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'r
         stop_server()
         start_server()
         check(call(f'/api/agents/tasks/{tid}/runs') == before_restart, 'Connection and completed runs survive a real backend restart')
+        check(call(f'/api/agents/projects/{pid}/connection')['settings']['gemini'] == settings['gemini'], 'Gemini model defaults persist through a backend restart')
         check(call(f'/api/agents/projects/{pid}/connection')['id'] == connection['id'], 'Project binding retains identity after restart')
         waiting, _ = start_run(instructions='REGRESSION_WAIT')
         wait_run(waiting['id'], terminal=False)

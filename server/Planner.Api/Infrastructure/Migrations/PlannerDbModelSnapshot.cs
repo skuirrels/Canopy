@@ -1498,6 +1498,7 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("PipelineVersions");
                 });
 
+
             modelBuilder.Entity("Planner.Api.Domain.Project", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1545,6 +1546,12 @@ namespace Planner.Api.Infrastructure.Migrations
                         .HasColumnType("VARCHAR");
 
                     b.Property<string>("CodexModel")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("GeminiEffort")
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("GeminiModel")
                         .HasColumnType("VARCHAR");
 
                     b.Property<string>("Instructions")

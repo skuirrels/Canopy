@@ -1,0 +1,6 @@
+{
+  "toolPermission": "proceed-in-sandbox",
+  "permissions": {
+    "deny": ["unsandboxed(*)", "mcp(*)", "read_url(*)", "execute_url(*)"]
+  }
+}

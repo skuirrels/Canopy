@@ -33,3 +33,5 @@ Work items expose position for Kanban ordering within a parent/status, and sibli
 The database uses logical relationships validated in the domain aggregate and committed transactionally. Scalar UUID references deliberately avoid DuckDB's restrictions on updating referenced principal rows; no alternate runtime persistence path exists.
 
 Linked local Markdown files use `/api/spec-files` endpoints and add `specFiles` to workspace snapshots. See [linked specification contract](LINKED-SPECIFICATIONS.md) for preview/load/write/unlink payloads, local access rules and filesystem conflict semantics.
+
+Agent providers include `codex`, `claude` and `gemini`. Project connection `settings` stores independent model defaults for each provider. Gemini uses the installed Antigravity CLI (`agy`) and its authentication. `/api/agents/providers` advertises configured effort levels; unsupported effort inputs return 400. Dispatch, continuation, cancellation, review and revision rules are shared across providers. See [agent execution](AGENT-WORKFLOW.md#gemini-through-antigravity-cli).
