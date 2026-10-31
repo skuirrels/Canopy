@@ -77,6 +77,8 @@ if __name__ == '__main__':
     suite = parser.parse_args().suite
     if suite in ('all', 'core'):
         run(sys.executable, ROOT / 'scripts/canopy-skills-configuration-test.py')
+        run(sys.executable, ROOT / 'scripts/factory-setup-regression.py')
+        run('dotnet', 'run', '--project', ROOT / 'tests/Planner.SetupMigrationRegression')
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.StoreRegression', '--',
             API / 'factory-templates.json')
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.WalRegression')

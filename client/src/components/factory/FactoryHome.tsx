@@ -1,0 +1,21 @@
+import { useEffect, useState } from 'react';
+import { ArrowRight, CheckCircle2, Loader2, Settings2, Sparkles } from 'lucide-react';
+import type { Item } from '../../lib/types';
+import { factoryRequest } from '../../lib/factory';
+import type { ProjectSetup } from '../../lib/factory-setup';
+import type { FactoryRunSummary } from '../../lib/factory-runs';
+import { Button } from '../ui/button';
+import { FactoryWorkflowPreview } from './FactoryWorkflowPreview';
+import { FactoryRunStatus } from './FactoryRunStatus';
+
+export function FactoryHome({projectId,projectRevision,items,runs,onSetup,onOpenTask,onOpenRun}: {projectId:string;projectRevision:number;items:Item[];runs:FactoryRunSummary[];onSetup:()=>void;onOpenTask:(id:string)=>void;onOpenRun:(id:string)=>void}) {
+ const [setup,setSetup]=useState<ProjectSetup|null>(null),[error,setError]=useState(''),[search,setSearch]=useState(''),[epoch,setEpoch]=useState(0);
+ useEffect(()=>{const abort=new AbortController();void factoryRequest<ProjectSetup>(`/projects/${projectId}/setup`,'GET',undefined,abort.signal).then(value=>{if(!abort.signal.aborted)setSetup(value);}).catch(cause=>{if(!abort.signal.aborted)setError((cause as Error).message);});return()=>abort.abort();},[projectId,projectRevision,epoch]);
+ const matching=items.filter(item=>item.title.toLocaleLowerCase().includes(search.toLocaleLowerCase()));
+ return <div className="factory-home">
+ <header className="factory-home-hero"><div><span className="factory-eyebrow">YOUR BUILD WORKSPACE</span><h2>From task to verified result.</h2><p>Set up the project once. Choose a task, review its workflow, and start when you’re ready.</p></div><Button onClick={onSetup}><Sparkles size={15}/>{setup?.available?'Review project setup':'Set up automatically'}</Button></header>
+ <section className="factory-home-workflow"><div className="factory-panel-heading"><h3>{setup?.available?<><CheckCircle2 size={17}/>Your project workflow</>:<><Settings2 size={17}/>Project setup</>}</h3>{setup?.available&&<span className="factory-home-badge">Reusable across tasks</span>}</div>{error?<p role="alert" className="factory-error">{error}<button className="text-button" onClick={()=>{setError('');setEpoch(x=>x+1);}}>Retry</button></p>:!setup?<p><Loader2 size={15} className="spin"/>Loading project setup…</p>:setup.available&&setup.version?<><p><strong>{setup.version.name}</strong> · {setup.providers.find(p=>p.id===setup.connection?.provider)?.name??'Agent connection needed'}</p><FactoryWorkflowPreview definition={setup.version.definition}/></>:<div className="factory-home-onboarding"><ol><li><strong>Connect your repository</strong><span>Use the agent and settings saved for this project.</span></li><li><strong>Add your checks</strong><span>Your actual build and test commands, saved once.</span></li><li><strong>Review the workflow</strong><span>Canopy assembles the steps. You decide when to start.</span></li></ol><p className="factory-help">You can keep planning without setting up or running the factory.</p></div>}</section>
+ {runs.length>0&&<section className="factory-home-section"><h3>Build activity</h3><div className="factory-home-runs">{runs.map(run=><button type="button" key={run.id} onClick={()=>onOpenRun(run.id)}><div><strong>{run.title}</strong><small>{run.pipelineName} · {new Date(run.createdAt).toLocaleString()}</small></div><FactoryRunStatus state={run.state}/><ArrowRight size={15}/></button>)}</div></section>}
+ <section className="factory-home-section"><div className="factory-panel-heading"><div><h3>Choose a task</h3><p className="factory-help">Choose a task to review its specification, workflow and acceptance criteria.</p></div><input aria-label="Find a factory task" type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Find a task…"/></div><div className="factory-home-tasks">{matching.map(item=><button type="button" key={item.id} onClick={()=>onOpenTask(item.id)}><div><small>{items.find(parent=>parent.id===item.parentId)?.title??'Project component'}</small><strong>{item.title}</strong></div><span>Build setup<ArrowRight size={14}/></span></button>)}{!matching.length&&<p className="factory-help">{items.length?'No tasks match your search.':'Add tasks in the planner, then return here when you want to build.'}</p>}</div></section>
+ </div>;
+}

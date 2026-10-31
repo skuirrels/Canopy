@@ -24,6 +24,7 @@ public sealed record EditPerson(string Name);
 public sealed record WorkflowDefault(string Name, string Color, bool IsCompleted);
 public sealed class WorkspaceData
 {
+    [JsonIgnore] public List<FactoryProjectSetup> FactoryProjectSetups { get; init; } = [];
     [JsonIgnore] public List<CalibrationTriggerReceipt> CalibrationTriggers { get; init; } = [];
     [JsonIgnore] public List<ProjectCalibrationPolicy> CalibrationPolicies { get; init; } = [];
     [JsonIgnore] public List<FactoryCalibration> Calibrations { get; init; } = [];
