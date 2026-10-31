@@ -79,7 +79,7 @@ else:
  assert ('Bash' in tools) == implementation
  if implementation: assert '"allowUnsandboxedCommands":false' in args[args.index('--settings')+1]
 session='19799227-aec9-4f79-aac2-98b42488b8a0'
-print(json.dumps({'type':'thread.started','thread_id':session} if codex else ({'event':'init','conversation_id':session} if gemini else {'type':'system','session_id':session})),flush=True)
+print(json.dumps({'type':'thread.started','thread_id':session} if codex else ({'event':'init','conversation_id':session} if gemini else {'type':'system','subtype':'init','session_id':session,'model':'fixture-claude-resolved'})),flush=True)
 if 'REGRESSION_WAIT' in prompt: time.sleep(120)
 if 'EXPECT_SETTINGS: ' in prompt:
  expected=json.loads(prompt.split('EXPECT_SETTINGS: ',1)[1].splitlines()[0])
@@ -185,9 +185,9 @@ else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'r
         codex_models = call('/api/agents/providers/codex/models')
         check(codex_models['source'] == 'cli' and [m['id'] for m in codex_models['models']] == ['fixture-fast', 'fixture-deep'] and codex_models['models'][0]['name'] == 'Fixture Fast', 'Codex models come from the CLI catalogue in priority order without hidden entries')
         gemini_models = call('/api/agents/providers/gemini/models')
-        check(gemini_models['source'] == 'cli' and gemini_models['models'] == [{'id': 'fixture-gemini-high', 'name': 'Fixture Gemini (High)'}, {'id': 'fixture-gemini-low', 'name': 'Fixture Gemini (Low)'}], 'Gemini (Antigravity) models come from the CLI listing')
+        check(gemini_models['source'] == 'cli' and [{'id': m['id'], 'name': m['name']} for m in gemini_models['models']] == [{'id': 'fixture-gemini-high', 'name': 'Fixture Gemini (High)'}, {'id': 'fixture-gemini-low', 'name': 'Fixture Gemini (Low)'}], 'Gemini (Antigravity) models come from the CLI listing')
         claude_models = call('/api/agents/providers/claude/models')
-        check(claude_models['source'] == 'configuration' and claude_models['models'] and all(m['id'] == m['name'] for m in claude_models['models']), 'Claude model aliases come from configuration because its CLI cannot list models')
+        check(claude_models['source'] == 'configuration' and claude_models['models'] and all(m['id'] and m['name'] for m in claude_models['models']), 'Claude model aliases come from configuration because its CLI cannot list models')
         call('/api/agents/providers/unknown/models', expected=404)
         picker_mode = fake.with_name('picker-mode')
         picker_mode.write_text('choose')
@@ -220,6 +220,9 @@ else: print(json.dumps({'type':'result','session_id':session,'is_error':False,'r
         start_run(provider='claude', previous=finished['id'], expected=400)
         documentation, _ = start_run('documentation', 'claude', 'Write documentation')
         check(wait_run(documentation['id'])['state'] == 'succeeded', 'Claude protocol returns documentation independently of task specs')
+        documented = call(f"/api/agents/runs/{documentation['id']}")
+        check(documented['model'] is None and documented['observedModel'] == 'fixture-claude-resolved' and call('/api/agents/providers/claude/models')['defaultLastRan'] == 'fixture-claude-resolved', 'Runs record the exact model Claude reports, and the catalogue shows what the agent default last ran as')
+        check(next(m for m in claude_models['models'] if m['id'] == 'opus')['name'] == 'Opus, latest' and any(m['id'].startswith('claude-opus-') for m in claude_models['models']), 'Claude aliases are labelled as latest beside pinned full model IDs')
         fields = {k: task[k] for k in ['title', 'specJson', 'statusId', 'priority', 'assigneeIds', 'estimatedHours', 'startDate', 'dueDate']}
         fields['specJson'] = json.dumps({'type': 'doc', 'content': [{'type': 'paragraph', 'content': [{'type': 'text', 'text': 'Implement the fixture document.'}]}]})
         workspace = call(f'/api/items/{tid}', 'PATCH', fields | {'expectedRevision': revision(), 'dependencyIds': []})
