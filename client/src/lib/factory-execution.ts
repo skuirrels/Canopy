@@ -1,0 +1,7 @@
+import type { AgentProviders } from './agents';
+export type ModelRoute = { role: string; provider: string; model: string; effort: string | null };
+export type ExecutionPolicy = { enabled: boolean; routes: ModelRoute[]; maxAgentInvocations: number; maxCommandInvocations: number; maxElapsedSeconds: number; allowUnmeteredCost: boolean; maxTokens: number | null; maxCost: number | null; currency: string | null };
+export type ExecutionPolicyDetail = { projectRevision: number; policy: ExecutionPolicy | null; roles: string[]; providers: AgentProviders['providers']; capabilities: { invocationLimits: boolean; elapsedTimeLimit: boolean; hardTokenCap: boolean; hardCurrencyCap: boolean; usageSemantics: string } };
+export type ExecutionSnapshot = { policy: ExecutionPolicy; policyHash: string; routes: { stageId: string; stepId: string; role: string; provider: string; model: string | null; effort: string | null; selectionSource: string; effortSource: string }[] };
+export type ExecutionBudget = { reservedAgentInvocations: number; reservedCommandInvocations: number; deadline: string | null; blockedReason: string | null };
+export type AgentUsage = { status: string; retentionLimitReached: boolean; observations: { provider: string; eventType: string; observedAt: string; status: string; inputTokens: number | null; outputTokens: number | null; payload: string; hash: string }[] };

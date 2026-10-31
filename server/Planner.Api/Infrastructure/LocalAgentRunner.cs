@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO.Pipes;
 using System.Text;
 using System.Text.Json;
 using Planner.Api.Application;
@@ -16,12 +17,13 @@ public sealed class AgentOptions
     public int PollIntervalMs { get; set; }
     public int MaxRunMinutes { get; set; }
     public int MaxOutputCharacters { get; set; }
+    public int MaxUsageEvents { get; set; }
     public int GitTimeoutSeconds { get; set; }
     public Dictionary<string, List<string>> EffortLevels { get; set; } = [];
     public void Validate()
     {
-        if (PollIntervalMs < 250 || MaxRunMinutes < 1 || MaxOutputCharacters < 1000 || GitTimeoutSeconds < 1 || string.IsNullOrWhiteSpace(WorkspaceRoot))
-            throw new InvalidOperationException("Configure Agents polling, run timeout, output limit, Git timeout and workspace root.");
+        if (MaxUsageEvents < 1 || PollIntervalMs < 250 || MaxRunMinutes < 1 || MaxOutputCharacters < 1000 || GitTimeoutSeconds < 1 || string.IsNullOrWhiteSpace(WorkspaceRoot))
+            throw new InvalidOperationException("Configure Agents polling, run timeout, output and usage retention limits, Git timeout and workspace root.");
         if (new[] { "codex", "claude" }.Any(provider => !EffortLevels.TryGetValue(provider, out var levels) || levels.Count == 0 || levels.Any(string.IsNullOrWhiteSpace) || levels.Count != levels.Distinct().Count()))
             throw new InvalidOperationException("Configure the supported effort levels for Codex and Claude.");
     }
@@ -70,29 +72,32 @@ internal static class AgentProcess
     public static async Task<int> Run(string executable, string directory, IReadOnlyList<string> arguments, string? input,
         Func<string, Task> stdout, Func<string, Task> stderr, CancellationToken ct, IReadOnlyDictionary<string, string>? environment = null, bool agentClient = false)
     {
-        var start = new ProcessStartInfo(executable) { WorkingDirectory = directory, UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true };
-        foreach (var argument in arguments) start.ArgumentList.Add(argument);
+        using var ownerLease = LocalProcessHost.Supported ? new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.Inheritable) : null;
+        var start = LocalProcessHost.Start(executable, directory, arguments, ownerLease?.GetClientHandleAsString());
+        start.UseShellExecute = false; start.RedirectStandardInput = true; start.RedirectStandardOutput = true; start.RedirectStandardError = true; start.CreateNoWindow = true;
         if (environment is not null) foreach (var entry in environment) start.Environment[entry.Key] = entry.Value;
         if (agentClient) start.Environment.Remove("CLAUDECODE"); // The worker is a separate CLI client, not a nested Claude tool call.
         using var process = new Process { StartInfo = start };
-        process.Start();
-        using var registration = ct.Register(() => { try { if (!process.HasExited) process.Kill(entireProcessTree: true); } catch (InvalidOperationException) { } });
-        var readOut = Read(process.StandardOutput, stdout); var readError = Read(process.StandardError, stderr);
+        ct.ThrowIfCancellationRequested();
+        process.Start(); ownerLease?.DisposeLocalCopyOfClientHandle();
+        using var registration = ct.Register(() => LocalProcessHost.Stop(process));
+        var readOut = Read(process.StandardOutput, stdout, ct); var readError = Read(process.StandardError, stderr, ct);
         try
         {
             if (input is not null) await process.StandardInput.WriteAsync(input.AsMemory(), ct);
             process.StandardInput.Close();
             await Task.WhenAll(readOut, readError, process.WaitForExitAsync(ct));
+            ct.ThrowIfCancellationRequested();
             return process.ExitCode;
         }
         finally
         {
-            if (!process.HasExited) { try { process.Kill(entireProcessTree: true); } catch (InvalidOperationException) { } }
+            LocalProcessHost.Stop(process);
             await process.WaitForExitAsync(CancellationToken.None);
             await Task.WhenAll(readOut, readError);
         }
-        static async Task Read(StreamReader reader, Func<string, Task> receive)
-        { while (await reader.ReadLineAsync() is { } line) await receive(line); }
+        static async Task Read(StreamReader reader, Func<string, Task> receive, CancellationToken token)
+        { while (await reader.ReadLineAsync(token) is { } line) await receive(line); }
     }
 }
 
@@ -122,7 +127,11 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
             var updated = await store.WriteAsync(data =>
             {
                 var current = data.AgentRuns.SingleOrDefault(x => x.Id == run.Id);
-                if (current?.State == "queued") current.Start(workspace, commit);
+                if (current?.State == "queued")
+                {
+                    if (current.FactoryStepRunId is { } stepId) FactoryExecutionPolicyService.Require(data, FactoryDispatchService.Find(data, data.FactoryStepRuns.Single(x => x.Id == stepId).RunId));
+                    current.Start(workspace, commit);
+                }
             }, ct);
             if (updated.AgentRuns.SingleOrDefault(x => x.Id == run.Id)?.State != "running") return;
             if (run.ExecutionPermission == "workspace-write" && run.PreviousRunId is null && run.FactoryStepRunId is null)
@@ -135,10 +144,11 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
             var code = await AgentProcess.Run(environment.Executable(run.Provider), workspace, arguments, Prompt(run),
                 async line =>
                 {
-                    string? session = null; var progress = line;
+                    string? session = null; var progress = line; AgentUsageObservation? usage = null;
                     try
                     {
                         using var document = JsonDocument.Parse(line); var root = document.RootElement;
+                        usage = LocalAgentUsage.Read(run.Provider, root);
                         if (root.TryGetProperty("thread_id", out var thread)) session = thread.GetString();
                         if (root.TryGetProperty("session_id", out var sessionValue)) session = sessionValue.GetString();
                         var type = root.TryGetProperty("type", out var typeValue) ? typeValue.GetString() : "event";
@@ -161,7 +171,7 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
                         if (type is "turn.failed" or "error") { providerError = line; progress = line; }
                     }
                     catch (Exception error) when (error is JsonException or InvalidOperationException) { /* Preserve unrecognized protocol diagnostics. */ }
-                    await store.WriteAsync(data => { var current = AgentService.Find(data, run.Id); if (session is not null) current.RecordSession(session); current.Progress(progress + "\n", options.MaxOutputCharacters); }, CancellationToken.None);
+                    await store.WriteAsync(data => { var current = AgentService.Find(data, run.Id); current.ObserveUsage(usage, options.MaxUsageEvents, options.MaxOutputCharacters); if (session is not null) current.RecordSession(session); current.Progress(progress + "\n", options.MaxOutputCharacters); }, CancellationToken.None);
                 },
                 line => Append(run.Id, line), ct, agentClient: true);
             if (run.ExecutionPermission == "workspace-write") diff = await CaptureDiff(workspace, commit, ct);

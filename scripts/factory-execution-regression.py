@@ -245,7 +245,9 @@ print(json.dumps({'type':'item.completed','item':{'type':'agent_message','text':
         cleanup_file=Path(running_stop['run']['workspacePath'])/'git-cleanup-pid.txt'
         wait(stopping,lambda d:d['run']['state']=='cancelling' and cleanup_file.exists())
         cleanup_pid=int(cleanup_file.read_text());before_crash=len(trace_rows());process.kill();process.wait(timeout=25)
-        os.kill(cleanup_pid,9);cleanup_pid=None;start();recovered_stop=read(stopping)
+        try:os.kill(cleanup_pid,9)
+        except ProcessLookupError:pass  # The backend owner lease may already have stopped it.
+        cleanup_pid=None;start();recovered_stop=read(stopping)
         stopped_child=call('/api/agents/runs/'+recovered_stop['steps'][0]['agentRunId'])
         check(recovered_stop['run']['state']=='interrupted' and stopped_child['state']=='interrupted','a crash during child cleanup recovers both stopping records as interrupted, never confirmed cancelled')
         time.sleep(.6)

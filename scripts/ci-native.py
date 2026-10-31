@@ -79,23 +79,27 @@ if __name__ == '__main__':
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.StoreRegression', '--',
             API / 'factory-templates.json')
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.WalRegression')
+        run('dotnet', 'run', '--project', ROOT / 'tests/Planner.ExecutionPolicyMigrationRegression')
         workspace_regression()
     core = (
         'spec-file', 'agent', 'factory', 'factory-run', 'factory-execution',
         'factory-quality', 'factory-review', 'factory-repair',
-        'factory-skills',
+        'factory-skills', 'factory-routing',
     )
+    if suite in ('all', 'core'):
+        run(sys.executable, ROOT / 'scripts/factory-repair-regression.py', '--execution-policy')
     providers = ('factory-delivery', 'factory-intake')
     deployments = ('factory-deployment',)
     if suite in ('all', 'providers'):
         run(sys.executable, ROOT / 'scripts/regression-processes-test.py')
+        run(sys.executable, ROOT / 'scripts/factory-routing-regression.py', '--postman')
     selected = core if suite == 'core' else providers if suite == 'providers' else deployments if suite == 'deployments' else core + providers + deployments
     for name in selected:
         run(sys.executable, ROOT / f'scripts/{name}-regression.py')
     for name in (() if suite == 'core' else ('Factory deployment regression',) if suite == 'deployments' else ('Planner API', 'Planner regression', 'Factory regression',
                  'Factory review regression', 'Factory repair regression',
                  'Factory delivery regression', 'Factory intake regression',
-                 'Factory skills regression')):
+                 'Factory skills regression', 'Factory routing regression')):
         run('postman', 'collection', 'lint', ROOT / 'postman/collections' / name,
             '--reporter', 'cli', '--fail-severity', 'error')
 

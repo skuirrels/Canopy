@@ -121,6 +121,12 @@ namespace Planner.Api.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("VARCHAR");
 
+                    b.Property<string>("UsageJson")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("VARCHAR")
+                        .HasDefaultValue("");
+
                     b.Property<string>("WorkspacePath")
                         .HasColumnType("VARCHAR");
 
@@ -1256,6 +1262,20 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DeliveryPolicies");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.ProjectFactoryExecutionPolicy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("PolicyJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExecutionPolicies");
                 });
 
             modelBuilder.Entity("Planner.Api.Domain.ProjectRepairPolicy", b =>

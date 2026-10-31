@@ -5,6 +5,9 @@ using Planner.Api.Domain;
 using Planner.Api.Infrastructure;
 using Planner.Api;
 
+if (args.FirstOrDefault() == LocalProcessHost.Argument)
+{ Environment.ExitCode = await LocalProcessHost.Run(args); return; }
+
 var builder = WebApplication.CreateBuilder(args);
 // Optional machine settings stay out of source control. Preserve environment/CLI precedence.
 builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: false).AddEnvironmentVariables().AddCommandLine(args);
@@ -28,6 +31,8 @@ builder.Services.AddSingleton<IReadOnlyList<FactoryTemplate>>(factoryTemplates);
 builder.Services.AddScoped<FactoryService>();
 builder.Services.AddSingleton<IFactoryEnvironment, LocalFactoryEnvironment>();
 builder.Services.AddScoped<FactoryRunService>();
+builder.Services.AddSingleton<FactoryExecutionPolicyService>();
+builder.Services.AddHostedService<LocalFactoryPolicyMonitor>();
 builder.Services.AddSingleton<LocalVerificationEnvironment>();
 builder.Services.AddSingleton<IVerificationEnvironment>(services => services.GetRequiredService<LocalVerificationEnvironment>());
 builder.Services.AddSingleton<IReviewChanges>(services => services.GetRequiredService<LocalVerificationEnvironment>());

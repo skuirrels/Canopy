@@ -43,6 +43,7 @@ public sealed class WorkspaceData
     [JsonIgnore] public List<FactoryVerificationReceipt> VerificationReceipts { get; init; } = [];
     [JsonIgnore] public List<FactoryCriterionVerdict> CriterionVerdicts { get; init; } = [];
     [JsonIgnore] public List<FactoryArtifact> FactoryArtifacts { get; init; } = [];
+    [JsonIgnore] public List<ProjectFactoryExecutionPolicy> ExecutionPolicies { get; init; } = [];
     [JsonIgnore] public List<FactoryRun> FactoryRuns { get; init; } = [];
     [JsonIgnore] public List<FactoryStageRun> FactoryStageRuns { get; init; } = [];
     [JsonIgnore] public List<FactoryStepRun> FactoryStepRuns { get; init; } = [];

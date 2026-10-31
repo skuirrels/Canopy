@@ -10,6 +10,7 @@ public sealed record FactorySkillLocation(string Id, string Source, string Path)
 // Provider credentials/model access and execution success are never inferred from a binary.
 public sealed class LocalFactoryEnvironment(LocalAgentEnvironment agents, IFactorySkillCatalogue catalogue) : IFactoryEnvironment
 {
+    public bool CanBoundProcessLifetime => LocalProcessHost.Supported;
     public async Task<FactoryInspection> InspectCaptured(FactoryEnvironmentSnapshot snapshot, CancellationToken ct)
     {
         var connection = ProjectAgentConnection.Create(Guid.Empty);

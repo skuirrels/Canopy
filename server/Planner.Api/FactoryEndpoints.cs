@@ -19,6 +19,12 @@ public static class FactoryEndpoints
             http.Response.Headers.CacheControl = "no-store";
             return await next(context);
         });
+        group.MapGet("/projects/{id:guid}/execution-policy", (Guid id, FactoryExecutionPolicyService service, CancellationToken ct) => service.Read(id, ct))
+            .WithSummary("Read model routes, invocation limits and enforcement capabilities").ProducesProblem(403).ProducesProblem(404);
+        group.MapPut("/projects/{id:guid}/execution-policy", (Guid id, EditFactoryExecutionPolicy input, FactoryExecutionPolicyService service, CancellationToken ct) => service.Edit(id, input, ct))
+            .WithSummary("Adopt explicit project model routes and work-order budgets")
+            .WithDescription("Optimistic project revision. Preparation executes nothing. Enabled policy pins requested models and requires explicit unmetered-cost consent for agents. Invocation reservations and elapsed time are enforced; hard token or currency caps block dispatch. Changed policy revokes pending work and cancels owned processes, retaining evidence.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
         group.MapGet("/projects/{id:guid}/skills", (Guid id, FactorySkillService service, CancellationToken ct) => service.Read(id, ct))
             .WithSummary("Observe configured installed skills").WithDescription("Read-only bounded catalogue for this project's explicit skill files and discovery roots. Entries retain exact IDs/sources, paths and byte hashes. Source coverage and unavailable/ambiguous references remain visible. Reading or selecting never installs, executes or verifies provider compatibility.")
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404);
@@ -85,7 +91,7 @@ public static class FactoryEndpoints
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
         group.MapPost("/repair-loops/{id:guid}/advance", (Guid id, AdvanceRepairLoop input, FactoryRepairService service, CancellationToken ct) => service.Advance(id, input, ct))
             .WithDescription("Bounded repair policy, immutable scope and attempt lineage. Execution requires explicit advance; fresh QA and independent review remain required. Money usage is unavailable.")
-            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
         group.MapPost("/repair-loops/{id:guid}/stop", (Guid id, StopRepairLoop input, FactoryRepairService service, CancellationToken ct) => service.Stop(id, input, ct))
             .WithDescription("Bounded repair policy, immutable scope and attempt lineage. Execution requires explicit advance; fresh QA and independent review remain required. Money usage is unavailable.")
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
@@ -114,7 +120,7 @@ public static class FactoryEndpoints
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
         group.MapPost("/runs/{id:guid}/start", (Guid id, StartFactoryRun input, FactoryDispatchService service, CancellationToken ct) => service.Start(id, input, ct))
             .WithDescription("Explicitly dispatch a prepared work order in its own worktree. expectedRevision is the run revision. Reusing the same requestId never redispatches work.")
-            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503);
         group.MapPost("/runs/{id:guid}/cancel", (Guid id, CancelFactoryRun input, FactoryDispatchService service, CancellationToken ct) => service.Cancel(id, input, ct))
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
         group.MapPost("/runs/{id:guid}/steps/{stepId:guid}/decision", (Guid id, Guid stepId, DecideFactoryStep input, FactoryDispatchService service, CancellationToken ct) => service.Decide(id, stepId, input, ct))

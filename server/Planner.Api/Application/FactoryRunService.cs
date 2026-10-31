@@ -6,14 +6,16 @@ namespace Planner.Api.Application;
 public sealed record FactoryInspection(FactoryEnvironmentSnapshot? Environment, IReadOnlyList<FactoryReadinessCheck> Checks);
 public interface IFactoryEnvironment
 {
+    bool CanBoundProcessLifetime { get; }
     Task<FactoryInspection> InspectCaptured(FactoryEnvironmentSnapshot snapshot, CancellationToken ct);
     Task<FactoryInspection> Inspect(FactoryDefinition definition, ProjectAgentConnection? connection, CancellationToken ct);
 }
 public sealed record FactoryReadiness(long ProjectRevision, bool CanPrepare, string ExecutionReadiness,
-    DateTime CheckedAt, IReadOnlyList<FactoryReadinessCheck> Checks, FactoryEnvironmentSnapshot? Environment);
+    DateTime CheckedAt, IReadOnlyList<FactoryReadinessCheck> Checks, FactoryEnvironmentSnapshot? Environment,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] FactoryExecutionSnapshot? Execution = null);
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record PrepareFactoryRun(Guid RequestId, long ExpectedRevision);
-public sealed record FactoryRunDetail(FactoryRun Run, IReadOnlyList<FactoryStageRun> Stages, IReadOnlyList<FactoryStepRun> Steps, IReadOnlyList<FactoryArtifact> Artifacts);
+public sealed record FactoryRunDetail(FactoryRun Run, IReadOnlyList<FactoryStageRun> Stages, IReadOnlyList<FactoryStepRun> Steps, IReadOnlyList<FactoryArtifact> Artifacts, FactoryBudgetView Budget);
 public sealed record FactoryRunSummary(Guid Id, Guid ItemId, string State, DateTime CreatedAt, string PipelineName, int VersionNumber, string Title, long Revision);
 
 public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment environment)
@@ -37,9 +39,10 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
             checks.Add(new("task.specification", "error", "Write a task specification before preparing implementation work."));
         foreach (var issue in FactoryRules.Validate(definition).Diagnostics)
             checks.Add(new(issue.Code, issue.Severity, issue.Message, issue.StageId, issue.StepId));
-        var inspection = await environment.Inspect(definition, data.AgentConnections.SingleOrDefault(x => x.ProjectId == item.ProjectId), ct);
+        var policyInspection = await FactoryExecutionPolicyService.Inspect(data, item.ProjectId, definition, data.AgentConnections.SingleOrDefault(x => x.ProjectId == item.ProjectId), environment, ct, attachment.Overrides);
+        var inspection = policyInspection.Inspection;
         checks.AddRange(inspection.Checks);
-        return new(revision, inspection.Environment is not null && checks.All(x => x.Severity != "error"), "notEvaluated", DateTime.UtcNow, checks, inspection.Environment);
+        return new(revision, inspection.Environment is not null && checks.All(x => x.Severity != "error"), "notEvaluated", DateTime.UtcNow, checks, inspection.Environment, policyInspection.Execution);
     }
     public async Task<FactoryRunDetail> Prepare(Guid itemId, PrepareFactoryRun input, CancellationToken ct)
     {
@@ -53,7 +56,7 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
         var attachment = before.TaskFactoryConfigurations.Single(x => x.Id == itemId);
         var version = before.PipelineVersions.Single(x => x.Id == attachment.PipelineVersionId);
         var snapshot = new FactoryRunSnapshot(version.Id, version.Number, version.Name, version.Source, item.Title, item.SpecJson,
-            input.ExpectedRevision, attachment.Overrides, readiness.Environment!, readiness.Checks, readiness.CheckedAt, before.AcceptanceCriteria.SingleOrDefault(x => x.Id == itemId)?.Criteria ?? []);
+            input.ExpectedRevision, attachment.Overrides, readiness.Environment!, readiness.Checks, readiness.CheckedAt, before.AcceptanceCriteria.SingleOrDefault(x => x.Id == itemId)?.Criteria ?? [], Execution: readiness.Execution);
         var run = FactoryRun.Prepare(input.RequestId, item, snapshot);
         var saved = await store.WriteAsync(data =>
         {
@@ -61,6 +64,7 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
             if (existing is not null) { Replay(data, existing, itemId); return; }
             data.ForItem(itemId, input.ExpectedRevision);
             if (((data.Deliveries.Any(x => x.ItemId == itemId && x.Open) || data.RepairLoops.Any(x => x.ItemId == itemId && x.Open)) || data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) throw new RuleException("Stop the repair loop or close the delivery, or wait for active execution.", 409);
+            FactoryExecutionPolicyService.RequireCurrent(data, item.ProjectId, snapshot.Execution);
             data.FactoryRuns.Add(run);
             foreach (var stage in snapshot.Environment.Definition.Stages)
             {
@@ -99,6 +103,6 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
         var stages = data.FactoryStageRuns.Where(x => x.RunId == run.Id).ToDictionary(x => x.StageId);
         var steps = data.FactoryStepRuns.Where(x => x.RunId == run.Id).ToDictionary(x => (x.StageRunId, x.StepId));
         return new(run, definition.Stages.Select(stage => stages[stage.Id]).ToList(),
-            definition.Stages.SelectMany(stage => stage.Steps.Select(step => steps[(stages[stage.Id].Id, step.Id)])).ToList(), data.FactoryArtifacts.Where(x => x.RunId == run.Id).OrderBy(x => x.Name).ToList());
+            definition.Stages.SelectMany(stage => stage.Steps.Select(step => steps[(stages[stage.Id].Id, step.Id)])).ToList(), data.FactoryArtifacts.Where(x => x.RunId == run.Id).OrderBy(x => x.Name).ToList(), FactoryExecutionPolicyService.Budget(data, run));
     }
 }

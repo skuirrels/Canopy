@@ -37,6 +37,7 @@ public sealed class LocalVerificationEnvironment( IMarkdownFiles markdown, Agent
             .Select(name => new { name, value = Environment.GetEnvironmentVariable(name) ?? throw new RuleException($"Verification environment reference '{name}' is unavailable.") }).ToArray();
         // Only the composite digest is persisted, never resolved environment values.
         var configurationHash = FactoryArtifact.Hash(JsonSerializer.Serialize(new { snapshot.Environment, snapshot.SpecJson, snapshot.Criteria, skills, references }, FactoryRules.Json));
+        if (snapshot.Execution is not null) configurationHash = FactoryArtifact.Hash(configurationHash + JsonSerializer.Serialize(snapshot.Execution, FactoryRules.Json));
         if (snapshot.Repair is not null) configurationHash = FactoryArtifact.Hash(configurationHash + JsonSerializer.Serialize(snapshot.Repair, FactoryRules.Json));
         if (head != (await Git(root, ["rev-parse", "HEAD"], ct)).Trim() || paths != await Git(root, ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], ct))
             throw new RuleException("Verification inputs changed during inspection. Refresh and verify again.", 409);

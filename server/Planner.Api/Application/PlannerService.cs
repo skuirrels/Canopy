@@ -25,7 +25,7 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
         data.SpecFiles.RemoveAll(x => x.ProjectId == id);
         data.TaskFactoryConfigurations.RemoveAll(x => x.ProjectId == id);
         data.PipelineVersions.RemoveAll(x => x.ProjectId == id); data.FactoryPipelines.RemoveAll(x => x.ProjectId == id);
-        data.RepairPolicies.RemoveAll(x => x.Id == id); data.DeliveryPolicies.RemoveAll(x => x.Id == id);
+        data.ExecutionPolicies.RemoveAll(x => x.Id == id); data.RepairPolicies.RemoveAll(x => x.Id == id); data.DeliveryPolicies.RemoveAll(x => x.Id == id);
         data.AcceptanceCriteria.RemoveAll(x => x.ProjectId == id);
         data.Dependencies.RemoveAll(x => x.ProjectId == id); data.Items.RemoveAll(x => x.ProjectId == id);
         data.Statuses.RemoveAll(x => x.ProjectId == id); data.Projects.Remove(graph.Project);

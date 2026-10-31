@@ -1,0 +1,21 @@
+$kind: http-request
+name: Reject stale adoption
+method: PUT
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/execution-policy'
+order: 4000
+body:
+  type: json
+  content: |-
+    {"expectedRevision": {{revision}}, "policy": {{policyJson}}}
+headers:
+  - key: Content-Type
+    value: application/json
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')||!pm.variables.get('baseUrl')) throw new Error('Supply isolated fixtureMode, baseUrl and projectId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Stale revision rejected',()=>pm.response.to.have.status(409));

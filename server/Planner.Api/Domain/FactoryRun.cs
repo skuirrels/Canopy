@@ -11,7 +11,8 @@ public sealed record FactoryEnvironmentSnapshot(string RepositoryPath, string Ba
     string ProjectInstructions, string DefaultProvider, FactoryDefinition Definition, IReadOnlyList<FactorySkillSnapshot> Skills);
 public sealed record FactoryRunSnapshot(Guid PipelineVersionId, int VersionNumber, string PipelineName, string Source,
     string Title, string SpecJson, long ProjectRevision, FactoryOverrides Overrides,
-    FactoryEnvironmentSnapshot Environment, IReadOnlyList<FactoryReadinessCheck> Checks, DateTime CheckedAt, IReadOnlyList<AcceptanceCriterion>? Criteria = null, FactoryRepairLineage? Repair = null);
+    FactoryEnvironmentSnapshot Environment, IReadOnlyList<FactoryReadinessCheck> Checks, DateTime CheckedAt, IReadOnlyList<AcceptanceCriterion>? Criteria = null, FactoryRepairLineage? Repair = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] FactoryExecutionSnapshot? Execution = null);
 
 public sealed class FactoryRun
 {
@@ -115,7 +116,7 @@ public sealed class FactoryStepRun
     {
         if (State is not ("queued" or "running")) return;
         Output = agent.Output; StartedAt ??= agent.StartedAt;
-        if (Evidence.Length == 0) Evidence = JsonSerializer.Serialize(new { agentRunId = agent.Id, agent.State, agent.Result, agent.Diff, agent.Error }, FactoryRules.Json);
+        if (Evidence.Length == 0) Evidence = JsonSerializer.Serialize(new { agentRunId = agent.Id, agent.State, agent.Result, agent.Diff, agent.Error, agent.Usage }, FactoryRules.Json);
     }
     public void Wait() { if (State != "running") throw new RuleException("This step cannot wait.", 409); State = "waiting"; }
     public void Progress(string text, int limit) { OutputLimitReached |= Output.Length + text.Length >= limit; Output = AgentRun.Tail(Output + text, limit); }

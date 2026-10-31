@@ -1,0 +1,23 @@
+$kind: http-request
+name: Adopt unchanged captured settings
+method: PUT
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/execution-policy'
+order: 3000
+body:
+  type: json
+  content: |-
+    {"expectedRevision": {{revision}}, "policy": {{policyJson}}}
+headers:
+  - key: Content-Type
+    value: application/json
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('projectId')||!pm.variables.get('baseUrl')) throw new Error('Supply isolated fixtureMode, baseUrl and projectId.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Explicit adoption succeeds',()=>pm.response.to.have.status(200));const d=pm.response.json();
+      pm.test('Adoption preserves caller settings',()=>pm.expect(d.policy).to.deep.eql(JSON.parse(pm.collectionVariables.get('policyJson'))));
+      pm.test('Optimistic revision advances',()=>pm.expect(d.projectRevision).to.eql(Number(pm.collectionVariables.get('revision'))+1));

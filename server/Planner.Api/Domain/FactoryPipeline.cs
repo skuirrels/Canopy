@@ -27,6 +27,7 @@ public sealed record FactoryValidation(bool Valid, string ExecutionReadiness, IR
 
 public static partial class FactoryRules
 {
+    public static IReadOnlyList<string> AgentRoles { get; } = Array.AsReadOnly(new[] { "specification", "implementation", "verification", "review", "documentation" });
     internal static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     // Configuration documents follow the existing rich specification size boundary.
     private const int MaxDocumentBytes = 2_000_000;
@@ -69,7 +70,7 @@ public static partial class FactoryRules
                 if (step.Kind == "agent")
                 {
                     if (string.IsNullOrWhiteSpace(step.Instructions)) StepError("agent.instructions", "Agent instructions are required.", "instructions");
-                    if (step.Role is not ("specification" or "implementation" or "verification" or "review" or "documentation")) StepError("agent.role", "Choose an agent role.", "role");
+                    if (!AgentRoles.Contains(step.Role ?? "")) StepError("agent.role", "Choose an agent role.", "role");
                     if (step.Permission is not ("read-only" or "workspace-write")) StepError("agent.permission", "Choose read-only or workspace-write.", "permission");
                     if (step.Role == "review" && step.Permission != "read-only") StepError("review.permission", "Review must use read-only permissions.", "permission");
                     if (step.Provider is not (null or "codex" or "claude")) StepError("agent.provider", "Choose codex, claude or inherit the project setting with null.", "provider");

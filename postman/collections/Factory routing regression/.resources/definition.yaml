@@ -1,0 +1,8 @@
+$kind: collection
+name: Factory routing regression
+description: Revision and capability checks against an explicitly supplied isolated execution-policy fixture. No model calls.
+variables:
+  - key: baseUrl
+    value: ''
+  - key: projectId
+    value: ''

@@ -27,6 +27,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             var repairPolicies = data.RepairPolicies.ToList(); var repairLoops = data.RepairLoops.ToList(); var repairAttempts = data.RepairAttempts.ToList();
             var reviewRounds = data.ReviewRounds.ToList(); var reviewFindings = data.ReviewFindings.ToList();
             var criteria = data.AcceptanceCriteria.ToList(); var receipts = data.VerificationReceipts.ToList(); var verdicts = data.CriterionVerdicts.ToList();
+            var executionPolicies = data.ExecutionPolicies.ToList();
             var artifacts = data.FactoryArtifacts.ToList();
             var factoryRuns = data.FactoryRuns.ToList(); var stageRuns = data.FactoryStageRuns.ToList(); var stepRuns = data.FactoryStepRuns.ToList();
             var specFiles = data.SpecFiles.ToList();
@@ -40,6 +41,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             Sync(db, repairPolicies, data.RepairPolicies); Sync(db, repairLoops, data.RepairLoops); Sync(db, repairAttempts, data.RepairAttempts);
             Sync(db, reviewRounds, data.ReviewRounds); Sync(db, reviewFindings, data.ReviewFindings);
             Sync(db, criteria, data.AcceptanceCriteria); Sync(db, receipts, data.VerificationReceipts); Sync(db, verdicts, data.CriterionVerdicts);
+            Sync(db, executionPolicies, data.ExecutionPolicies);
             Sync(db, artifacts, data.FactoryArtifacts);
             Sync(db, factoryRuns, data.FactoryRuns); Sync(db, stageRuns, data.FactoryStageRuns); Sync(db, stepRuns, data.FactoryStepRuns);
             Sync(db, specFiles, data.SpecFiles);
@@ -64,6 +66,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
         ReviewRounds = await db.ReviewRounds.ToListAsync(ct), ReviewFindings = await db.ReviewFindings.ToListAsync(ct),
         AcceptanceCriteria = await db.AcceptanceCriteria.ToListAsync(ct),
         VerificationReceipts = await db.VerificationReceipts.ToListAsync(ct), CriterionVerdicts = await db.CriterionVerdicts.ToListAsync(ct),
+        ExecutionPolicies = await db.ExecutionPolicies.ToListAsync(ct),
         FactoryArtifacts = await db.FactoryArtifacts.ToListAsync(ct),
         FactoryRuns = await db.FactoryRuns.OrderBy(x => x.CreatedAt).ToListAsync(ct),
         FactoryStageRuns = await db.FactoryStageRuns.ToListAsync(ct), FactoryStepRuns = await db.FactoryStepRuns.ToListAsync(ct),
