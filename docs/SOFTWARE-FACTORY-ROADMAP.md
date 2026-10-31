@@ -4,6 +4,8 @@ Canopy records acceptance criteria, revision-bound verification evidence and
 explicit operator QA verdicts, independent review rounds and persistent findings.
 It also supports bounded repair, controlled PR delivery and verified problem intake.
 
+Start using it with the [Phase 1 quick start and screenshots](PHASE1-QUICKSTART.md).
+
 ## Delivered foundation
 
 - [x] Persistent pipelines, configured templates, custom stages, immutable
