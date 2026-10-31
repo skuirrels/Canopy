@@ -9,9 +9,9 @@ public sealed record EditIntakeSource(long ExpectedRevision, long ExpectedSource
 public sealed record CollectIntake(Guid RequestId, long ExpectedSourceRevision);
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record ActOnIntake(Guid RequestId, long ExpectedRevision, long ExpectedProjectRevision, string Action, string Reason, Guid? TaskId, Guid? StatusId, string? TaskTitle);
-public sealed record IntakeLibrary(long ProjectRevision, IReadOnlyList<FactoryIntakeSource> Sources, IReadOnlyList<FactoryIntakeCollection> Collections, IReadOnlyList<IntakeCandidatePreview> Candidates, IReadOnlyList<FactoryErrorFeedReceipt> ErrorFeedReceipts, ErrorFeedCatalogue ErrorFeeds);
+public sealed record IntakeLibrary(long ProjectRevision, IReadOnlyList<FactoryIntakeSource> Sources, IReadOnlyList<FactoryIntakeCollection> Collections, IReadOnlyList<IntakeCandidatePreview> Candidates, IReadOnlyList<FactoryErrorFeedReceipt> ErrorFeedReceipts, ErrorFeedCatalogue ErrorFeeds, IReadOnlyList<FactoryAnalyticsReceipt> AnalyticsReceipts, AnalyticsFeedCatalogue AnalyticsFeeds);
 public sealed record IntakeCandidatePreview(FactoryIntakeCandidate Candidate, IntakeObservation Observation, bool Current, bool LinkedTaskExists, IReadOnlyList<Guid> MatchingTaskIds);
-public sealed record IntakeCandidateDetail(IntakeCandidatePreview Preview, IReadOnlyList<IntakeObservation> Observations, IReadOnlyList<IntakeDecision> Decisions, IReadOnlyList<FactoryErrorFeedReceipt> ErrorFeedReceipts);
+public sealed record IntakeCandidateDetail(IntakeCandidatePreview Preview, IReadOnlyList<IntakeObservation> Observations, IReadOnlyList<IntakeDecision> Decisions, IReadOnlyList<FactoryErrorFeedReceipt> ErrorFeedReceipts, IReadOnlyList<FactoryAnalyticsReceipt> AnalyticsReceipts);
 public interface IIntakeIssues
 {
     string Binding { get; }

@@ -5116,6 +5116,58 @@
           }
         }
       }
+    },
+    "/api/factory/projects/{id}/intake/analytics-feeds": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Read configured analytics feeds and explicit metric rules",
+        "description": "Read-only catalogue of configured source/application/environment, units, statistics, exact decimal thresholds and minimum reported samples. No paths, implicit metric policy or execution authority.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsFeedCatalogue"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -10803,7 +10855,8 @@
           "preview",
           "observations",
           "decisions",
-          "errorFeedReceipts"
+          "errorFeedReceipts",
+          "analyticsReceipts"
         ],
         "type": "object",
         "properties": {
@@ -10826,6 +10879,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FactoryErrorFeedReceipt"
+            }
+          },
+          "analyticsReceipts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryAnalyticsReceipt"
             }
           }
         }
@@ -10919,6 +10978,21 @@
             "items": {
               "type": "string"
             }
+          },
+          "analyticsFeedId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "analyticsRuleIds": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
           }
         },
         "additionalProperties": false
@@ -10971,7 +11045,9 @@
           "collections",
           "candidates",
           "errorFeedReceipts",
-          "errorFeeds"
+          "errorFeeds",
+          "analyticsReceipts",
+          "analyticsFeeds"
         ],
         "type": "object",
         "properties": {
@@ -11009,6 +11085,15 @@
           },
           "errorFeeds": {
             "$ref": "#/components/schemas/ErrorFeedCatalogue"
+          },
+          "analyticsReceipts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryAnalyticsReceipt"
+            }
+          },
+          "analyticsFeeds": {
+            "$ref": "#/components/schemas/AnalyticsFeedCatalogue"
           }
         }
       },
@@ -12124,6 +12209,251 @@
               "string"
             ],
             "format": "int32"
+          }
+        }
+      },
+      "FactoryAnalyticsReceipt": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/AnalyticsCoverage"
+          }
+        }
+      },
+      "AnalyticsFeedCatalogue": {
+        "required": [
+          "feeds",
+          "supported"
+        ],
+        "type": "object",
+        "properties": {
+          "feeds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnalyticsFeedChoice"
+            }
+          },
+          "supported": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AnalyticsFeedChoice": {
+        "required": [
+          "id",
+          "name",
+          "identity",
+          "maxAgeSeconds",
+          "maxWindowSeconds",
+          "dimensionNames",
+          "rules"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "identity": {
+            "$ref": "#/components/schemas/AnalyticsIdentity"
+          },
+          "maxAgeSeconds": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "maxWindowSeconds": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "dimensionNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnalyticsRule"
+            }
+          }
+        }
+      },
+      "AnalyticsRule": {
+        "required": [
+          "id",
+          "name",
+          "condition"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "condition": {
+            "$ref": "#/components/schemas/AnalyticsCondition"
+          }
+        }
+      },
+      "AnalyticsIdentity": {
+        "required": [
+          "sourceId",
+          "application",
+          "environment"
+        ],
+        "type": "object",
+        "properties": {
+          "sourceId": {
+            "type": "string"
+          },
+          "application": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          }
+        }
+      },
+      "AnalyticsCoverage": {
+        "required": [
+          "feedId",
+          "identity",
+          "reportId",
+          "reportHash",
+          "fileHash",
+          "bytes",
+          "generatedAt",
+          "windowStart",
+          "windowEnd",
+          "reportedSeries",
+          "selectedSeries",
+          "availableSeries",
+          "qualifyingSignals"
+        ],
+        "type": "object",
+        "properties": {
+          "feedId": {
+            "type": "string"
+          },
+          "identity": {
+            "$ref": "#/components/schemas/AnalyticsIdentity"
+          },
+          "reportId": {
+            "type": "string"
+          },
+          "reportHash": {
+            "type": "string"
+          },
+          "fileHash": {
+            "type": "string"
+          },
+          "bytes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "windowStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "windowEnd": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reportedSeries": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "selectedSeries": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "availableSeries": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "qualifyingSignals": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "AnalyticsCondition": {
+        "required": [
+          "metricId",
+          "unit",
+          "statistic",
+          "comparison",
+          "threshold",
+          "minimumSamples"
+        ],
+        "type": "object",
+        "properties": {
+          "metricId": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "statistic": {
+            "type": "string"
+          },
+          "comparison": {
+            "type": "string"
+          },
+          "threshold": {
+            "type": "string"
+          },
+          "minimumSamples": {
+            "type": "string"
           }
         }
       }

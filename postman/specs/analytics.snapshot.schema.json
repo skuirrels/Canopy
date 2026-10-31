@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Canopy complete analytics metric snapshot",
+  "description": "Producer-owned aggregate provenance. Configured source scope, units/statistics/dimensions, exact decimal range, sample semantics, freshness/window/byte/series bounds and immutable report IDs are validated by the backend.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "reportId",
+    "sourceId",
+    "application",
+    "environment",
+    "generatedAt",
+    "windowStart",
+    "windowEnd",
+    "complete",
+    "sanitized",
+    "metrics"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "reportId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "sourceId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "application": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "environment": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "windowStart": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "windowEnd": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "complete": {
+      "const": true
+    },
+    "sanitized": {
+      "const": true
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "metricId",
+          "name",
+          "unit",
+          "statistic",
+          "value",
+          "samples",
+          "dimensions"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "metricId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "statistic": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                "maxLength": 64,
+                "description": "Exact .NET decimal value; no exponent notation or rounding. Canonicalized after exact validation."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "samples": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$",
+            "maxLength": 19,
+            "description": "Exact nonnegative signed-64-bit sample count. Zero requires value null."
+          },
+          "dimensions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name",
+                "value"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

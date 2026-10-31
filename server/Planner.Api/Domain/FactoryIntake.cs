@@ -6,11 +6,13 @@ namespace Planner.Api.Domain;
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record IntakeConfiguration(string Name, string Kind, bool Enabled, string Repository, IReadOnlyList<string> Labels, int MinimumOccurrences, IReadOnlyList<string> Categories,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ErrorFeedId = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<string>? Levels = null)
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<string>? Levels = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? AnalyticsFeedId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<string>? AnalyticsRuleIds = null)
 {
     public IntakeConfiguration Validate()
     {
-        if (Kind is not ("githubIssues" or "reviewFindings" or "applicationErrors")) throw new RuleException("Choose GitHub issues, recurring review findings or configured application errors.");
+        if (Kind is not ("githubIssues" or "reviewFindings" or "applicationErrors" or "analytics")) throw new RuleException("Choose GitHub issues, recurring review findings or configured application errors or analytics.");
         if (Labels is null || Categories is null) throw new RuleException("Explicit label and category lists are required.");
         var labels = Labels.Select(x => Rules.Name(x, "Label")).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToArray();
         var categories = Categories.Distinct().Order().ToArray();
@@ -20,7 +22,9 @@ public sealed record IntakeConfiguration(string Name, string Kind, bool Enabled,
             throw new RuleException("Review intake requires at least two distinct tasks, explicit finding categories and no GitHub repository/labels.");
         if (Kind != "applicationErrors" && (ErrorFeedId is not null || Levels is not null)) throw new RuleException("Only application-error sources accept a configured feed ID and levels.");
         if (Kind == "applicationErrors" && (Repository != "" || labels.Length != 0 || categories.Length != 0 || MinimumOccurrences < 1 || string.IsNullOrWhiteSpace(ErrorFeedId) || Levels is null || Levels.Count == 0)) throw new RuleException("Error intake requires a configured feed, explicit levels, a positive distinct-event threshold and no repository/labels/review categories.");
-        return this with { Name = Rules.Name(Name), Repository = Repository.ToLowerInvariant(), Labels = labels, Categories = categories, ErrorFeedId = ErrorFeedId is null ? null : Rules.Name(ErrorFeedId, "Error feed ID"), Levels = Levels?.Select(x => Rules.Name(x, "Error level")).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray() };
+        if (Kind != "analytics" && (AnalyticsFeedId is not null || AnalyticsRuleIds is not null)) throw new RuleException("Only analytics sources accept analytics feed/rule selections.");
+        if (Kind == "analytics" && (Repository != "" || labels.Length != 0 || categories.Length != 0 || MinimumOccurrences != 0 || string.IsNullOrWhiteSpace(AnalyticsFeedId) || AnalyticsRuleIds is null || AnalyticsRuleIds.Count == 0)) throw new RuleException("Analytics requires an explicit feed/rule subset and no repository, labels, recurrence threshold or review categories.");
+        return this with { Name = Rules.Name(Name), Repository = Repository.ToLowerInvariant(), Labels = labels, Categories = categories, ErrorFeedId = ErrorFeedId is null ? null : Rules.Name(ErrorFeedId, "Error feed ID"), Levels = Levels?.Select(x => Rules.Name(x, "Error level")).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(), AnalyticsFeedId = AnalyticsFeedId is null ? null : AnalyticsQuantity.Identity(AnalyticsFeedId, "Analytics feed identity", 400), AnalyticsRuleIds = AnalyticsRuleIds?.Select(x => AnalyticsQuantity.Identity(x, "Analytics rule identity", 400)).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray() };
     }
 }
 public sealed record IntakeSignal(string Fingerprint, string Title, string Description, string Origin, string? Url, bool Available, string EvidenceJson)
@@ -57,7 +61,7 @@ public sealed class FactoryIntakeSource
     public void Edit(long expected, IntakeConfiguration input, string? binding, string? identity)
     {
         Rules.Revision(expected, Revision); var config = input.Validate();
-        if (config.Kind != Configuration.Kind || config.Repository != Configuration.Repository || config.ErrorFeedId != Configuration.ErrorFeedId) throw new RuleException("Source kind, repository and error feed are immutable. Configure a new source instead.");
+        if (config.Kind != Configuration.Kind || config.Repository != Configuration.Repository || config.ErrorFeedId != Configuration.ErrorFeedId || config.AnalyticsFeedId != Configuration.AnalyticsFeedId) throw new RuleException("Source kind, repository and configured feed are immutable. Configure a new source instead.");
         if ((binding is null || identity is null) && config.Enabled) throw new RuleException("An enabled source requires its configured provider binding.", 409);
         ConfigurationJson = JsonSerializer.Serialize(config, FactoryRules.Json);
         if (binding is not null && identity is not null) { ProviderBinding = binding; Scope = ScopeFor(config, identity); }

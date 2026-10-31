@@ -295,3 +295,9 @@
 .error-feed-coverage,.error-group-evidence { border-left:3px solid var(--line); padding:8px 14px; margin:12px 0; min-width:0; overflow-wrap:anywhere; font-size:13px; }
 .error-feed-coverage h4,.error-group-evidence h4 { margin:0 0 8px; }
 .error-feed-coverage code { white-space:normal; overflow-wrap:anywhere; }
+
+.analytics-coverage,.analytics-evidence { border-left:3px solid var(--line); padding:8px 14px; margin:12px 0; min-width:0; overflow-wrap:anywhere; font-size:13px; }
+.analytics-coverage h4,.analytics-evidence h4 { margin:0 0 8px; }
+.analytics-coverage code { white-space:normal; overflow-wrap:anywhere; }
+.analytics-rule-choice { display:block; border:1px solid var(--line); border-radius:6px; padding:8px; margin:6px 0; }
+.analytics-rule-choice small { display:block; margin:5px 0 0 24px; overflow-wrap:anywhere; }

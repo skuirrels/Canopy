@@ -28,6 +28,9 @@ public static class FactoryEndpoints
         group.MapGet("/projects/{id:guid}/skills", (Guid id, FactorySkillService service, CancellationToken ct) => service.Read(id, ct))
             .WithSummary("Observe configured installed skills").WithDescription("Read-only bounded catalogue for this project's explicit skill files and discovery roots. Entries retain exact IDs/sources, paths and byte hashes. Source coverage and unavailable/ambiguous references remain visible. Reading or selecting never installs, executes or verifies provider compatibility.")
             .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404);
+        group.MapGet("/projects/{id:guid}/intake/analytics-feeds", (Guid id, FactoryIntakeService service, CancellationToken ct) => service.AnalyticsFeeds(id, ct))
+            .WithSummary("Read configured analytics feeds and explicit metric rules").WithDescription("Read-only catalogue of configured source/application/environment, units, statistics, exact decimal thresholds and minimum reported samples. No paths, implicit metric policy or execution authority.")
+            .ProducesProblem(403).ProducesProblem(404);
         group.MapGet("/projects/{id:guid}/intake/error-feeds", (Guid id, FactoryIntakeService service, CancellationToken ct) => service.ErrorFeeds(id, ct))
             .WithSummary("Read explicitly configured structured-error feeds")
             .WithDescription("Read-only catalogue; paths remain server configuration. No feed, levels or runtime events are adopted by default. Collection requires complete sanitized snapshots, bounded freshness and distinct upstream identities.")

@@ -6,6 +6,8 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
 {
     public DbSet<FactoryDeployment> Deployments => Set<FactoryDeployment>();
     public DbSet<FactoryDeploymentOperation> DeploymentOperations => Set<FactoryDeploymentOperation>();
+    public DbSet<FactoryAnalyticsReceipt> AnalyticsReceipts => Set<FactoryAnalyticsReceipt>();
+    public DbSet<FactoryAnalyticsReportIdentity> AnalyticsReportIdentities => Set<FactoryAnalyticsReportIdentity>();
     public DbSet<FactoryErrorEventIdentity> ErrorEventIdentities => Set<FactoryErrorEventIdentity>();
     public DbSet<FactoryErrorFeedReceipt> ErrorFeedReceipts => Set<FactoryErrorFeedReceipt>();
     public DbSet<FactoryIntakeSource> IntakeSources => Set<FactoryIntakeSource>();
@@ -52,6 +54,11 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
         model.Entity<FactoryDeploymentOperation>().Property(x => x.CreatedAt).HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
         model.Entity<FactoryDeploymentOperation>().Property(x => x.FinishedAt).HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : (DateTime?)null);
         model.Ignore<IntakeConfiguration>(); model.Ignore<IntakeSignal>();
+        model.Entity<FactoryAnalyticsReceipt>().HasKey(x => x.Id);
+        model.Entity<FactoryAnalyticsReceipt>().Ignore(x => x.Coverage);
+        model.Entity<FactoryAnalyticsReceipt>().HasIndex(x => x.ProjectId);
+        model.Entity<FactoryAnalyticsReportIdentity>().HasKey(x => x.Id);
+        model.Entity<FactoryAnalyticsReportIdentity>().HasIndex(x => new { x.ProjectId, x.Scope, x.ReportId }).IsUnique();
         model.Entity<FactoryErrorEventIdentity>().HasKey(x => x.Id);
         model.Entity<FactoryErrorEventIdentity>().HasIndex(x => new { x.ProjectId, x.Scope, x.EventId }).IsUnique();
         model.Entity<FactoryErrorFeedReceipt>().HasKey(x => x.Id);

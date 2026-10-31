@@ -1,0 +1,12 @@
+$kind: collection
+name: Factory analytics intake regression
+description: Real isolated analytic snapshot/native intake observations. No model calls or source-file writes.
+variables:
+  - key: baseUrl
+    value: ''
+  - key: projectId
+    value: ''
+  - key: sourceId
+    value: ''
+  - key: candidateId
+    value: ''

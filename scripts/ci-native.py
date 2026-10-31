@@ -81,6 +81,7 @@ if __name__ == '__main__':
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.WalRegression')
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.ExecutionPolicyMigrationRegression')
         run('dotnet', 'run', '--project', ROOT / 'tests/Planner.ErrorIntakeMigrationRegression')
+        run('dotnet', 'run', '--project', ROOT / 'tests/Planner.AnalyticsMigrationRegression')
         workspace_regression()
     core = (
         'spec-file', 'agent', 'factory', 'factory-run', 'factory-execution',
@@ -89,18 +90,18 @@ if __name__ == '__main__':
     )
     if suite in ('all', 'core'):
         run(sys.executable, ROOT / 'scripts/factory-repair-regression.py', '--execution-policy')
-    providers = ('factory-delivery', 'factory-intake', 'factory-error-intake')
+    providers = ('factory-delivery', 'factory-intake', 'factory-error-intake', 'factory-analytics-intake')
     deployments = ('factory-deployment',)
     if suite in ('all', 'providers'):
         run(sys.executable, ROOT / 'scripts/regression-processes-test.py')
         run(sys.executable, ROOT / 'scripts/factory-routing-regression.py', '--postman')
     selected = core if suite == 'core' else providers if suite == 'providers' else deployments if suite == 'deployments' else core + providers + deployments
     for name in selected:
-        run(sys.executable, ROOT / f'scripts/{name}-regression.py', *(['--postman'] if name == 'factory-error-intake' else []))
+        run(sys.executable, ROOT / f'scripts/{name}-regression.py', *(['--postman'] if name in ('factory-error-intake', 'factory-analytics-intake') else []))
     for name in (() if suite == 'core' else ('Factory deployment regression',) if suite == 'deployments' else ('Planner API', 'Planner regression', 'Factory regression',
                  'Factory review regression', 'Factory repair regression',
                  'Factory delivery regression', 'Factory intake regression',
-                 'Factory skills regression', 'Factory routing regression', 'Factory error intake regression')):
+                 'Factory skills regression', 'Factory routing regression', 'Factory error intake regression', 'Factory analytics intake regression')):
         run('postman', 'collection', 'lint', ROOT / 'postman/collections' / name,
             '--reporter', 'cli', '--fail-severity', 'error')
 
