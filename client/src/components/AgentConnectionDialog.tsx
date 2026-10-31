@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Loader2, Unplug, Bot, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkspace } from '../lib/workspace';
@@ -18,13 +18,26 @@ export function AgentConnectionDialog({ projectId, onClose }: { projectId: strin
  const [path, setPath] = useState(''); const [baseRef, setBaseRef] = useState(''); const [provider, setProvider] = useState<AgentId | ''>('');
  const [settings, setSettings] = useState<Record<AgentId, AgentExecutionSettings>>({ codex: { model: null, effort: null }, claude: { model: null, effort: null }, gemini: { model: null, effort: null } }); const [instructions, setInstructions] = useState('');
  const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false); const [browsing, setBrowsing] = useState(false); const [error, setError] = useState('');
+ const [refs, setRefs] = useState<{ root: string; isRoot: boolean; current: string | null; branches: string[] } | null>(null); const [refsError, setRefsError] = useState(''); const refEdited = useRef(false); const refList = useId();
  useEffect(() => {
   const controller = new AbortController();
   void Promise.all([agentRequest<AgentConnection | null>(`/projects/${projectId}/connection`, 'GET', undefined, controller.signal), agentRequest<AgentProviders>('/providers', 'GET', undefined, controller.signal)])
-   .then(([value, available]) => { if (available.providers.some(agent => !Array.isArray(agent.effortLevels))) throw new Error('Restart the Canopy backend to use model and effort settings.'); setConnection(value); setProviders(available); if (value) { setPath(value.repositoryPath); setBaseRef(value.baseRef); setProvider(value.provider); setSettings(value.settings); setInstructions(value.instructions); } })
+   .then(([value, available]) => { if (available.providers.some(agent => !Array.isArray(agent.effortLevels))) throw new Error('Restart the Canopy backend to use model and effort settings.'); setConnection(value); setProviders(available); if (value) { setPath(value.repositoryPath); setBaseRef(value.baseRef); refEdited.current = true; setProvider(value.provider); setSettings(value.settings); setInstructions(value.instructions); } })
    .catch(e => { if (!controller.signal.aborted) setError((e as Error).message); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
   return () => controller.abort();
  }, [projectId]);
+ // Read the folder's branches so the current one can fill Base Git ref until the person types their own.
+ useEffect(() => {
+  const folder = path.trim(); setRefs(null); setRefsError('');
+  if (loading || !folder) return;
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+   agentRequest<{ root: string; isRoot: boolean; current: string | null; branches: string[] }>('/repository-refs', 'POST', { path: folder }, controller.signal)
+    .then(value => { setRefs(value); if (!refEdited.current) setBaseRef(value.current ?? value.branches[0] ?? ''); })
+    .catch(() => { if (!controller.signal.aborted) setRefsError('Canopy could not read Git branches from this folder.'); });
+  }, 400);
+  return () => { clearTimeout(timer); controller.abort(); };
+ }, [path, loading]);
  async function browse() {
   setBrowsing(true); setError('');
   try { const choice = await agentRequest<{ path: string | null }>('/folder-picker', 'POST', { start: path.trim() || null }); if (choice.path) setPath(choice.path); }
@@ -50,7 +63,7 @@ export function AgentConnectionDialog({ projectId, onClose }: { projectId: strin
    </fieldset>
    <div className="agent-connection-workspace">
    <div className="repository-folder"><label htmlFor="repository-folder">Repository folder</label><div><input id="repository-folder" required value={path} onChange={e => setPath(e.target.value)} placeholder="Absolute path to the repository" autoComplete="off"/>{providers?.folderPicker && <Button type="button" variant="secondary" disabled={browsing || busy} onClick={() => { void browse(); }}>{browsing ? <Loader2 size={14} className="spin"/> : <FolderOpen size={14}/>}{browsing ? 'Choosing…' : 'Browse…'}</Button>}</div>{browsing && <p className="agent-note" role="status">Choose the folder in the window that opened on this computer.</p>}</div>
-   <div className="form-row"><label>Base Git ref<input required value={baseRef} onChange={e => setBaseRef(e.target.value)} placeholder="Branch, tag or commit"/></label><label>Preferred agent<select required value={provider} onChange={e => setProvider(e.target.value as AgentId)}><option value="">Choose an agent</option>{providers?.providers.map(p => <option key={p.id} value={p.id}>{p.name}{p.available ? '' : ' · not installed'}</option>)}</select></label></div>
+   <div className="form-row"><label>Base Git ref<input required list={refList} value={baseRef} onChange={e => { setBaseRef(e.target.value); refEdited.current = true; }} placeholder="Branch, tag or commit" autoComplete="off"/><datalist id={refList}>{refs?.branches.map(branch => <option key={branch} value={branch}/>)}</datalist>{refs ? <small className="base-ref-note">{!refs.isRoot ? `This folder is inside ${refs.root}. Choose the repository root.` : refs.current ? `Current branch: ${refs.current}. Implementation starts from this ref.` : 'Detached HEAD. Enter the branch, tag or commit to start from.'}</small> : refsError && <small className="base-ref-note">{refsError}</small>}</label><label>Preferred agent<select required value={provider} onChange={e => setProvider(e.target.value as AgentId)}><option value="">Choose an agent</option>{providers?.providers.map(p => <option key={p.id} value={p.id}>{p.name}{p.available ? '' : ' · not installed'}</option>)}</select></label></div>
    <label>Project instructions <span className="optional">optional</span><textarea rows={6} maxLength={100000} value={instructions} onChange={e => setInstructions(e.target.value)} placeholder="Shared context, conventions and verification requirements"/></label>
    </div>
    <fieldset className="agent-project-defaults"><legend>Model and effort defaults <span className="optional">optional</span></legend>

@@ -35,3 +35,4 @@
 .agent-connection-dialog .repository-folder input:not([type=checkbox]):not([type=color]){flex:1;min-width:0;margin:0}
 .agent-connection-dialog .repository-folder button{flex-shrink:0;min-height:44px}
 .agent-connection-dialog .repository-folder .agent-note{margin:6px 0 0}
+.agent-connection-dialog .base-ref-note{display:block;margin-top:6px;font-size:12px;font-weight:400;line-height:1.5;color:var(--secondary-text)}

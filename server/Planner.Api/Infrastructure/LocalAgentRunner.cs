@@ -94,6 +94,16 @@ public sealed class LocalAgentEnvironment(AgentOptions options) : IAgentEnvironm
         await Git(fullPath, ["rev-parse", "--verify", "--end-of-options", gitRef + "^{commit}"], ct);
         return root;
     }
+    public async Task<RepositoryRefs> RepositoryRefs(string path, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !Path.IsPathRooted(path) || !Directory.Exists(path)) throw new RuleException("Choose an existing absolute repository directory.");
+        var fullPath = Path.GetFullPath(path);
+        var root = (await Git(fullPath, ["rev-parse", "--show-toplevel"], ct)).Trim();
+        var isRoot = string.IsNullOrWhiteSpace(await Git(fullPath, ["rev-parse", "--show-prefix"], ct));
+        var current = (await Git(fullPath, ["branch", "--show-current"], ct)).Trim();
+        var branches = await Git(fullPath, ["for-each-ref", "--sort=-committerdate", "--count=200", "--format=%(refname:short)", "refs/heads"], ct);
+        return new(root, isRoot, current.Length > 0 ? current : null, branches.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+    }
     public async Task<string> Git(string directory, IReadOnlyList<string> arguments, CancellationToken ct, bool acceptDiff = false, IReadOnlyDictionary<string, string>? environment = null)
     {
         var executable = Resolve(options.GitExecutable) ?? throw new RuleException("Configure an available Git executable.", 503);
