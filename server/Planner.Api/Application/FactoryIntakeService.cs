@@ -8,23 +8,35 @@ public sealed class IntakeLimits
     public int MaximumCollectionBytes { get; set; }
     public int MaximumReviewFindings { get; set; }
     public int CollectionTimeoutSeconds { get; set; }
-    public void Validate() { if (MaximumCollectionBytes < 1 || MaximumReviewFindings < 1 || CollectionTimeoutSeconds < 1) throw new InvalidOperationException("Configure Intake collection and review evidence limits."); }
+    public int MaximumErrorEvents { get; set; }
+    public int MaximumFutureSkewSeconds { get; set; }
+    public List<ErrorFeedDefinition> ErrorFeeds { get; set; } = [];
+    public void Validate()
+    {
+        if (MaximumErrorEvents < 1 || MaximumFutureSkewSeconds < 0 || ErrorFeeds is null) throw new InvalidOperationException("Configure error-feed event and clock-skew bounds.");
+        foreach (var feed in ErrorFeeds) feed.Validate();
+        if (ErrorFeeds.Select(x => x.Id).Distinct(StringComparer.Ordinal).Count() != ErrorFeeds.Count || ErrorFeeds.Select(x => x.Identity).Distinct().Count() != ErrorFeeds.Count) throw new InvalidOperationException("Configured error feed IDs and source/application/environment scopes must be distinct.");
+        if (MaximumCollectionBytes < 1 || MaximumReviewFindings < 1 || CollectionTimeoutSeconds < 1) throw new InvalidOperationException("Configure Intake collection and review evidence limits."); }
 }
-public sealed class FactoryIntakeService(IWorkspaceStore store, IIntakeIssues issues, IntakeLimits limits)
+public sealed class FactoryIntakeService(IWorkspaceStore store, IIntakeIssues issues, IntakeLimits limits, IIntakeErrorFeeds errors)
 {
     public async Task<IntakeLibrary> List(Guid projectId, CancellationToken ct)
     {
         var data = await store.ReadAsync(ct); var project = data.Graph(projectId).Project;
         return new(project.Revision, data.IntakeSources.Where(x => x.ProjectId == projectId).ToList(), data.IntakeCollections.Where(x => x.ProjectId == projectId).OrderByDescending(x => x.CreatedAt).ToList(),
-            data.IntakeCandidates.Where(x => x.ProjectId == projectId).OrderByDescending(x => x.CreatedAt).Select(x => Preview(data, x)).ToList());
+            data.IntakeCandidates.Where(x => x.ProjectId == projectId).OrderByDescending(x => x.CreatedAt).Select(x => Preview(data, x)).ToList(), data.ErrorFeedReceipts.Where(x => x.ProjectId == projectId).OrderBy(x => x.Id).ToList(), new(errors.Catalogue(), errors.Supported));
     }
+    public async Task<ErrorFeedCatalogue> ErrorFeeds(Guid projectId, CancellationToken ct)
+    { (await store.ReadAsync(ct)).Graph(projectId); return new(errors.Catalogue(), errors.Supported); }
+    private (string Binding, string Identity) Binding(IntakeConfiguration config) => config.Kind switch
+    { "githubIssues" => (issues.Binding, issues.Identity), "applicationErrors" => errors.Bind(config), "reviewFindings" => ("local-review", "local-review"), _ => throw new RuleException("This intake source kind is unsupported by the current backend.", 503) };
     public async Task<FactoryIntakeSource> AddSource(Guid projectId, AddIntakeSource input, CancellationToken ct)
     {
         FactoryIntakeSource? result = null;
         await store.WriteAsync(data =>
         {
             var graph = data.Graph(projectId, input.ExpectedRevision); var config = input.Configuration?.Validate() ?? throw new RuleException("Source configuration is required.");
-            result = FactoryIntakeSource.Create(projectId, config, config.Kind == "githubIssues" ? issues.Binding : "local-review", config.Kind == "githubIssues" ? issues.Identity : "local-review");
+            var bound = Binding(config); result = FactoryIntakeSource.Create(projectId, config, bound.Binding, bound.Identity);
             if (data.IntakeSources.Any(x => x.ProjectId == projectId && x.Scope == result.Scope)) throw new RuleException("This source scope already exists. Edit its configuration instead.", 409);
             data.IntakeSources.Add(result); graph.Project.Touch();
         }, ct); return result!;
@@ -33,8 +45,8 @@ public sealed class FactoryIntakeService(IWorkspaceStore store, IIntakeIssues is
     {
         FactoryIntakeSource? result = null;
         await store.WriteAsync(data => { result = Source(data, id); var graph = data.Graph(result.ProjectId, input.ExpectedRevision); var config = input.Configuration?.Validate() ?? throw new RuleException("Source configuration is required.");
-            var binding = config.Kind == "githubIssues" ? issues.Binding : "local-review"; var identity = config.Kind == "githubIssues" ? issues.Identity : "local-review";
-            if (data.IntakeSources.Any(x => x.Id != id && x.ProjectId == result.ProjectId && x.Scope == FactoryIntakeSource.ScopeFor(config, identity))) throw new RuleException("This provider/repository source scope already exists.", 409);
+            (string? binding, string? identity) = config.Kind == "applicationErrors" && !config.Enabled && !errors.Catalogue().Any(x => x.Id == config.ErrorFeedId) ? (null, null) : Binding(config);
+            if (data.IntakeSources.Any(x => x.Id != id && x.ProjectId == result.ProjectId && x.Scope == (identity is null ? result.Scope : FactoryIntakeSource.ScopeFor(config, identity)))) throw new RuleException("This provider/repository source scope already exists.", 409);
             result.Edit(input.ExpectedSourceRevision, config, binding, identity); graph.Project.Touch(); }, ct); return result!;
     }
     public async Task<FactoryIntakeCollection> Collect(Guid id, CollectIntake input, CancellationToken ct)
@@ -53,13 +65,28 @@ public sealed class FactoryIntakeService(IWorkspaceStore store, IIntakeIssues is
         try
         {
             var before = await store.ReadAsync(ct);
-            var signals = source!.Configuration.Kind == "githubIssues" ? await issues.Collect(source.Configuration, ct) : ReviewSignals(before, source);
+            ErrorFeedInspection? errorFeed = null;
+            var signals = source!.Configuration.Kind switch
+            {
+                "githubIssues" => await issues.Collect(source.Configuration, ct),
+                "applicationErrors" => (errorFeed = await errors.Collect(source.Configuration, ct)).Signals,
+                "reviewFindings" => ReviewSignals(before, source),
+                _ => throw new RuleException("This intake source kind is unsupported by the current backend.", 503)
+            };
             if (signals.Sum(x => (long)Encoding.UTF8.GetByteCount(x.EvidenceJson)) > limits.MaximumCollectionBytes) throw new RuleException("Configured collection byte limit reached; coverage is incomplete.", 503);
             await store.WriteAsync(data =>
             {
                 var current = Source(data, id); RequireEnabled(current); Rules.Revision(batch!.SourceRevision, current.Revision);
                 if (current.Configuration.Kind == "reviewFindings" && SignalsHash(signals) != SignalsHash(ReviewSignals(data, current))) throw new RuleException("Review evidence changed during collection. Collect again.", 409);
                 var persisted = data.IntakeCollections.Single(x => x.Id == batch.Id);
+                if (errorFeed is not null)
+                {
+                    var scope = IntakeRules.Fingerprint(errorFeed.Coverage.Identity);
+                    var known = data.ErrorEventIdentities.Where(x => x.ProjectId == current.ProjectId && x.Scope == scope).ToDictionary(x => x.EventId, StringComparer.Ordinal);
+                    foreach (var fact in errorFeed.Events)
+                        if (known.TryGetValue(fact.Occurrence.Id, out var previous)) previous.RequireSame(fact);
+                        else data.ErrorEventIdentities.Add(FactoryErrorEventIdentity.Capture(current.ProjectId, errorFeed.Coverage.Identity, fact));
+                }
                 var fingerprints = signals.Select(x => x.Fingerprint).ToHashSet();
                 var missing = data.IntakeCandidates.Where(x => x.ProjectId == current.ProjectId && data.IntakeObservations.Single(o => o.Id == x.ObservationId) is { } o && data.IntakeCollections.Single(c => c.Id == o.CollectionId).SourceId == id && !fingerprints.Contains(x.Fingerprint))
                     .Select(x => data.IntakeObservations.Single(o => o.Id == x.ObservationId).Signal with { Available = false }).ToList();
@@ -69,6 +96,7 @@ public sealed class FactoryIntakeService(IWorkspaceStore store, IIntakeIssues is
                     if (candidate is null) { if (!signal.Available) continue; candidate = FactoryIntakeCandidate.Create(current.ProjectId, signal.Fingerprint); data.IntakeCandidates.Add(candidate); }
                     var observation = IntakeObservation.Create(candidate.Id, batch.Id, signal); data.IntakeObservations.Add(observation); candidate.Observe(observation);
                 }
+                if (errorFeed is not null) { errors.RequireFresh(errorFeed.Coverage, current.Configuration); data.ErrorFeedReceipts.Add(FactoryErrorFeedReceipt.Capture(persisted, errorFeed.Coverage)); }
                 persisted.Finish("complete", null, signals.Count); batch = persisted;
             }, ct);
         }
@@ -94,7 +122,13 @@ public sealed class FactoryIntakeService(IWorkspaceStore store, IIntakeIssues is
         if (requiresCurrent)
         {
             RequireCurrent(before, candidate);
-            var fresh = source.Configuration.Kind == "githubIssues" ? await issues.Refresh(observation.Signal, source.Configuration, ct) : ReviewSignals(before, source).SingleOrDefault(x => x.Fingerprint == candidate.Fingerprint);
+            var fresh = source.Configuration.Kind switch
+            {
+                "githubIssues" => await issues.Refresh(observation.Signal, source.Configuration, ct),
+                "applicationErrors" => await errors.Refresh(observation.Signal, Receipt(before, observation).Coverage, source.Configuration, ct),
+                "reviewFindings" => ReviewSignals(before, source).SingleOrDefault(x => x.Fingerprint == candidate.Fingerprint),
+                _ => throw new RuleException("This intake source kind is unsupported by the current backend.", 503)
+            };
             if (fresh?.Hash != observation.Signal.Hash) throw new RuleException("Source evidence changed or is no longer available. Collect and verify again.", 409);
         }
         await store.WriteAsync(data =>
@@ -119,7 +153,7 @@ public sealed class FactoryIntakeService(IWorkspaceStore store, IIntakeIssues is
                     if (graph.Statuses.Single(x => x.Id == input.StatusId).IsCompleted) throw new RuleException("Intake requires an incomplete backlog column.");
                     var title = Rules.Name(input.TaskTitle, "Task title");
                     if (graph.Items.Any(x => IntakeRules.Normalize(x.Title) == IntakeRules.Normalize(title))) throw new RuleException("A task with this title already exists. Link the candidate to existing work instead.", 409);
-                    var task = graph.Add(title, null, input.StatusId); task.Specify(Spec(observed.Signal, input.Reason)); data.Items.Add(task); taskId = task.Id;
+                    var task = graph.Add(title, null, input.StatusId); task.Specify(Spec(observed, input.Reason, source.Configuration.Kind == "applicationErrors")); data.Items.Add(task); taskId = task.Id;
                 }
             }
             current.Decide(input.Action, input.Reason, observed, taskId); data.IntakeDecisions.Add(IntakeDecision.Create(input.RequestId, hash, current, input.Action, input.Reason)); graph.Project.Touch();
@@ -134,11 +168,12 @@ public sealed class FactoryIntakeService(IWorkspaceStore store, IIntakeIssues is
     private void RequireEnabled(FactoryIntakeSource source)
     {
         if (!source.Configuration.Enabled) throw new RuleException("Enable this explicitly configured source before collection or triage.", 409);
-        if (source.Configuration.Kind == "githubIssues" && source.ProviderBinding != issues.Binding) throw new RuleException("Provider configuration changed. Explicitly save this source to adopt the current provider binding before collection.", 409);
+        if (source.ProviderBinding != Binding(source.Configuration).Binding) throw new RuleException("Provider configuration changed. Explicitly save this source to adopt the current provider binding before collection.", 409);
     }
     private void RequireCurrent(WorkspaceData data, FactoryIntakeCandidate candidate)
     {
         var observation = Observation(data, candidate); var batch = data.IntakeCollections.Single(x => x.Id == observation.CollectionId); var source = Source(data, batch.SourceId); RequireEnabled(source);
+        if (source.Configuration.Kind == "applicationErrors") errors.RequireFresh(Receipt(data, observation).Coverage, source.Configuration);
         var latest = data.IntakeCollections.Where(x => x.SourceId == source.Id).OrderByDescending(x => x.CreatedAt).First();
         if (latest.Id != batch.Id || latest.State != "complete" || batch.SourceRevision != source.Revision || !observation.Signal.Available) throw new RuleException("Current complete source coverage is required. Collect again before triage.", 409);
     }
@@ -149,7 +184,8 @@ public sealed class FactoryIntakeService(IWorkspaceStore store, IIntakeIssues is
         return new(candidate, observation, current, candidate.TaskId.HasValue && data.Items.Any(x => x.Id == candidate.TaskId),
             data.Items.Where(x => x.ProjectId == candidate.ProjectId && IntakeRules.Normalize(x.Title) == IntakeRules.Normalize(observation.Signal.Title)).Select(x => x.Id).ToList());
     }
-    private IntakeCandidateDetail Detail(WorkspaceData data, Guid id) => new(Preview(data, Candidate(data, id)), data.IntakeObservations.Where(x => x.CandidateId == id).ToList(), data.IntakeDecisions.Where(x => x.CandidateId == id).OrderBy(x => x.CreatedAt).ToList());
+    private IntakeCandidateDetail Detail(WorkspaceData data, Guid id) => new(Preview(data, Candidate(data, id)), data.IntakeObservations.Where(x => x.CandidateId == id).ToList(), data.IntakeDecisions.Where(x => x.CandidateId == id).OrderBy(x => x.CreatedAt).ToList(), data.ErrorFeedReceipts.Where(x => data.IntakeObservations.Any(o => o.CandidateId == id && o.CollectionId == x.Id)).OrderBy(x => x.Id).ToList());
+    private static FactoryErrorFeedReceipt Receipt(WorkspaceData data, IntakeObservation observation) => data.ErrorFeedReceipts.SingleOrDefault(x => x.Id == observation.CollectionId) ?? throw new RuleException("Complete error-feed coverage receipt is unavailable. Collect again.", 409);
     private static bool Replay(WorkspaceData data, Guid request, string hash)
     {
         var previous = data.IntakeDecisions.SingleOrDefault(x => x.RequestId == request); if (previous is null) return false;
@@ -159,9 +195,14 @@ public sealed class FactoryIntakeService(IWorkspaceStore store, IIntakeIssues is
     private static FactoryIntakeSource Source(WorkspaceData data, Guid id) => data.IntakeSources.SingleOrDefault(x => x.Id == id) ?? throw new RuleException("Intake source not found.", 404);
     private static FactoryIntakeCandidate Candidate(WorkspaceData data, Guid id) => data.IntakeCandidates.SingleOrDefault(x => x.Id == id) ?? throw new RuleException("Intake candidate not found.", 404);
     private static IntakeObservation Observation(WorkspaceData data, FactoryIntakeCandidate candidate) => data.IntakeObservations.Single(x => x.Id == candidate.ObservationId);
-    private static string Spec(IntakeSignal signal, string reason)
+    private static string Spec(IntakeObservation observation, string reason, bool errorFeed)
     {
-        var lines = new[] { "Intake provenance", signal.Title, signal.Description, "Source: " + signal.Origin, signal.Url ?? "Local recurring review findings", "Fingerprint: " + signal.Fingerprint, "Triage rationale: " + reason, "Captured source evidence: " + signal.EvidenceJson };
+        var signal = observation.Signal;
+        var details = errorFeed ? JsonSerializer.Deserialize<ErrorGroupEvidence>(signal.EvidenceJson, FactoryRules.Json) : null;
+        if (errorFeed && details?.Kind != "applicationErrors") throw new RuleException("Captured error evidence is unavailable; collect and verify again.", 409);
+        var evidence = errorFeed ? $"Upstream error group: {details!.Group.Id}; source {details.Identity.SourceId}, application {details.Identity.Application}, environment {details.Identity.Environment}. Complete error evidence: /api/factory/intake/candidates/{observation.CandidateId}; observation {observation.Id}; collection {observation.CollectionId}; signal SHA-256 {signal.Hash}. Full structured frames and event identities remain in this immutable intake observation." : signal.EvidenceJson;
+        var description = errorFeed ? $"{details!.Group.ExceptionType}; {details.Group.Occurrences.Count} distinct selected occurrences. The full producer message template and code frames remain in the referenced immutable intake observation." : signal.Description;
+        var lines = new[] { "Intake provenance", signal.Title, description, "Source: " + signal.Origin, signal.Url ?? (errorFeed ? "Configured application-error feed" : "Local recurring review findings"), "Fingerprint: " + signal.Fingerprint, "Triage rationale: " + reason, "Captured source evidence: " + evidence };
         return JsonSerializer.Serialize(new { type = "doc", content = lines.Where(text => text.Length > 0).Select(text => new { type = "paragraph", content = new[] { new { type = "text", text } } }) }, FactoryRules.Json);
     }
 }

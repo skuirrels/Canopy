@@ -1,0 +1,21 @@
+$kind: http-request
+name: Reject stale collection authority
+method: POST
+url: '{{baseUrl}}/api/factory/intake/sources/{{sourceId}}/collections'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {"requestId":"{{$guid}}","expectedSourceRevision":0}
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('baseUrl')||!pm.variables.get('projectId')||!pm.variables.get('sourceId')||!pm.variables.get('candidateId'))throw new Error('Supply explicit isolated fixture mode and identities.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Stale source revision rejected',()=>pm.response.to.have.status(409));

@@ -124,7 +124,8 @@ and persistence. See [delivery validation](FACTORY-DELIVERY-VALIDATION.md).
 
 - [x] Connect explicitly configured GitHub issue and recurring review-finding
   sources; retain each source's own identity and evidence. Integrations remain
-  optional. Application errors and analytics are future source adapters.
+  optional. Configured application-error snapshots are delivered as the source
+  extension below. Analytics remains a future adapter.
 - [x] Verify each candidate, assign a durable fingerprint and deduplicate against
   existing work. Preserve links to the original signal.
 - [x] Distinguish a successful empty read from unavailable or truncated coverage.
@@ -156,7 +157,21 @@ does not establish a defect. See [intake validation](FACTORY-INTAKE-VALIDATION.m
 See [execution policy](FACTORY-EXECUTION-POLICY.md) and its
 [validation](FACTORY-EXECUTION-POLICY-VALIDATION.md). This controls CLI invocations;
 provider-internal calls and hard spend enforcement remain outside its guarantees.
-Application-error intake is the next selected roadmap extension.
+## Application-error intake
+
+- [x] Explicitly configured structured log snapshots, with source/application/
+  environment identity, selected levels and a distinct-event threshold.
+- [x] Closed producer-sanitized schema, complete bounded windows, native receipts
+  for empty coverage and fail-closed malformed, stale or conflicting evidence.
+- [x] Persistent occurrence identity checks across windows and restart, durable
+  group fingerprints, immutable observations and explicit verification/file/link.
+- [x] UI feed selection, scope/coverage history, code frames and occurrence evidence;
+  source saves revoke current authority until collection.
+
+See [structured feed setup and contract](FACTORY-ERROR-INTAKE.md) and
+[validation](FACTORY-ERROR-INTAKE-VALIDATION.md). No real error producer is configured
+by default. Exporter installation, analytics sources and automatic filing remain
+separate work; intake still grants no execution authority.
 
 ## Operating constraints
 

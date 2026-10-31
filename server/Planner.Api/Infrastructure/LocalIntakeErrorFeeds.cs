@@ -1,0 +1,92 @@
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Planner.Api.Application;
+using Planner.Api.Domain;
+
+namespace Planner.Api.Infrastructure;
+
+public sealed class LocalIntakeErrorFeeds(IntakeLimits limits) : IIntakeErrorFeeds
+{
+    private static readonly JsonSerializerOptions SnapshotJson = SnapshotOptions();
+    private static JsonSerializerOptions SnapshotOptions()
+    {
+        var options = new JsonSerializerOptions(FactoryRules.Json) { PropertyNameCaseInsensitive = false, AllowDuplicateProperties = false, RespectRequiredConstructorParameters = true, NumberHandling = JsonNumberHandling.Strict };
+        options.Converters.Add(new ErrorTimestamp()); return options;
+    }
+    private sealed class ErrorTimestamp : JsonConverter<DateTimeOffset>
+    {
+        public override DateTimeOffset Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
+        {
+            if (reader.TokenType != JsonTokenType.String) throw new JsonException();
+            var text = reader.GetString()!;
+            var offset = text.EndsWith('Z') || text.Length >= 6 && (text[^6] is '+' or '-') && text[^3] == ':';
+            if (!offset || !reader.TryGetDateTimeOffset(out var instant)) throw new JsonException("Require explicit timestamp offsets.");
+            return instant;
+        }
+        public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options) => writer.WriteStringValue(value);
+    }
+    public bool Supported => LocalErrorSnapshotFile.Supported;
+    public IReadOnlyList<ErrorFeedChoice> Catalogue() => limits.ErrorFeeds.Select(x => new ErrorFeedChoice(x.Id, x.Name, x.Identity, x.Levels, x.MaxAgeSeconds, x.MaxWindowSeconds)).ToArray();
+    private ErrorFeedDefinition Resolve(IntakeConfiguration configuration)
+    {
+        var feed = limits.ErrorFeeds.SingleOrDefault(x => x.Id == configuration.ErrorFeedId) ?? throw new RuleException("This error feed is not configured on the backend. Configure it explicitly before collection.", 503);
+        if (configuration.Levels is null || configuration.Levels.Any(x => !feed.Levels.Contains(x))) throw new RuleException("Choose levels from the configured error feed.");
+        return feed;
+    }
+    public (string Binding, string Identity) Bind(IntakeConfiguration configuration)
+    {
+        var feed = Resolve(configuration);
+        return (IntakeRules.Fingerprint(feed, limits.MaximumErrorEvents, limits.MaximumFutureSkewSeconds, limits.MaximumCollectionBytes), IntakeRules.Fingerprint(feed.Identity));
+    }
+    public void RequireFresh(ErrorFeedCoverage coverage, IntakeConfiguration configuration)
+    {
+        var feed = Resolve(configuration);
+        if (coverage.FeedId != feed.Id || coverage.Identity != feed.Identity || DateTimeOffset.UtcNow - coverage.GeneratedAt > TimeSpan.FromSeconds(feed.MaxAgeSeconds)) throw new RuleException("Current, unexpired complete error-feed coverage is required. Collect again before triage.", 409);
+    }
+    public async Task<ErrorFeedInspection> Collect(IntakeConfiguration configuration, CancellationToken ct)
+    {
+        var feed = Resolve(configuration);
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct); timeout.CancelAfter(TimeSpan.FromSeconds(limits.CollectionTimeoutSeconds)); ct = timeout.Token;
+        // Only explicitly configured regular files. Never interpret FIFOs, devices
+        // or links as a complete snapshot, or follow a path supplied by a browser.
+        for (var path = new FileInfo(feed.Path) as FileSystemInfo; path is not null; path = path is FileInfo f ? f.Directory : ((DirectoryInfo)path).Parent)
+            if (path.LinkTarget is not null) throw new RuleException("Error snapshots cannot traverse symbolic links.", 503);
+        var file = new FileInfo(feed.Path);
+        if (!file.Exists || (file.Attributes & (FileAttributes.Directory | FileAttributes.Device)) != 0) throw new RuleException("The configured error snapshot is unavailable.", 503);
+        await using var stream = LocalErrorSnapshotFile.Read(feed.Path);
+        if (!stream.CanSeek || stream.Length > limits.MaximumCollectionBytes) throw new RuleException("The error snapshot exceeds configured bounds or is not a regular snapshot.", 503);
+        var beforeLength = stream.Length; var beforeWrite = file.LastWriteTimeUtc;
+        using var bytes = new MemoryStream(); var buffer = new byte[8192];
+        while (true)
+        {
+            var read = await stream.ReadAsync(buffer, ct); if (read == 0) break;
+            if (bytes.Length + read > limits.MaximumCollectionBytes) throw new RuleException("Error snapshot byte limit reached; coverage is incomplete.", 503);
+            bytes.Write(buffer, 0, read);
+        }
+        file.Refresh();
+        if (bytes.Length != beforeLength || stream.Length != beforeLength || file.Length != beforeLength || file.LastWriteTimeUtc != beforeWrite) throw new RuleException("The snapshot changed while it was being read. Publish an atomic complete snapshot and collect again.", 503);
+        var body = bytes.ToArray(); ErrorFeedSnapshot snapshot;
+        try { snapshot = JsonSerializer.Deserialize<ErrorFeedSnapshot>(body, SnapshotJson) ?? throw new JsonException(); }
+        catch (JsonException) { throw new RuleException("Malformed or unsupported error snapshot. Unknown/raw context fields cannot establish complete coverage.", 503); }
+        if (snapshot.Groups is null || snapshot.Groups.Count > limits.MaximumErrorEvents || snapshot.Groups.Any(x => x is null || x.Occurrences is null) || snapshot.Groups.Sum(x => (long)x.Occurrences.Count) > limits.MaximumErrorEvents) throw new RuleException("Error event/group limit reached or incomplete event lists supplied. Coverage is unavailable.", 503);
+        var raw = snapshot.Groups.Sum(x => x.Occurrences.Count);
+        snapshot = snapshot.Normalize(feed.Identity, feed.Levels, feed.MaxAgeSeconds, feed.MaxWindowSeconds, limits.MaximumFutureSkewSeconds, DateTimeOffset.UtcNow);
+        var distinct = snapshot.Groups.Sum(x => x.Occurrences.Count);
+        var selected = snapshot.Groups.Select(group => group with { Occurrences = group.Occurrences.Where(x => configuration.Levels!.Contains(x.Level)).ToArray() }).ToArray();
+        var signals = selected.Where(x => x.Occurrences.Count >= configuration.MinimumOccurrences).Select(group => new IntakeSignal(
+            IntakeRules.Fingerprint("applicationErrors", feed.Identity, group.Id), group.Title,
+            $"{group.ExceptionType}: {group.MessageTemplate}\n{group.Occurrences.Count} distinct selected occurrences in the captured window. Operator reproduction and relevance verification are still required.",
+            $"{feed.Name} · {feed.Application} · {feed.Environment}", null, true,
+            FactoryRules.Serialize(new ErrorGroupEvidence("applicationErrors", feed.Id, feed.Identity, group)))).ToArray();
+        return new(signals, new(feed.Id, feed.Identity, Convert.ToHexString(SHA256.HashData(body)), body.LongLength,
+            snapshot.GeneratedAt, snapshot.WindowStart, snapshot.WindowEnd, raw, distinct, selected.Sum(x => x.Occurrences.Count), signals.Length),
+            snapshot.Groups.SelectMany(group => group.Occurrences.Select(occurrence => new ErrorFeedEventFact(group.Id, occurrence))).ToArray());
+    }
+    public async Task<IntakeSignal?> Refresh(IntakeSignal signal, ErrorFeedCoverage coverage, IntakeConfiguration configuration, CancellationToken ct)
+    {
+        RequireFresh(coverage, configuration); var current = await Collect(configuration, ct);
+        if (current.Coverage.FileHash != coverage.FileHash) throw new RuleException("The error snapshot changed. Collect current complete coverage before triage.", 409);
+        return current.Signals.SingleOrDefault(x => x.Fingerprint == signal.Fingerprint);
+    }
+}
