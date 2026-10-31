@@ -1,5 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 using Planner.Api.Application;
 using Planner.Api.Domain;
 namespace Planner.Api.Infrastructure;
@@ -14,6 +17,25 @@ public sealed class LocalCalibrationWorkspace(IFactorySkillCatalogue catalogue, 
     private const string Folder = ".canopy-calibration";
     private static string Mirror(int index) => $"{Folder}/targets/{index}/SKILL.md";
     private static string Reference(FactoryCalibration job) => $"refs/canopy/calibration/{job.Id:N}/input";
+    [DllImport("libc", EntryPoint = "open", SetLastError = true)] private static extern int Open(string path, int flags);
+    private static FileStream OpenRegularFile(string path)
+    {
+        if (!LocalProcessHost.Supported) throw new RuleException("Calibration file inspection requires a supported backend.");
+        // POSIX O_RDONLY | O_NONBLOCK | O_CLOEXEC | O_NOFOLLOW. A learner can
+        // replace even an existing mirror with a FIFO; a normal open blocks
+        // before cancellation can act. Reject non-seekable handles before reads.
+        var flags = OperatingSystem.IsMacOS() ? 0x0004 | 0x1000000 | 0x0100 : 0x0800 | 0x80000 | 0x20000;
+        var descriptor = Open(path, flags);
+        if (descriptor < 0) throw new IOException("Cannot inspect a calibration file.", new Win32Exception(Marshal.GetLastPInvokeError()));
+        var handle = new SafeFileHandle((IntPtr)descriptor, ownsHandle: true);
+        try
+        {
+            var stream = new FileStream(handle, FileAccess.Read);
+            if (stream.CanSeek) return stream;
+            stream.Dispose(); throw new RuleException("Calibration inspection permits regular files only.");
+        }
+        catch { handle.Dispose(); throw; }
+    }
     public async Task<IReadOnlyList<CalibrationSkill>> Resolve(string repository, IReadOnlyList<FactorySkill> targets, bool writable, CancellationToken ct)
     {
         if (targets.Count > options.MaximumTargets) throw new RuleException("Calibration skill count exceeds configured capacity.");
@@ -89,7 +111,7 @@ public sealed class LocalCalibrationWorkspace(IFactorySkillCatalogue catalogue, 
                 if (Directory.Exists(item)) { pending.Push(item); continue; }
                 if (files.Count >= options.MaximumWorkspaceFiles) throw new RuleException("Calibration workspace file coverage exceeds configured bounds.");
                 var info = new FileInfo(item); bytes = checked(bytes + info.Length); if (bytes > options.MaximumWorkspaceBytes) throw new RuleException("Calibration workspace coverage exceeds configured byte bounds.");
-                await using var stream = File.OpenRead(item); var hash = Convert.ToHexString(await SHA256.HashDataAsync(stream, ct));
+                await using var stream = OpenRegularFile(item); var hash = Convert.ToHexString(await SHA256.HashDataAsync(stream, ct));
                 files.Add(Path.GetRelativePath(root, item).Replace(Path.DirectorySeparatorChar, '/'), hash + ":" + (OperatingSystem.IsWindows() ? "" : ((int)File.GetUnixFileMode(item)).ToString()));
             }
         }

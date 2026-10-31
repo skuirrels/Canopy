@@ -64,10 +64,12 @@ security boundary. Native intent precedes process dispatch; invocation reservati
 elapsed deadline, cancellation, policy revocation and restart recovery remain
 bounded. A restart interrupts unfinished work and never replays the learner.
 
-Inspect actual files, empty directories, static Git metadata and the complete
+Inspect actual regular files, empty directories, static Git metadata and the complete
 permitted mirror path set, including ignored paths. Audit HEAD and the pinned
 input tree separately from Git-managed index/object/ref/log updates. Private skill
 blobs remain in the owned calibration repository, outside product Git objects.
+Nonblocking no-follow file opens reject named pipes and other non-seekable
+entries before hashing; cancellation cannot interrupt a blocking synchronous open.
 Unexpected product, rules, wrapper, evidence or new-skill edits fail the job and
 remain retained for inspection. Never publish or revert them automatically.
 Process success alone does not establish a valid calibration. Path, byte and

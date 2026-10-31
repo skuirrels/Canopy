@@ -37,6 +37,8 @@ if 'Task: Post-delivery skill calibration' in prompt:
  if mode=='product':pathlib.Path('counter.py').write_text('Unexpected product edit')
  if mode=='ignored':pathlib.Path('__pycache__').mkdir(exist_ok=True);pathlib.Path('__pycache__/unexpected').write_text('Unexpected ignored file')
  if mode=='directory':pathlib.Path('unexpected-empty-directory').mkdir()
+ if mode=='fifo':pathlib.Path('__pycache__').mkdir(exist_ok=True);os.mkfifo('__pycache__/unexpected-pipe')
+ if mode=='mirrorFifo':pathlib.Path('.canopy-calibration/targets/0/SKILL.md').unlink();os.mkfifo('.canopy-calibration/targets/0/SKILL.md')
  if mode=='gitconfig':subprocess.run(['git','config','core.hooksPath','unexpected-hooks'],check=True)
  if mode=='packet':pathlib.Path('.canopy-calibration/evidence.json').write_text('{}')
  if mode=='delete':pathlib.Path('.canopy-calibration/targets/0/SKILL.md').unlink()
@@ -126,9 +128,10 @@ def run(ns, delivery):
     saved=read(job);restart();check(read(job)==saved and len(rows())==count,'completed canonical adoption persists across restart without another invocation or file write')
     if '--postman' in sys.argv:subprocess.run(['postman','collection','run',str(ns['ROOT']/'postman/collections/Factory calibration regression'),'--env-var',f"baseUrl={ns['base']}",'--env-var',f'projectId={pid}','--env-var',f"calibrationId={job['id']}",'--env-var','fixtureMode=isolated','--report-events=false'],cwd=ns['ROOT'],check=True)
     job=execute('noChange',provider='claude');check(job['state']=='noChange' and not job['edits'],'a real read/no-change Claude protocol invocation remains distinct from unavailable or failed calibration')
-    for mode in ['product','ignored','directory','gitconfig','packet','delete','permission','reference','commit','huge']:
+    for mode in ['product','ignored','directory','fifo','mirrorFifo','gitconfig','packet','delete','permission','reference','commit','huge']:
         before=[path.read_bytes() for path in fixture['targets']];job=execute(mode)
         assert job['state']=='failed',(mode,job)
+        if mode in ['fifo','mirrorFifo']:assert 'regular files only' in job['error'],(mode,job['error'])
         check([path.read_bytes() for path in fixture['targets']]==before and job['error'],mode+' violation fails actual proposal audit and preserves canonical skills')
     before=fixture['targets'][0].read_bytes();job=execute('canonical',canonical=str(fixture['targets'][0]));check(job['state']=='failed' and fixture['targets'][0].read_text()=='Unexpected canonical escape','an executable bypassing its CLI sandbox is detected by actual canonical hashes; external edits are preserved for review');fixture['targets'][0].write_bytes(before)
     job=execute();before=fixture['targets'][0].read_bytes();fixture['targets'][0].write_bytes(before+b'\nCaller external edit\n');job=wait(act(job,'apply'));check(job['state']=='needsAttention' and fixture['targets'][0].read_bytes().endswith(b'Caller external edit\n'),'canonical hash conflict prevents overwriting external edits and records a reconciliation state')
@@ -169,7 +172,7 @@ def run(ns, delivery):
     path='/api/factory/deliveries/'+new['delivery']['id']+'/calibrations';deadline=time.monotonic()+30
     while time.monotonic()<deadline:
         value=call(path)
-        if value['jobs'] and not value['jobs'][0]['active']:break
+        if value['jobs'] and value['jobs'][0]['state'] not in ['prepared','queued','preparing','running','cancelling','applying'] and value['triggers'] and value['triggers'][0]['state']!='observing':break
         time.sleep(.1)
     assert value['jobs'] and value['jobs'][0]['state']=='proposed',value
     check(len(value['jobs'])==1 and len(value['triggers'])==1 and value['triggers'][0]['state']=='prepared','new verified delivery triggers one native observation and one bounded learner under explicit automatic policy')

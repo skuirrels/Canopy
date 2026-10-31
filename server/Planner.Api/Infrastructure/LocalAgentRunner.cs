@@ -187,14 +187,17 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
                     await store.WriteAsync(data => { var current = AgentService.Find(data, run.Id); current.ObserveUsage(usage, options.MaxUsageEvents, options.MaxOutputCharacters); if (session is not null) current.RecordSession(session); current.Progress(progress + "\n", options.MaxOutputCharacters); }, CancellationToken.None);
                 },
                 line => Append(run.Id, line), ct, agentClient: true);
-            if (run.ExecutionPermission == "workspace-write") diff = await CaptureDiff(workspace, commit, ct);
+            // Calibration owns a complete file audit and exact permitted-target
+            // diff. Its untrusted workspace may contain pipes or other special
+            // files; do not feed those to the human-readable Git diff collector.
+            if (run.ExecutionPermission == "workspace-write" && run.CalibrationJobId is null) diff = await CaptureDiff(workspace, commit, ct);
             if (result.Length > options.MaxOutputCharacters) { result = ""; providerError = "The result exceeded the configured output limit. Review the activity output or increase Agents:MaxOutputCharacters before retrying."; }
             var succeeded = code == 0 && providerError is null && !string.IsNullOrWhiteSpace(result);
             await Finish(run.Id, succeeded ? "succeeded" : "failed", result, diff, succeeded ? null : providerError ?? $"Agent exited with code {code}. No completed result was received; inspect the output.");
         }
         catch (OperationCanceledException)
         {
-            if (run.ExecutionPermission == "workspace-write" && Directory.Exists(workspace))
+            if (run.ExecutionPermission == "workspace-write" && run.CalibrationJobId is null && Directory.Exists(workspace))
             { try { diff = await CaptureDiff(workspace, run.BaseCommit ?? "HEAD", CancellationToken.None); } catch (Exception error) { await Append(run.Id, "Could not collect the diff: " + error.Message); } }
             var current = (await store.ReadAsync(CancellationToken.None)).AgentRuns.SingleOrDefault(x => x.Id == run.Id);
             if (current is null) return;

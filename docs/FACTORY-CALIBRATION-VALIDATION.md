@@ -8,7 +8,7 @@ live-model learning quality, billing or a production calibrator installation.
 
 ## Local results (31 October 2026)
 
-- Calibration/delivery native/API/process/canonical-file checks: **59 passed**;
+- Calibration/delivery native/API/process/canonical-file checks: **61 passed**;
   saved Postman assertions against that actual API: **13 passed**.
 - Existing shared agent regression: **29 passed**. Client tests: **99 passed**.
 - Prior-schema native migration/update/restart regression passed. Existing agent
@@ -39,7 +39,7 @@ It does not inject a successful native delivery or learner outcome. It proves:
 - Bounded complete packets, item/byte limits and canonical skill version capture.
 - Actual mirror-only edits, exact diffs, separate Git objects/private refs,
   shared provider settings, unknown usage and blocked standalone continuation.
-- Product, ignored file, empty directory, Git config, packet, deletion, mode,
+- Product, ignored file, empty directory, ignored/mirrored FIFO, Git config, packet, deletion, mode,
   pinned-ref, commit and oversized edits fail without canonical adoption.
 - Real canonical byte changes remain preserved; guarded adoption and persisted
   before/after hashes survive restart without another invocation or write.
@@ -77,7 +77,11 @@ the local deployment evidence.
 Review fixed automatic-policy activation races across provider I/O, copied skills
 into a separate repository rather than the product object store, audited ignored
 files/empty directories/static Git metadata, and verified actual diffs independently
-of the index. Child processes settle before parent completion, and native intents
+of the index. Nonblocking no-follow opens reject actual named pipes before hashing;
+calibration bypasses the shared human-readable Git diff collector and retains its
+own complete audited proposal. The automatic test waits through the valid
+prepared/observing interval before asserting a finished proposal and receipt.
+Child processes settle before parent completion, and native intents
 precede dispatch and canonical writes. Actual generated OpenAPI caught optional
 DateTime defaults that broke generation; required native timestamps fixed it.
 The run inspector now gives delivery, review and repair controls distinct sibling
