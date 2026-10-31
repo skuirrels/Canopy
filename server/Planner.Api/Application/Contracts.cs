@@ -26,6 +26,8 @@ public sealed class WorkspaceData
 {
     [JsonIgnore] public List<FactoryDeployment> Deployments { get; init; } = [];
     [JsonIgnore] public List<FactoryDeploymentOperation> DeploymentOperations { get; init; } = [];
+    [JsonIgnore] public List<FactoryParallelRun> ParallelRuns { get; init; } = [];
+    [JsonIgnore] public List<FactoryParallelStage> ParallelStages { get; init; } = [];
     [JsonIgnore] public List<FactoryAnalyticsReceipt> AnalyticsReceipts { get; init; } = [];
     [JsonIgnore] public List<FactoryAnalyticsReportIdentity> AnalyticsReportIdentities { get; init; } = [];
     [JsonIgnore] public List<FactoryErrorEventIdentity> ErrorEventIdentities { get; init; } = [];
@@ -65,6 +67,7 @@ public sealed class WorkspaceData
     public void RemoveFactoryRuns(IEnumerable<Guid> runIds)
     {
         var ids = runIds.ToHashSet();
+        ParallelStages.RemoveAll(x => ids.Contains(x.RunId)); ParallelRuns.RemoveAll(x => ids.Contains(x.Id));
         var deliveryIds = Deliveries.Where(x => ids.Contains(x.RunId)).Select(x => x.Id).ToHashSet();
         var deploymentIds = Deployments.Where(x => deliveryIds.Contains(x.DeliveryId)).Select(x => x.Id).ToHashSet();
         DeploymentOperations.RemoveAll(x => deploymentIds.Contains(x.DeploymentId)); Deployments.RemoveAll(x => deploymentIds.Contains(x.Id));

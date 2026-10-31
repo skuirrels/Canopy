@@ -5,7 +5,7 @@ namespace Planner.Api.Application;
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record EditFactoryExecutionPolicy(long ExpectedRevision, FactoryExecutionPolicy Policy);
-public sealed record FactoryExecutionCapabilities(bool InvocationLimits, bool ElapsedTimeLimit, bool HardTokenCap, bool HardCurrencyCap, string UsageSemantics);
+public sealed record FactoryExecutionCapabilities(bool InvocationLimits, bool ElapsedTimeLimit, bool HardTokenCap, bool HardCurrencyCap, string UsageSemantics, int MaximumConcurrentStages);
 public sealed record FactoryExecutionPolicyDetail(long ProjectRevision, FactoryExecutionPolicy? Policy, IReadOnlyList<string> Roles, IReadOnlyList<AgentProvider> Providers, FactoryExecutionCapabilities Capabilities);
 public sealed record FactoryPolicyInspection(FactoryInspection Inspection, FactoryExecutionSnapshot? Execution);
 public sealed record FactoryBudgetView(int ReservedAgentInvocations, int ReservedCommandInvocations, DateTime? Deadline, string? BlockedReason);
@@ -16,7 +16,8 @@ public sealed class FactoryExecutionPolicyService(IWorkspaceStore store, IAgentE
     {
         var data = await store.ReadAsync(ct);
         return new(data.Graph(projectId).Project.Revision, data.ExecutionPolicies.SingleOrDefault(x => x.Id == projectId)?.Policy,
-            FactoryRules.AgentRoles, agents.Providers(), new(true, factory.CanBoundProcessLifetime, false, false, "Provider completion counters are observations; missing usage is unknown and counters do not establish account billing."));
+            FactoryRules.AgentRoles, agents.Providers(), new(true, factory.CanBoundProcessLifetime, false, false,
+                "Provider completion counters are observations; missing usage is unknown and counters do not establish account billing.", factory.MaximumConcurrentStages));
     }
     public async Task<FactoryExecutionPolicyDetail> Edit(Guid projectId, EditFactoryExecutionPolicy input, CancellationToken ct)
     {
@@ -67,6 +68,8 @@ public sealed class FactoryExecutionPolicyService(IWorkspaceStore store, IAgentE
     }
     public static void RequireLifetime(FactoryExecutionSnapshot? execution, bool canBound)
     { if (execution is not null && !canBound) throw new RuleException("Enabled elapsed budgets require an owned-process lifetime adapter for this operating system.", 503); }
+    public static void RequireCapacity(FactoryExecutionSnapshot? execution, int capacity)
+    { if (execution?.Policy.MaxConcurrentStages is { } requested && requested > capacity) throw new RuleException("Captured parallelism exceeds this backend's configured stage capacity.", 503); }
     public static string? Failure(WorkspaceData data, FactoryRun run) => Budget(data, run).BlockedReason;
     public static void Require(WorkspaceData data, FactoryRun run, string? nextKind = null)
     { if (Budget(data, run, nextKind).BlockedReason is { } error) throw new RuleException(error, 409); }
@@ -87,6 +90,7 @@ public sealed class FactoryExecutionPolicyService(IWorkspaceStore store, IAgentE
         if (policy.Unsupported(flat.Any(x => x.Kind == "agent")) is { } unsupported) checks.Add(new("execution.unsupported", "error", unsupported));
         if (flat.Count(x => x.Kind == "agent") > policy.MaxAgentInvocations) checks.Add(new("execution.agentBudget", "error", "The pipeline needs more agent invocations than the adopted work-order budget."));
         if (flat.Count(x => x.Kind == "command") > policy.MaxCommandInvocations) checks.Add(new("execution.commandBudget", "error", "The pipeline needs more command invocations than the adopted work-order budget."));
+        if (policy.MaxConcurrentStages > environment.MaximumConcurrentStages) checks.Add(new("execution.parallelCapacity", "error", "Requested parallel stages exceed the backend capacity."));
         var routes = new List<FactoryResolvedRoute>();
         if (inspection.Environment is { } resolved)
             foreach (var stage in definition.Stages)

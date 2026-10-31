@@ -7,6 +7,7 @@ public sealed record FactoryInspection(FactoryEnvironmentSnapshot? Environment, 
 public interface IFactoryEnvironment
 {
     bool CanBoundProcessLifetime { get; }
+    int MaximumConcurrentStages { get; }
     Task<FactoryInspection> InspectCaptured(FactoryEnvironmentSnapshot snapshot, CancellationToken ct);
     Task<FactoryInspection> Inspect(FactoryDefinition definition, ProjectAgentConnection? connection, CancellationToken ct);
 }
@@ -15,7 +16,7 @@ public sealed record FactoryReadiness(long ProjectRevision, bool CanPrepare, str
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] FactoryExecutionSnapshot? Execution = null);
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record PrepareFactoryRun(Guid RequestId, long ExpectedRevision);
-public sealed record FactoryRunDetail(FactoryRun Run, IReadOnlyList<FactoryStageRun> Stages, IReadOnlyList<FactoryStepRun> Steps, IReadOnlyList<FactoryArtifact> Artifacts, FactoryBudgetView Budget);
+public sealed record FactoryRunDetail(FactoryRun Run, IReadOnlyList<FactoryStageRun> Stages, IReadOnlyList<FactoryStepRun> Steps, IReadOnlyList<FactoryArtifact> Artifacts, FactoryBudgetView Budget, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] FactoryParallelRun? Parallel = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<FactoryParallelStage>? ParallelStages = null);
 public sealed record FactoryRunSummary(Guid Id, Guid ItemId, string State, DateTime CreatedAt, string PipelineName, int VersionNumber, string Title, long Revision);
 
 public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment environment)
@@ -103,6 +104,6 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
         var stages = data.FactoryStageRuns.Where(x => x.RunId == run.Id).ToDictionary(x => x.StageId);
         var steps = data.FactoryStepRuns.Where(x => x.RunId == run.Id).ToDictionary(x => (x.StageRunId, x.StepId));
         return new(run, definition.Stages.Select(stage => stages[stage.Id]).ToList(),
-            definition.Stages.SelectMany(stage => stage.Steps.Select(step => steps[(stages[stage.Id].Id, step.Id)])).ToList(), data.FactoryArtifacts.Where(x => x.RunId == run.Id).OrderBy(x => x.Name).ToList(), FactoryExecutionPolicyService.Budget(data, run));
+            definition.Stages.SelectMany(stage => stage.Steps.Select(step => steps[(stages[stage.Id].Id, step.Id)])).ToList(), data.FactoryArtifacts.Where(x => x.RunId == run.Id).OrderBy(x => x.Name).ToList(), FactoryExecutionPolicyService.Budget(data, run), data.ParallelRuns.SingleOrDefault(x => x.Id == run.Id), FactoryParallel.Enabled(run) ? data.ParallelStages.Where(x => x.RunId == run.Id).ToList() : null);
     }
 }

@@ -1,6 +1,6 @@
 import type { ExecutionSnapshot, ExecutionBudget } from './factory-execution';
 import type { RepairLineage } from './factory-repair';
-import type { AcceptanceCriterion } from './factory-quality';
+import type { VerificationContext, AcceptanceCriterion } from './factory-quality';
 import type { FactoryDefinition, FactoryOverrides } from './factory';
 
 export type FactoryRunState = 'prepared' | 'queued' | 'running' | 'waiting' | 'cancelling' | 'succeeded' | 'failed' | 'cancelled' | 'interrupted';
@@ -13,7 +13,10 @@ export type FactoryRunSummary = { id: string; itemId: string; state: FactoryRunS
 export type FactoryStageRun = { id: string; stageId: string; state: string; startedAt: string | null; finishedAt: string | null };
 export type FactoryStepRun = { id: string; stageRunId: string; stepId: string; state: string; startedAt: string | null; finishedAt: string | null; agentRunId: string | null; decisionRequestId: string | null; decision: boolean | null; decisionNote: string | null; output: string; outputLimitReached: boolean; evidence: string; error: string | null; exitCode: number | null };
 export type FactoryArtifact = { id: string; runId: string; stepRunId: string; name: string; kind: string; evidenceHash: string };
-export type FactoryRunDetail = { run: FactoryRun; stages: FactoryStageRun[]; steps: FactoryStepRun[]; artifacts: FactoryArtifact[]; budget?: ExecutionBudget };
+export type ParallelTree = { tree: string; modes: Record<string, number> };
+export type ParallelStage = { id: string; runId: string; workspacePath: string; state: string; input: ParallelTree | null; output: ParallelTree | null; checkpoint: VerificationContext | null; error: string | null; stepCheckpoints: { stepRunId: string; context: VerificationContext; indexHash: string; files: ParallelTree }[] };
+export type ParallelRun = { id: string; state: string; head: string; indexHash: string; initial: ParallelTree | null; initialContext: VerificationContext | null; final: ParallelTree | null; finalContext: VerificationContext | null; error: string | null };
+export type FactoryRunDetail = { run: FactoryRun; stages: FactoryStageRun[]; steps: FactoryStepRun[]; artifacts: FactoryArtifact[]; budget?: ExecutionBudget; parallel?: ParallelRun; parallelStages?: ParallelStage[] };
 
 export function requireFactoryRunDetail(value: FactoryRunDetail): FactoryRunDetail {
  if (!value?.run?.id || !Number.isSafeInteger(value.run.revision) || typeof value.run.active !== 'boolean' || !Array.isArray(value.stages) || !Array.isArray(value.steps) || !Array.isArray(value.artifacts) || !Array.isArray(value.run.snapshot?.environment?.definition?.stages))

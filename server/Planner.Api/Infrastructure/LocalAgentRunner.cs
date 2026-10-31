@@ -51,14 +51,14 @@ public sealed class LocalAgentEnvironment(AgentOptions options) : IAgentEnvironm
         await Git(fullPath, ["rev-parse", "--verify", "--end-of-options", gitRef + "^{commit}"], ct);
         return root;
     }
-    public async Task<string> Git(string directory, IReadOnlyList<string> arguments, CancellationToken ct, bool acceptDiff = false)
+    public async Task<string> Git(string directory, IReadOnlyList<string> arguments, CancellationToken ct, bool acceptDiff = false, IReadOnlyDictionary<string, string>? environment = null)
     {
         var executable = Resolve(options.GitExecutable) ?? throw new RuleException("Configure an available Git executable.", 503);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct); timeout.CancelAfter(TimeSpan.FromSeconds(options.GitTimeoutSeconds));
         var output = new StringBuilder(); var errors = new StringBuilder();
         var code = await AgentProcess.Run(executable, directory, arguments, null,
             line => { if (output.Length < options.MaxOutputCharacters) output.AppendLine(line); return Task.CompletedTask; },
-            line => { if (errors.Length < options.MaxOutputCharacters) errors.AppendLine(line); return Task.CompletedTask; }, timeout.Token);
+            line => { if (errors.Length < options.MaxOutputCharacters) errors.AppendLine(line); return Task.CompletedTask; }, timeout.Token, environment);
         if (code != 0 && !(acceptDiff && code == 1)) throw new RuleException("Git could not complete the operation: " + AgentRun.Tail(errors.ToString(), 2000));
         return AgentRun.Tail(output.ToString(), options.MaxOutputCharacters);
     }
@@ -105,13 +105,25 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        var active = new Dictionary<Guid, (Task Task, Guid? Parent)>();
+        try
         {
-            var data = await store.ReadAsync(stoppingToken);
-            var next = data.AgentRuns.FirstOrDefault(x => x.State == "queued");
-            if (next is not null) await Execute(next, stoppingToken);
-            else await Task.Delay(options.PollIntervalMs, stoppingToken);
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                foreach (var complete in active.Where(x => x.Value.Task.IsCompleted).ToList()) { await complete.Value.Task; active.Remove(complete.Key); }
+                var data = await store.ReadAsync(stoppingToken);
+                foreach (var next in data.AgentRuns.Where(x => x.State == "queued" && !active.ContainsKey(x.Id)))
+                {
+                    FactoryRun? parent = next.FactoryStepRunId is { } stepId ? data.FactoryRuns.Single(x => x.Id == data.FactoryStepRuns.Single(s => s.Id == stepId).RunId) : null;
+                    var parallel = parent is not null && FactoryParallel.Enabled(parent);
+                    if (!parallel && active.Values.Any(x => x.Parent is null)) continue;
+                    if (parallel && active.Values.Count(x => x.Parent == parent!.Id) >= parent!.Snapshot.Execution!.Policy.MaxConcurrentStages!.Value) continue;
+                    active.Add(next.Id, (Execute(next, stoppingToken), parallel ? parent!.Id : null));
+                }
+                await Task.WhenAny(active.Values.Select(x => x.Task).Append(Task.Delay(options.PollIntervalMs, stoppingToken)));
+            }
         }
+        finally { foreach (var current in active.Values) try { await current.Task; } catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { } }
     }
     private async Task Execute(AgentRun run, CancellationToken stoppingToken)
     {

@@ -22,6 +22,7 @@ public sealed class FactoryDispatchService(IWorkspaceStore store, IFactoryEnviro
         if (run.State != "prepared") throw new RuleException("Only prepared work orders can start. Review interrupted work before preparing a new run.", 409);
         CheckCurrent(before, run);
         FactoryExecutionPolicyService.RequireLifetime(run.Snapshot.Execution, environment.CanBoundProcessLifetime);
+        FactoryExecutionPolicyService.RequireCapacity(run.Snapshot.Execution, environment.MaximumConcurrentStages);
         var inspected = await environment.InspectCaptured(run.Snapshot.Environment, ct);
         var error = inspected.Checks.FirstOrDefault(x => x.Severity == "error");
         if (error is not null) throw new RuleException(error.Message);
@@ -58,12 +59,18 @@ public sealed class FactoryDispatchService(IWorkspaceStore store, IFactoryEnviro
             }
             Rules.Revision(input.ExpectedRevision, run.Revision);
             FactoryExecutionPolicyService.Require(data, run);
-            if (run.State != "waiting") throw new RuleException("The factory run is not waiting for approval.", 409);
+            if (run.State != "waiting" && !(FactoryParallel.Enabled(run) && run.State == "running")) throw new RuleException("The factory run is not waiting for approval.", 409);
             var stage = data.FactoryStageRuns.Single(x => x.Id == step.StageRunId);
             var definition = run.Snapshot.Environment.Definition.Stages.Single(x => x.Id == stage.StageId).Steps.Single(x => x.Id == step.StepId);
             if (definition.Kind != "manual") throw new RuleException("This is not a human approval step.");
             step.Decide(input.RequestId, input.Approved, input.Note);
-            if (input.Approved) { Capture(data, run, step, definition); stage.Continue(); run.Continue(); }
+            if (FactoryParallel.Enabled(run))
+            {
+                if (input.Approved) { Capture(data, run, step, definition); stage.Continue(); data.ParallelStages.Single(x => x.Id == stage.Id).Continue(); }
+                else stage.End("failed");
+                if (run.State == "waiting") run.Continue(); else run.Touch();
+            }
+            else if (input.Approved) { Capture(data, run, step, definition); stage.Continue(); run.Continue(); }
             else End(data, run, "failed", "Human approval was declined.");
         }, ct);
         return FactoryRunService.Detail(saved, Find(saved, id));
@@ -94,6 +101,11 @@ public sealed class FactoryDispatchService(IWorkspaceStore store, IFactoryEnviro
     public static void End(WorkspaceData data, FactoryRun run, string state, string? error)
     {
         run.End(state, error); state = run.State;
+        if (state != "succeeded")
+        {
+            data.ParallelRuns.SingleOrDefault(x => x.Id == run.Id)?.Stop(state, error);
+            foreach (var branch in data.ParallelStages.Where(x => x.RunId == run.Id)) branch.Stop(state, error);
+        }
         foreach (var step in data.FactoryStepRuns.Where(x => x.RunId == run.Id))
         {
             if (step.AgentRunId is { } childId && data.AgentRuns.SingleOrDefault(x => x.Id == childId) is { } child) step.RecoverAgent(child);

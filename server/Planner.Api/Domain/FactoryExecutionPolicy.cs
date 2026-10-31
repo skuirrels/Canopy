@@ -16,10 +16,12 @@ public sealed record FactoryModelRoute(string Role, string Provider, string Mode
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record FactoryExecutionPolicy(bool Enabled, IReadOnlyList<FactoryModelRoute> Routes,
     int MaxAgentInvocations, int MaxCommandInvocations, int MaxElapsedSeconds, bool AllowUnmeteredCost,
-    long? MaxTokens = null, decimal? MaxCost = null, string? Currency = null)
+    long? MaxTokens = null, decimal? MaxCost = null, string? Currency = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? MaxConcurrentStages = null)
 {
     public FactoryExecutionPolicy Normalize()
     {
+        if (MaxConcurrentStages is < 1) throw new RuleException("Concurrent stages must be positive, or null for serial execution.");
         if (Routes is null || Routes.Count > FactoryRules.AgentRoles.Count || Routes.Any(x => x is null) || Routes.Select(x => x.Role).Distinct().Count() != Routes.Count) throw new RuleException("Supply distinct role routes, using [] for none.");
         if (MaxAgentInvocations < 0 || MaxCommandInvocations < 0 || MaxElapsedSeconds < 1) throw new RuleException("Set nonnegative invocation limits and a positive elapsed-time limit.");
         if (MaxTokens < 0 || MaxCost < 0 || MaxCost.HasValue && string.IsNullOrWhiteSpace(Currency)) throw new RuleException("Token/currency caps require nonnegative values and an explicit currency for a cost cap.");

@@ -8,8 +8,9 @@ public sealed record FactorySkillLocation(string Id, string Source, string Path)
 
 // Local filesystem observations are confined to the explicitly single-process deployment.
 // Provider credentials/model access and execution success are never inferred from a binary.
-public sealed class LocalFactoryEnvironment(LocalAgentEnvironment agents, IFactorySkillCatalogue catalogue) : IFactoryEnvironment
+public sealed class LocalFactoryEnvironment(LocalAgentEnvironment agents, IFactorySkillCatalogue catalogue, FactoryParallelOptions parallel) : IFactoryEnvironment
 {
+    public int MaximumConcurrentStages => parallel.MaximumConcurrentStages;
     public bool CanBoundProcessLifetime => LocalProcessHost.Supported;
     public async Task<FactoryInspection> InspectCaptured(FactoryEnvironmentSnapshot snapshot, CancellationToken ct)
     {

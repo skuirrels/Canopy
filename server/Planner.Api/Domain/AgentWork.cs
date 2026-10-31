@@ -117,7 +117,7 @@ public sealed class AgentRun
             SessionId = previous?.SessionId, WorkspacePath = previous?.WorkspacePath, BaseCommit = previous?.BaseCommit
         };
     }
-    public static AgentRun ForFactory(FactoryRun run, FactoryStepRun stepRun, FactoryStep step, string instructions)
+    public static AgentRun ForFactory(FactoryRun run, FactoryStepRun stepRun, FactoryStep step, string instructions, string? executionBase = null)
     {
         if (step.Kind != "agent" || step.Provider is null || step.Permission is not ("read-only" or "workspace-write") || run.WorkspacePath is null)
             throw new RuleException("The factory agent step is not ready.");
@@ -127,7 +127,7 @@ public sealed class AgentRun
         return new() { Id = Guid.NewGuid(), RequestId = Guid.NewGuid(), FactoryStepRunId = stepRun.Id, FactoryPermission = step.Permission,
             ProjectId = run.ProjectId, ItemId = run.ItemId, Provider = step.Provider, Purpose = step.Role == "specification" ? "spec" : step.Role!,
             Title = snapshot.Title, SpecJson = snapshot.SpecJson, ProjectRevision = snapshot.ProjectRevision,
-            RepositoryPath = snapshot.Environment.RepositoryPath, BaseRef = snapshot.Environment.BaseCommit, BaseCommit = snapshot.Environment.BaseCommit,
+            RepositoryPath = snapshot.Environment.RepositoryPath, BaseRef = executionBase ?? snapshot.Environment.BaseCommit, BaseCommit = executionBase ?? snapshot.Environment.BaseCommit,
             WorkspacePath = run.WorkspacePath, Model = step.Model, Effort = step.Effort,
             ProjectInstructions = snapshot.Environment.ProjectInstructions, Instructions = instructions, CreatedAt = DateTime.UtcNow };
     }

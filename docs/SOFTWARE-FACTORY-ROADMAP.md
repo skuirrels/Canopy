@@ -191,6 +191,21 @@ counts belong to the configured producer. Threshold crossings require operator
 verification; no production source, business rule or automatic filing is enabled
 by default.
 
+## Parallel stage execution
+
+- [x] Explicit captured concurrency on the enabled project execution policy;
+  legacy/absent settings retain serial execution and existing policy hashes.
+- [x] Retained stage worktrees, ordered steps, dependency-only source joins and
+  native input/output/index/HEAD checkpoints. Conflicts fail visibly.
+- [x] Stage-local approvals, bounded reservations and elapsed time, owned child
+  cancellation, revocation and restart interruption without replay.
+- [x] Final integrated QA/review/repair context, stage inspection in React Flow and
+  the step list, compatibility and native migration regressions.
+
+See [parallel execution](FACTORY-PARALLEL-EXECUTION.md) and
+[validation](FACTORY-PARALLEL-VALIDATION.md). Concurrency is opt-in; ignored build
+outputs and physical artifacts are not distributed as source.
+
 ## Operating constraints
 
 Planning, specification assistance and factory execution remain independent
@@ -215,7 +230,7 @@ Named deployment targets, separate revision-bound approvals and explicit recover
 are delivered as an extension of controlled delivery. See
 [deployment environments](FACTORY-DEPLOYMENTS.md) and
 [validation](FACTORY-DEPLOYMENTS-VALIDATION.md). Authentication and team access remain a separate deployment
-track. Parallel dispatch and automatic skill calibration remain deferred.
+track. Automatic skill calibration remains deferred.
 
 ## Design references
 
