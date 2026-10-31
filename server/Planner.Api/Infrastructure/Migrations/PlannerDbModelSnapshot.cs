@@ -164,6 +164,56 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("Dependencies");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.FactoryAnalyticsReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("CoverageJson")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("SourceId")
+                        .HasColumnType("UUID");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("AnalyticsReceipts");
+                });
+
+            modelBuilder.Entity("Planner.Api.Domain.FactoryAnalyticsReportIdentity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ReportHash")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("ReportId")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId", "Scope", "ReportId")
+                        .IsUnique();
+
+                    b.ToTable("AnalyticsReportIdentities");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.FactoryArtifact", b =>
                 {
                     b.Property<Guid>("Id")

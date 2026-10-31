@@ -26,6 +26,8 @@ public sealed class WorkspaceData
 {
     [JsonIgnore] public List<FactoryDeployment> Deployments { get; init; } = [];
     [JsonIgnore] public List<FactoryDeploymentOperation> DeploymentOperations { get; init; } = [];
+    [JsonIgnore] public List<FactoryAnalyticsReceipt> AnalyticsReceipts { get; init; } = [];
+    [JsonIgnore] public List<FactoryAnalyticsReportIdentity> AnalyticsReportIdentities { get; init; } = [];
     [JsonIgnore] public List<FactoryErrorEventIdentity> ErrorEventIdentities { get; init; } = [];
     [JsonIgnore] public List<FactoryErrorFeedReceipt> ErrorFeedReceipts { get; init; } = [];
     [JsonIgnore] public List<FactoryIntakeSource> IntakeSources { get; init; } = [];

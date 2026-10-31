@@ -125,7 +125,7 @@ and persistence. See [delivery validation](FACTORY-DELIVERY-VALIDATION.md).
 - [x] Connect explicitly configured GitHub issue and recurring review-finding
   sources; retain each source's own identity and evidence. Integrations remain
   optional. Configured application-error snapshots are delivered as the source
-  extension below. Analytics remains a future adapter.
+  extensions below. External connections remain explicitly configured.
 - [x] Verify each candidate, assign a durable fingerprint and deduplicate against
   existing work. Preserve links to the original signal.
 - [x] Distinguish a successful empty read from unavailable or truncated coverage.
@@ -157,6 +157,7 @@ does not establish a defect. See [intake validation](FACTORY-INTAKE-VALIDATION.m
 See [execution policy](FACTORY-EXECUTION-POLICY.md) and its
 [validation](FACTORY-EXECUTION-POLICY-VALIDATION.md). This controls CLI invocations;
 provider-internal calls and hard spend enforcement remain outside its guarantees.
+
 ## Application-error intake
 
 - [x] Explicitly configured structured log snapshots, with source/application/
@@ -170,8 +171,25 @@ provider-internal calls and hard spend enforcement remain outside its guarantees
 
 See [structured feed setup and contract](FACTORY-ERROR-INTAKE.md) and
 [validation](FACTORY-ERROR-INTAKE-VALIDATION.md). No real error producer is configured
-by default. Exporter installation, analytics sources and automatic filing remain
+by default. Exporter installation and automatic filing remain
 separate work; intake still grants no execution authority.
+
+## Analytics signal intake
+
+- [x] Configured metric snapshots with explicit source/application/environment,
+  metric identity, unit/statistic, dimension allowlist and threshold/sample rules.
+- [x] Exact decimal/count strings, complete bounded windows, immutable native
+  report identities and distinct unavailable/zero-sample/empty coverage.
+- [x] Semantic rule/series fingerprints, native coverage receipts and immutable
+  observations, fresh explicit verification and duplicate-safe filing/linking.
+- [x] UI rule selection, exact quantities, dimensions and coverage history;
+  source edits revoke authority and unavailable selections remain visible.
+
+See [analytics setup and contract](FACTORY-ANALYTICS-INTAKE.md) and
+[validation](FACTORY-ANALYTICS-INTAKE-VALIDATION.md). Reported aggregates and sample
+counts belong to the configured producer. Threshold crossings require operator
+verification; no production source, business rule or automatic filing is enabled
+by default.
 
 ## Operating constraints
 

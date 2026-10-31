@@ -1,0 +1,14 @@
+$kind: http-request
+name: Read configured analytics feeds
+method: GET
+url: '{{baseUrl}}/api/factory/projects/{{projectId}}/intake/analytics-feeds'
+order: 1000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if(pm.variables.get('fixtureMode')!=='isolated'||!pm.variables.get('baseUrl')||!pm.variables.get('projectId')||!pm.variables.get('sourceId')||!pm.variables.get('candidateId'))throw new Error('Supply explicit isolated fixture mode and identities.');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Catalogue readable',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('Rules and quantities are explicit exact strings',()=>{pm.expect(d.feeds.length).to.be.above(0);d.feeds.forEach(f=>{pm.expect(f).not.to.have.property('path');f.rules.forEach(r=>{pm.expect(r.condition.threshold).to.be.a('string');pm.expect(r.condition.minimumSamples).to.be.a('string')})})});

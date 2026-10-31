@@ -49,6 +49,7 @@ var intakeLimits = builder.Configuration.GetSection("Intake").Get<IntakeLimits>(
 intakeLimits.Validate(); builder.Services.AddSingleton(intakeLimits);
 builder.Services.AddSingleton<IIntakeIssues, GitHubIntakeIssues>();
 builder.Services.AddSingleton<IIntakeErrorFeeds, LocalIntakeErrorFeeds>();
+builder.Services.AddSingleton<IIntakeAnalyticsFeeds, LocalIntakeAnalyticsFeeds>();
 builder.Services.AddSingleton<FactoryIntakeService>();
 builder.Services.AddSingleton<IDeliveryWorkspace, LocalDeliveryWorkspace>();
 builder.Services.AddSingleton<IDeliveryHooks, LocalDeliveryHooks>();

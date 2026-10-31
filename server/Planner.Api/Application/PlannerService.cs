@@ -19,6 +19,7 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
         if (data.IntakeCollections.Any(x => x.ProjectId == id && x.State == "running")) throw new RuleException("Wait for the active intake collection before deleting this project.", 409);
         var intakeIds = data.IntakeCandidates.Where(x => x.ProjectId == id).Select(x => x.Id).ToHashSet();
         data.IntakeDecisions.RemoveAll(x => intakeIds.Contains(x.CandidateId)); data.IntakeObservations.RemoveAll(x => intakeIds.Contains(x.CandidateId));
+        data.AnalyticsReceipts.RemoveAll(x => x.ProjectId == id); data.AnalyticsReportIdentities.RemoveAll(x => x.ProjectId == id);
         data.ErrorFeedReceipts.RemoveAll(x => x.ProjectId == id); data.ErrorEventIdentities.RemoveAll(x => x.ProjectId == id);
         data.IntakeCandidates.RemoveAll(x => x.ProjectId == id); data.IntakeCollections.RemoveAll(x => x.ProjectId == id); data.IntakeSources.RemoveAll(x => x.ProjectId == id);
         data.RemoveFactoryRuns(data.FactoryRuns.Where(x => x.ProjectId == id).Select(x => x.Id));
