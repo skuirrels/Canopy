@@ -7,6 +7,13 @@ public sealed record StartAgentRun(Guid RequestId, long ExpectedRevision, string
 public sealed record AgentProvider(string Id, string Name, bool Available, IReadOnlyList<string> EffortLevels);
 public sealed record AgentModel(string Id, string Name);
 public sealed record AgentModelCatalogue(string Provider, string Source, IReadOnlyList<AgentModel> Models, string? Error);
+public sealed record ChooseFolder(string? Start);
+public sealed record FolderChoice(string? Path);
+public interface IFolderPicker
+{
+    bool Available { get; }
+    Task<FolderChoice> Choose(string? start, CancellationToken ct);
+}
 public interface IAgentEnvironment
 {
     int PollIntervalMs { get; }
@@ -16,9 +23,10 @@ public interface IAgentEnvironment
     void Cancel(Guid runId);
 }
 
-public sealed class AgentService(IWorkspaceStore store, IAgentEnvironment environment)
+public sealed class AgentService(IWorkspaceStore store, IAgentEnvironment environment, IFolderPicker folders)
 {
-    public object Providers() => new { providers = environment.Providers(), pollIntervalMs = environment.PollIntervalMs };
+    public object Providers() => new { providers = environment.Providers(), pollIntervalMs = environment.PollIntervalMs, folderPicker = folders.Available };
+    public Task<FolderChoice> ChooseFolder(ChooseFolder input, CancellationToken ct) => folders.Choose(input.Start, ct);
     public Task<AgentModelCatalogue> Models(string provider, CancellationToken ct) => environment.Models(provider, ct);
     public async Task<ProjectAgentConnection?> Connection(Guid projectId, CancellationToken ct)
     { var data = await store.ReadAsync(ct); data.Graph(projectId); return data.AgentConnections.SingleOrDefault(x => x.ProjectId == projectId); }

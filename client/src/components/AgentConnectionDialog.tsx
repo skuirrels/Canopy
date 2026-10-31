@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Loader2, Unplug, Bot } from 'lucide-react';
+import { Loader2, Unplug, Bot, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkspace } from '../lib/workspace';
 import { agentRequest } from '../lib/agents';
@@ -17,7 +17,7 @@ export function AgentConnectionDialog({ projectId, onClose }: { projectId: strin
  const [providers, setProviders] = useState<AgentProviders | null>(null);
  const [path, setPath] = useState(''); const [baseRef, setBaseRef] = useState(''); const [provider, setProvider] = useState<AgentId | ''>('');
  const [settings, setSettings] = useState<Record<AgentId, AgentExecutionSettings>>({ codex: { model: null, effort: null }, claude: { model: null, effort: null }, gemini: { model: null, effort: null } }); const [instructions, setInstructions] = useState('');
- const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
+ const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false); const [browsing, setBrowsing] = useState(false); const [error, setError] = useState('');
  useEffect(() => {
   const controller = new AbortController();
   void Promise.all([agentRequest<AgentConnection | null>(`/projects/${projectId}/connection`, 'GET', undefined, controller.signal), agentRequest<AgentProviders>('/providers', 'GET', undefined, controller.signal)])
@@ -25,6 +25,11 @@ export function AgentConnectionDialog({ projectId, onClose }: { projectId: strin
    .catch(e => { if (!controller.signal.aborted) setError((e as Error).message); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
   return () => controller.abort();
  }, [projectId]);
+ async function browse() {
+  setBrowsing(true); setError('');
+  try { const choice = await agentRequest<{ path: string | null }>('/folder-picker', 'POST', { start: path.trim() || null }); if (choice.path) setPath(choice.path); }
+  catch (e) { setError((e as Error).message); } finally { setBrowsing(false); }
+ }
  async function save(event: React.FormEvent) {
   event.preventDefault(); setBusy(true); setError('');
   try {
@@ -44,7 +49,7 @@ export function AgentConnectionDialog({ projectId, onClose }: { projectId: strin
     <p className="agent-note">Graphics and sound during agent builds. Saves immediately for all projects in this browser. Turning effects off keeps builds running.</p>
    </fieldset>
    <div className="agent-connection-workspace">
-   <label>Repository folder<input required value={path} onChange={e => setPath(e.target.value)} placeholder="Absolute path to the repository" autoComplete="off"/></label>
+   <div className="repository-folder"><label htmlFor="repository-folder">Repository folder</label><div><input id="repository-folder" required value={path} onChange={e => setPath(e.target.value)} placeholder="Absolute path to the repository" autoComplete="off"/>{providers?.folderPicker && <Button type="button" variant="secondary" disabled={browsing || busy} onClick={() => { void browse(); }}>{browsing ? <Loader2 size={14} className="spin"/> : <FolderOpen size={14}/>}{browsing ? 'Choosing…' : 'Browse…'}</Button>}</div>{browsing && <p className="agent-note" role="status">Choose the folder in the window that opened on this computer.</p>}</div>
    <div className="form-row"><label>Base Git ref<input required value={baseRef} onChange={e => setBaseRef(e.target.value)} placeholder="Branch, tag or commit"/></label><label>Preferred agent<select required value={provider} onChange={e => setProvider(e.target.value as AgentId)}><option value="">Choose an agent</option>{providers?.providers.map(p => <option key={p.id} value={p.id}>{p.name}{p.available ? '' : ' · not installed'}</option>)}</select></label></div>
    <label>Project instructions <span className="optional">optional</span><textarea rows={6} maxLength={100000} value={instructions} onChange={e => setInstructions(e.target.value)} placeholder="Shared context, conventions and verification requirements"/></label>
    </div>

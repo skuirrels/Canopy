@@ -81,7 +81,7 @@ svg{flex-shrink:0}
 .button-primary{background:var(--accent-fill);color:#fff;border-color:var(--accent);box-shadow:0 1px 2px #00000015}
 .button-primary:hover:not(:disabled){background:var(--accent-hover);box-shadow:0 2px 5px #00000025}
 .button-secondary{background:var(--surface);border-color:var(--line);color:var(--body-text);box-shadow:0 1px 3px #1e293b06}
-.button-secondary:hover{background:var(--surface-subtle)}
+.button-secondary:not(:disabled):hover{background:var(--surface-hover);border-color:var(--border-hover)}
 .button-ghost{color:var(--body-text)}
 .button-ghost:hover{background:var(--surface-hover)}
 .button-danger{background:#b85851;color:white}
