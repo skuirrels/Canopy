@@ -31,8 +31,9 @@ var factoryTemplates = FactoryTemplateLoader.Load(Path.GetFullPath(factoryTempla
 builder.Services.AddSingleton<IReadOnlyList<FactoryTemplate>>(factoryTemplates);
 builder.Services.AddScoped<FactoryService>();
 var setupOptions = builder.Configuration.GetSection("Factory:Setup").Get<FactorySetupOptions>() ?? throw new InvalidOperationException("Configure Factory:Setup.");
-if (setupOptions.SuggestedSkills is null || setupOptions.SuggestedSkills.Any(x => !FactoryRules.AgentRoles.Contains(x.Key) || x.Value is null || x.Value.Any(s => s is null)) || !factoryTemplates.Any(x => x.Id == setupOptions.DefaultTemplateId)) throw new InvalidOperationException("Configure an existing Factory:Setup:DefaultTemplateId.");
+if (setupOptions.SuggestedSkills is null || setupOptions.SuggestedSkills.Any(x => !FactoryRules.AgentRoles.Contains(x.Key) || x.Value is null || x.Value.Any(s => s is null)) || !factoryTemplates.Any(x => x.Id == setupOptions.DefaultTemplateId) || setupOptions.DefaultCheckTimeoutSeconds < 1 || setupOptions.StarterChecks is null || setupOptions.StarterChecks.Any(x => x is null || string.IsNullOrWhiteSpace(x.Ecosystem) || x.Commands is null || x.Commands.Length == 0 || x.Commands.Any(string.IsNullOrWhiteSpace))) throw new InvalidOperationException("Configure an existing Factory:Setup:DefaultTemplateId, a positive DefaultCheckTimeoutSeconds and non-empty StarterChecks commands.");
 builder.Services.AddSingleton(setupOptions);
+builder.Services.AddSingleton<IRepositoryChecks, LocalRepositoryChecks>();
 builder.Services.AddScoped<FactorySetupService>();
 var calibrationOptions = builder.Configuration.GetSection("Factory:Calibration").Get<FactoryCalibrationOptions>() ?? throw new InvalidOperationException("Configure Factory:Calibration.");
 calibrationOptions.Validate(); builder.Services.AddSingleton(calibrationOptions);

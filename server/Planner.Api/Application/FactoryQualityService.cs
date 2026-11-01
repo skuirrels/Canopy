@@ -128,8 +128,8 @@ public sealed class FactoryQualityService(IWorkspaceStore store, IVerificationEn
     private static WorkItem Item(WorkspaceData data, Guid id) => data.Items.SingleOrDefault(x => x.Id == id) ?? throw new RuleException("Task not found.", 404);
     private static object? Attachment(WorkspaceData data, FactoryRun run)
     {
-        var attachment = data.TaskFactoryConfigurations.SingleOrDefault(x => x.Id == run.ItemId);
-        return attachment is null ? null : new { attachment.PipelineVersionId, attachment.Overrides };
+        var attachment = FactoryAttachments.Effective(data, run.ItemId);
+        return attachment is null ? null : new { PipelineVersionId = attachment.Version.Id, attachment.Overrides };
     }
     private static string WithExecution(string source, string? policyHash) => policyHash is null ? source : FactoryArtifact.Hash(source + policyHash);
     public static string Source(WorkspaceData data, FactoryRun run) => WithExecution(FactoryCriterionVerdict.Source(Item(data, run.ItemId).SpecJson,

@@ -6,7 +6,17 @@ public sealed class FactorySetupOptions
 {
     public string DefaultTemplateId { get; set; } = "";
     public Dictionary<string, FactorySkill[]> SuggestedSkills { get; set; } = [];
+    public int DefaultCheckTimeoutSeconds { get; set; }
+    // Common build and test commands offered when the repository has nothing to detect yet.
+    public StarterCheckGroup[] StarterChecks { get; set; } = [];
 }
+public sealed class StarterCheckGroup
+{
+    public string Ecosystem { get; set; } = "";
+    public string[] Commands { get; set; } = [];
+}
+public sealed record SuggestedCheckGroup(string Ecosystem, string Evidence, FactoryCommand[] Checks);
+public interface IRepositoryChecks { IReadOnlyList<SuggestedCheckGroup> Suggest(string repositoryPath, int timeoutSeconds); }
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record ConfigureFactorySetup(long ExpectedRevision, string TemplateId, string Name, FactoryCommand[] Commands,
     Dictionary<string, FactorySkill[]> Skills, Guid? ItemId = null);
@@ -14,18 +24,19 @@ public sealed record ConfigureFactorySetup(long ExpectedRevision, string Templat
 public sealed record UseFactorySetup(long ExpectedRevision, Guid PipelineVersionId);
 public sealed record FactorySetupDetail(long ProjectRevision, FactoryProjectSetup? Setup, PipelineVersion? Version,
     bool Available, ProjectAgentConnection? Connection, IReadOnlyList<AgentProvider> Providers,
-    IReadOnlyList<FactoryTemplate> Templates, FactorySetupOptions Defaults);
+    IReadOnlyList<FactoryTemplate> Templates, FactorySetupOptions Defaults, IReadOnlyList<SuggestedCheckGroup> SuggestedChecks);
 
 public sealed class FactorySetupService(IWorkspaceStore store, IReadOnlyList<FactoryTemplate> templates,
-    FactorySetupOptions options, IFactorySkillCatalogue catalogue, IAgentEnvironment agents)
+    FactorySetupOptions options, IFactorySkillCatalogue catalogue, IAgentEnvironment agents, IRepositoryChecks repositoryChecks)
 {
     private FactorySetupDetail Detail(WorkspaceData data, Guid id)
     {
         var graph = data.Graph(id); var setup = data.FactoryProjectSetups.SingleOrDefault(x => x.Id == id);
         var version = data.PipelineVersions.SingleOrDefault(x => x.Id == setup?.PipelineVersionId);
         var pipeline = data.FactoryPipelines.SingleOrDefault(x => x.Id == version?.PipelineId);
-        return new(graph.Project.Revision, setup, version, pipeline is { Archived: false },
-            data.AgentConnections.SingleOrDefault(x => x.ProjectId == id), agents.Providers(), templates, options);
+        var connection = data.AgentConnections.SingleOrDefault(x => x.ProjectId == id);
+        return new(graph.Project.Revision, setup, version, pipeline is { Archived: false }, connection, agents.Providers(), templates, options,
+            connection is null ? [] : repositoryChecks.Suggest(connection.RepositoryPath, options.DefaultCheckTimeoutSeconds));
     }
     public async Task<FactorySetupDetail> Read(Guid id, CancellationToken ct) => Detail(await store.ReadAsync(ct), id);
     public async Task<FactoryDefinition> Preview(Guid id, ConfigureFactorySetup input, CancellationToken ct)

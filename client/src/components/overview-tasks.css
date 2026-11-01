@@ -1,7 +1,7 @@
 .overview-dashboard.overview-page{padding:30px 40px 28px}
 .overview-dashboard .overview-heading h1{font-size:32px;margin:7px 0 6px;letter-spacing:-.8px}
 .overview-dashboard .overview-heading p{font-size:15px}
-.overview-dashboard .overview-heading>.button{align-self:center;margin:0}
+.overview-dashboard .overview-heading>.button,.overview-dashboard .overview-heading>.blocked-action>.button{align-self:center;margin:0}
 .overview-attention{flex-shrink:0;--attention-danger:#aa443e;--attention-danger-soft:#aa443e0c}
 [data-theme="react-flow"] .overview-attention{--attention-danger:#e9a195;--attention-danger-soft:#e9a1950b}
 .overview-workspace-summary{display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin:24px 0;padding:17px 0;border-block:1px solid var(--line);font-size:14px;color:var(--secondary-text)}
@@ -39,7 +39,7 @@
 @media(max-width:1100px){.attention-lanes{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:550px){
  .overview-dashboard.overview-page{padding:20px 14px max(24px,env(safe-area-inset-bottom))}
- .overview-dashboard .overview-heading h1{font-size:28px;max-width:none}.overview-dashboard .overview-heading p{font-size:14px}.overview-dashboard .overview-heading>.button{margin-top:4px}
+ .overview-dashboard .overview-heading h1{font-size:28px;max-width:none}.overview-dashboard .overview-heading p{font-size:14px}.overview-dashboard .overview-heading>.button,.overview-dashboard .overview-heading>.blocked-action>.button{margin-top:4px}
  .overview-workspace-summary{gap:10px 16px;margin:20px 0;padding:14px 0;font-size:13px}.overview-workspace-summary strong{font-size:14px}
  .attention-heading h2{font-size:20px}.attention-calendar{font-size:13px}.attention-task{padding:14px}.attention-task-context{font-size:12px}
  .attention-task-details,.attention-task-bottom{font-size:14px}.attention-task-bottom{align-items:flex-start;flex-direction:column;gap:8px}.attention-assignees{gap:6px 12px}
@@ -54,8 +54,8 @@
  .overview-dashboard .overview-heading>div{padding-right:56px}
  .overview-dashboard .overview-heading .eyebrow,.overview-dashboard .overview-heading p{display:none}
  .overview-dashboard .overview-heading h1{font-size:23px;line-height:1.35;margin:0;padding-top:5px}
- .overview-dashboard .overview-heading>.button{position:absolute;right:0;top:0;width:44px;height:44px;min-height:44px;margin:0;padding:0;font-size:0;gap:0}
- .overview-dashboard .overview-heading>.button>svg{width:18px;height:18px}
+ .overview-dashboard .overview-heading>.button, .overview-dashboard .overview-heading>.blocked-action>.button{position:absolute;right:0;top:0;width:44px;height:44px;min-height:44px;margin:0;padding:0;font-size:0;gap:0}
+ .overview-dashboard .overview-heading>.button>svg, .overview-dashboard .overview-heading>.blocked-action>.button>svg{width:18px;height:18px}
  .overview-workspace-summary{gap:8px 12px}
  .attention-heading p{display:none}
 }

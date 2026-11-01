@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { parseMarkdown, specificationExtensions } from '../lib/markdown';
 import { Dialog } from './ui/dialog';
 import { Button } from './ui/button';
+import { blockedBy } from '../lib/blocked';
 import './agents.css';
 
 export function MarkdownImport({ initialMarkdown = '', onApply, onClose }: { initialMarkdown?: string; onApply: (markdown: string, mode: 'append' | 'replace') => Promise<void>; onClose: () => void }) {
@@ -16,6 +17,6 @@ export function MarkdownImport({ initialMarkdown = '', onApply, onClose }: { ini
   <label>How to import<select value={mode} onChange={e => setMode(e.target.value as 'append' | 'replace')}><option value="append">Append to existing specification</option><option value="replace">Replace existing specification</option></select></label>
   {parsed.error ? <p role="alert" className="agent-error">{parsed.error}</p> : <div className="markdown-preview"><span className="eyebrow">PREVIEW</span><EditorContent editor={editor}/></div>}
   {error && <p role="alert" className="agent-error">{error}</p>}
-  <div className="dialog-footer"><Button variant="ghost" disabled={busy} onClick={onClose}>Cancel</Button><Button disabled={busy || !markdown.trim() || !parsed.document} onClick={() => { setBusy(true); setError(''); void onApply(markdown, mode).then(onClose).catch(e => setError((e as Error).message)).finally(() => setBusy(false)); }}>{busy && <Loader2 size={14} className="spin"/>}{mode === 'append' ? 'Append specification' : 'Replace specification'}</Button></div>
+  <div className="dialog-footer"><Button variant="ghost" disabled={busy} onClick={onClose}>Cancel</Button><Button disabled={busy} blockedReason={blockedBy([!markdown.trim(), 'Paste some Markdown to import.'], [!parsed.document, 'Fix the Markdown problem above first.'])} onClick={() => { setBusy(true); setError(''); void onApply(markdown, mode).then(onClose).catch(e => setError((e as Error).message)).finally(() => setBusy(false)); }}>{busy && <Loader2 size={14} className="spin"/>}{mode === 'append' ? 'Append specification' : 'Replace specification'}</Button></div>
  </Dialog>;
 }

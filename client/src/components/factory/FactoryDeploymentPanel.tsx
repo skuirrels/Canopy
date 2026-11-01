@@ -1,13 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { ApiError } from '../../lib/api';
 import { factoryRequest } from '../../lib/factory';
 import type { DeliveryRecord } from '../../lib/factory-delivery';
 import type { DeploymentDetail, DeploymentLibrary } from '../../lib/factory-deployment';
-import { Button } from '../ui/button';
+import { blockedBy } from '../../lib/blocked';
+import { BlockedNote, Button } from '../ui/button';
 import { Dialog } from '../ui/dialog';
 
 const labels: Record<string, string> = { approveDeploy: 'Approve deployment', deploy: 'Deploy approved revision', approveRecovery: 'Approve recovery', recover: 'Run approved recovery', reconcile: 'Observe target outcome', close: 'Close deployment tracking' };
 type SavedRequest = { path: string; body: object };
+const retryFirst = 'Retry the saved deployment request first.';
 export function FactoryDeploymentPanel({ delivery }: { delivery: DeliveryRecord }) {
  const [library, setLibrary] = useState<DeploymentLibrary | null>(null), [current, setCurrent] = useState<DeploymentDetail | null>(null), [selected, setSelected] = useState('');
  const [target, setTarget] = useState(''), [action, setAction] = useState(''), [note, setNote] = useState(''), [busy, setBusy] = useState(false), [error, setError] = useState(''), [pending, setPending] = useState<SavedRequest | null>(null);
@@ -31,14 +33,18 @@ export function FactoryDeploymentPanel({ delivery }: { delivery: DeliveryRecord 
   finally { submitting.current = false; if (alive.current) setBusy(false); }
  }
  function act(kind: string) { if (current) void send({ path: `/deployments/${current.deployment.id}/actions`, body: { requestId: crypto.randomUUID(), expectedRevision: current.deployment.revision, action: kind, approvalNote: note } }); }
- const d = current?.deployment, locked = busy || !!pending || !!d?.currentOperationId;
+ const d = current?.deployment;
  const configured = library?.targets.find(x => x.target.id === target);
+ const captureId = useId(), actionsId = useId();
+ const lockReason = blockedBy([pending, retryFirst], [d?.currentOperationId, 'Wait for the current deployment operation to finish.']);
+ const captureReason = lockReason ?? blockedBy([!delivery.remote?.mergeSha, 'Merge the pull request before deploying.']);
+ const gateReason = lockReason ?? blockedBy([current?.authorityErrors.length, 'Resolve the authority problems listed above.']);
  const approval = (kind: string) => d?.approvals.some(x => x.action === kind && x.binding === (kind === 'deploy' ? current?.deployBinding : current?.recoveryBinding));
  return <details className="factory-inherited factory-deployment" aria-label="Deployment environments"><summary>Deployment environments</summary>
   <p className="factory-help">Deploy the recorded merge to a configured environment. Capture, approval, execution and task acceptance are separate decisions. Recovery returns to the recorded pre-deployment revision and checks the original persistence snapshot.</p>
   {error && <p className="factory-error" role="alert">{error}</p>}{pending && <p role="status">The response was uncertain. <button type="button" disabled={busy} onClick={() => { void send(pending); }}>Retry saved deployment request</button></p>}
   <Button variant="ghost" disabled={busy} onClick={() => { setError(''); void refresh(); }}>Refresh deployments</Button>
-  {library && <><fieldset className="factory-step-fields" disabled={locked || !delivery.remote?.mergeSha}><legend>Capture deployment</legend><label>Deployment target<select value={target} onChange={e => setTarget(e.target.value)}><option value="">Choose a configured environment</option>{library.targets.map(x => <option key={x.target.id} value={x.target.id} disabled={!x.allowed || !x.ready}>{x.target.name} · {x.target.environment}{!x.allowed ? ' · not authorized' : !x.ready ? ' · not ready' : ''}</option>)}</select></label><Button disabled={!configured?.allowed || !configured.ready} onClick={() => { void send({ path: `/deliveries/${delivery.id}/deployments`, body: { requestId: crypto.randomUUID(), expectedRevision: library.sourceRevision, targetId: target } }); }}>Capture merged revision</Button></fieldset>
+  {library && <><fieldset className="factory-step-fields" disabled={busy || !!captureReason} aria-describedby={captureReason ? captureId : undefined}><legend>Capture deployment</legend><BlockedNote id={captureId} reason={captureReason}/><label>Deployment target<select value={target} onChange={e => setTarget(e.target.value)}><option value="">Choose a configured environment</option>{library.targets.map(x => <option key={x.target.id} value={x.target.id} disabled={!x.allowed || !x.ready}>{x.target.name} · {x.target.environment}{!x.allowed ? ' · not authorized' : !x.ready ? ' · not ready' : ''}</option>)}</select></label><Button blockedReason={!captureReason && blockedBy([!configured, 'Choose a deployment target.'], [!configured?.allowed, 'Authorize this target in the delivery policy first.'], [!configured?.ready, 'Choose a target that is ready.'])} onClick={() => { void send({ path: `/deliveries/${delivery.id}/deployments`, body: { requestId: crypto.randomUUID(), expectedRevision: library.sourceRevision, targetId: target } }); }}>Capture merged revision</Button></fieldset>
    {configured?.error && <p className="factory-help" role="status">{configured.error}</p>}
    {!library.targets.length && <p className="factory-help">No deployment targets are configured. Add named targets in backend deployment configuration, then authorize the chosen targets in project delivery policy.</p>}
    {!!library.targets.length && !library.targets.some(x => x.allowed) && <p className="factory-help">Authorize a configured target in project delivery policy before deployment.</p>}
@@ -46,9 +52,9 @@ export function FactoryDeploymentPanel({ delivery }: { delivery: DeliveryRecord 
   </>}
   {current && d && <article><h4>{d.capture.target.name} · {d.state}</h4><p role="status">{d.reason}</p><dl className="factory-runtime-facts"><div><dt>Environment</dt><dd>{d.capture.target.environment}</dd></div><div><dt>Approved deployment revision</dt><dd><code>{d.capture.mergeSha}</code></dd></div><div><dt>Recovery revision</dt><dd><code>{d.deployment?.before.revision ?? 'Captured immediately before deployment'}</code></dd></div></dl>
    {!!current.authorityErrors.length && <ul className="factory-error">{current.authorityErrors.map(x => <li key={x}>{x}</li>)}</ul>}
-   {d.open && <div className="factory-task-actions">{!d.deployment && <><Button disabled={locked || !!current.authorityErrors.length} onClick={() => setAction('approveDeploy')}>Approve deployment</Button><Button disabled={locked || !!current.authorityErrors.length || !approval('deploy')} onClick={() => setAction('deploy')}>Deploy approved revision</Button></>}
-    {d.deployment && !d.recovery && d.capture.target.recoveryHookId && <><Button variant="secondary" disabled={locked || !!current.authorityErrors.length} onClick={() => setAction('approveRecovery')}>Approve recovery</Button><Button disabled={locked || !!current.authorityErrors.length || !approval('recover')} onClick={() => setAction('recover')}>Run approved recovery</Button></>}
-    {d.deployment && <Button variant="secondary" disabled={locked || !!current.authorityErrors.length} onClick={() => act('reconcile')}>Observe target outcome</Button>}<Button variant="ghost" disabled={locked} onClick={() => setAction('close')}>Close deployment tracking</Button></div>}
+   {d.open && <><div className="factory-task-actions">{!d.deployment && <><Button disabled={busy || !!gateReason} aria-describedby={gateReason ? actionsId : undefined} onClick={() => setAction('approveDeploy')}>Approve deployment</Button><Button disabled={busy || !!gateReason} aria-describedby={gateReason ? actionsId : undefined} blockedReason={!gateReason && !approval('deploy') && 'Approve the deployment first.'} onClick={() => setAction('deploy')}>Deploy approved revision</Button></>}
+    {d.deployment && !d.recovery && d.capture.target.recoveryHookId && <><Button variant="secondary" disabled={busy || !!gateReason} aria-describedby={gateReason ? actionsId : undefined} onClick={() => setAction('approveRecovery')}>Approve recovery</Button><Button disabled={busy || !!gateReason} aria-describedby={gateReason ? actionsId : undefined} blockedReason={!gateReason && !approval('recover') && 'Approve the recovery first.'} onClick={() => setAction('recover')}>Run approved recovery</Button></>}
+    {d.deployment && <Button variant="secondary" disabled={busy || !!gateReason} aria-describedby={gateReason ? actionsId : undefined} onClick={() => act('reconcile')}>Observe target outcome</Button>}<Button variant="ghost" disabled={busy || !!lockReason} aria-describedby={lockReason ? actionsId : undefined} onClick={() => setAction('close')}>Close deployment tracking</Button></div><BlockedNote id={actionsId} reason={gateReason}/></>}
    <details className="factory-inherited"><summary>Deployment operations · {current.operations.length}</summary>{current.operations.map(op => <article key={op.id}><strong>{labels[op.kind]} · {op.state}</strong>{op.error && <p className="factory-error">{op.error}</p>}{op.approvalNote && <p>{op.approvalNote}</p>}<pre tabIndex={0}>{JSON.stringify(op.result, null, 2)}</pre></article>)}</details>
    <details className="factory-inherited"><summary>Original deployment and recovery receipts</summary><pre tabIndex={0}>{JSON.stringify({ deployment: d.deployment, recovery: d.recovery }, null, 2)}</pre></details>
   </article>}
@@ -57,7 +63,7 @@ export function FactoryDeploymentPanel({ delivery }: { delivery: DeliveryRecord 
    {!!delivery.capture.migrationFiles.length && <p className="factory-help">Migration files: {delivery.capture.migrationFiles.join(', ')}. Confirm compatibility and recovery before approving.</p>}
    {!!delivery.capture.sensitiveFiles.length && <p className="factory-help">Sensitive files: {delivery.capture.sensitiveFiles.join(', ')}.</p>}
    {action.startsWith('approve') && <label>Approval rationale and migration/recovery considerations<textarea rows={4} value={note} onChange={e => setNote(e.target.value)}/></label>}
-   <div className="dialog-footer"><Button variant="ghost" disabled={busy} onClick={() => setAction('')}>Keep current state</Button><Button disabled={busy || !!pending || action.startsWith('approve') && !note.trim()} onClick={() => act(action)}>{labels[action]}</Button></div>
+   <div className="dialog-footer"><Button variant="ghost" disabled={busy} onClick={() => setAction('')}>Keep current state</Button><Button disabled={busy} blockedReason={blockedBy([pending, retryFirst], [action.startsWith('approve') && !note.trim(), 'Enter an approval rationale.'])} onClick={() => act(action)}>{labels[action]}</Button></div>
   </Dialog>
  </details>;
 }
