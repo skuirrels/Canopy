@@ -9,6 +9,7 @@ import type { Project } from '../lib/types';
 import { useWorkspace } from '../lib/workspace';
 import { Dialog } from './ui/dialog';
 import { Button } from './ui/button';
+import { blockedBy } from '../lib/blocked';
 import './plan-import.css';
 
 export function PlanImport({ project, onClose, onImported }: { project: Project; onClose: () => void; onImported: () => void }) {
@@ -90,6 +91,6 @@ export function PlanImport({ project, onClose, onImported }: { project: Project;
    </div>
   </>}
   {error && <p role="alert" className="agent-error">{error}</p>}
-  <div className="dialog-footer"><Button variant="ghost" disabled={busy} onClick={onClose}>Cancel</Button>{draft && <Button variant="secondary" disabled={busy} onClick={() => { setDraft(null); setError(''); }}>Back to plan</Button>}<Button disabled={busy || (!draft && (!markdown.trim() || !source.trim()))} onClick={() => { void (draft ? apply() : preview()); }}>{busy ? <Loader2 size={15} className="spin"/> : <FileUp size={15}/>} {draft ? 'Import reviewed plan' : 'Preview backlog'}</Button></div>
+  <div className="dialog-footer"><Button variant="ghost" disabled={busy} onClick={onClose}>Cancel</Button>{draft && <Button variant="secondary" disabled={busy} onClick={() => { setDraft(null); setError(''); }}>Back to plan</Button>}<Button disabled={busy} blockedReason={!draft && blockedBy([!markdown.trim(), 'Choose a plan file or paste its contents.'], [!source.trim(), 'Give the plan a source name.'])} onClick={() => { void (draft ? apply() : preview()); }}>{busy ? <Loader2 size={15} className="spin"/> : <FileUp size={15}/>} {draft ? 'Import reviewed plan' : 'Preview backlog'}</Button></div>
  </Dialog>;
 }

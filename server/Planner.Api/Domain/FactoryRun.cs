@@ -12,7 +12,11 @@ public sealed record FactoryEnvironmentSnapshot(string RepositoryPath, string Ba
 public sealed record FactoryRunSnapshot(Guid PipelineVersionId, int VersionNumber, string PipelineName, string Source,
     string Title, string SpecJson, long ProjectRevision, FactoryOverrides Overrides,
     FactoryEnvironmentSnapshot Environment, IReadOnlyList<FactoryReadinessCheck> Checks, DateTime CheckedAt, IReadOnlyList<AcceptanceCriterion>? Criteria = null, FactoryRepairLineage? Repair = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] FactoryExecutionSnapshot? Execution = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] FactoryExecutionSnapshot? Execution = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] FactoryGuidedBuild? Guided = null);
+// A build started from the guided path. Pressing Build is the go-ahead for work that has not begun; the person then keeps
+// the committed result or asks for changes, which starts a revision from that result.
+public sealed record FactoryGuidedBuild(Guid? PreviousRunId = null, string? StartCommit = null, string? ChangeRequest = null);
 
 public sealed class FactoryRun
 {
@@ -130,11 +134,13 @@ public sealed class FactoryStepRun
         State = state; Evidence = evidence; Error = error; ExitCode = exitCode; FinishedAt = DateTime.UtcNow;
     }
     public void NotRun(string state) { if (state is not ("blocked" or "cancelled" or "interrupted")) throw new RuleException("Invalid unexecuted step outcome."); if (State == "pending") { State = state; FinishedAt = DateTime.UtcNow; } }
-    public void Decide(Guid requestId, bool approved, string? note)
+    public void Decide(Guid requestId, bool approved, string? note, object? outcome = null, string? declined = null)
     {
         if (State != "waiting" || requestId == Guid.Empty) throw new RuleException("This step is not waiting for a decision.", 409);
         DecisionRequestId = requestId; Decision = approved; DecisionNote = AgentRun.Text(note, "Decision note");
-        Complete(approved ? "succeeded" : "failed", JsonSerializer.Serialize(new { approved, note = DecisionNote, decidedAt = DateTime.UtcNow }, FactoryRules.Json), approved ? null : "Human approval was declined.");
+        var evidence = outcome is null ? JsonSerializer.Serialize(new { approved, note = DecisionNote, decidedAt = DateTime.UtcNow }, FactoryRules.Json)
+            : JsonSerializer.Serialize(new { approved, note = DecisionNote, decidedAt = DateTime.UtcNow, outcome }, FactoryRules.Json);
+        Complete(approved ? "succeeded" : "failed", evidence, approved ? null : declined ?? "Human approval was declined.");
     }
     public static FactoryStepRun Prepare(Guid runId, Guid stageRunId, FactoryStep step) => new()
         { Id = Guid.NewGuid(), RunId = runId, StageRunId = stageRunId, StepId = step.Id };

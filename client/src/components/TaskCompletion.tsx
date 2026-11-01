@@ -7,6 +7,10 @@ import type { Item } from '../lib/types';
 import { useWorkspace } from '../lib/workspace';
 import { Button } from './ui/button';
 
+// Without a completed column there is nowhere to move a task. The view showing the tick buttons renders this note once.
+export const noCompletedStatus = 'No column counts as done. Mark a board column complete first.';
+export const noCompletedStatusId = (projectId: string) => `no-completed-status-${projectId}`;
+
 export function TaskCompletion({ item, returnFocusRef }: { item: Item; returnFocusRef: RefObject<HTMLButtonElement | null> }) {
  const { data, pending, mutate } = useWorkspace();
  const [open, setOpen] = useState(false);
@@ -32,7 +36,7 @@ export function TaskCompletion({ item, returnFocusRef }: { item: Item; returnFoc
  }
  if (status?.isCompleted) return <span className="task-completion task-completion-done" style={{ color: status.color }} aria-label={`${item.title}: ${status.name}`}><span className="task-completion-circle"><Check size={13} strokeWidth={2.5}/></span></span>;
  return <Dialog.Root open={open} onOpenChange={value => { if (!submitting.current) setOpen(value); }}>
-  <Dialog.Trigger asChild><button type="button" className="task-completion" aria-label={`Mark ${item.title} as done`} data-tooltip={target ? 'Mark as done' : 'Add a completed status in project settings first'} disabled={pending > 0 || !target}><span className="task-completion-circle"><Check size={13} strokeWidth={2.5}/></span></button></Dialog.Trigger>
+  <Dialog.Trigger asChild><button type="button" className="task-completion" aria-label={`Mark ${item.title} as done`} data-tooltip={target ? 'Mark as done' : noCompletedStatus} aria-describedby={target ? undefined : noCompletedStatusId(item.projectId)} disabled={pending > 0 || !target}><span className="task-completion-circle"><Check size={13} strokeWidth={2.5}/></span></button></Dialog.Trigger>
   <Dialog.Portal><Dialog.Overlay className="dialog-overlay"/><Dialog.Content className="dialog-content task-completion-dialog" onOpenAutoFocus={event => { event.preventDefault(); cancel.current?.focus(); }} onCloseAutoFocus={event => {
    // A successful move removes the trigger; keep keyboard users in this task row.
    if (completed.current) { event.preventDefault(); returnFocusRef.current?.focus(); }
@@ -40,7 +44,7 @@ export function TaskCompletion({ item, returnFocusRef }: { item: Item; returnFoc
    <Dialog.Title>Mark as done?</Dialog.Title>
    <Dialog.Description>“{item.title}”{hasChildren && <span className="task-completion-note">Subtasks will keep their current statuses.</span>}</Dialog.Description>
    {completedStatuses.length > 1 && <label>Completed status<select value={target?.id ?? ''} onChange={event => setSelectedStatus(event.target.value)} disabled={saving}>{completedStatuses.map(value => <option key={value.id} value={value.id}>{value.name}</option>)}</select></label>}
-   <div className="dialog-footer"><button ref={cancel} type="button" className="button button-ghost button-sm" disabled={saving} onClick={() => setOpen(false)}>Cancel</button><Button size="sm" disabled={saving || pending > 0 || !target} onClick={() => void complete()}>{saving ? 'Saving…' : 'Mark as done'}</Button></div>
+   <div className="dialog-footer"><button ref={cancel} type="button" className="button button-ghost button-sm" disabled={saving} onClick={() => setOpen(false)}>Cancel</button><Button size="sm" disabled={saving || pending > 0} blockedReason={!target && noCompletedStatus} onClick={() => void complete()}>{saving ? 'Saving…' : 'Mark as done'}</Button></div>
   </Dialog.Content></Dialog.Portal>
  </Dialog.Root>;
 }

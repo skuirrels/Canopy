@@ -16,7 +16,7 @@ function loadModels(provider: AgentId): Promise<AgentModelCatalogue> {
  return pending;
 }
 
-export function ModelPicker({ provider, label, presets, selection, onChange, disabled }: { provider: AgentId | ''; label: string; presets: { key: string; label: string }[]; selection: ModelSelection; onChange: (selection: ModelSelection) => void; disabled?: boolean }) {
+export function ModelPicker({ provider, label, presets, selection, onChange, disabled, describedBy }: { provider: AgentId | ''; label: string; presets: { key: string; label: string }[]; selection: ModelSelection; onChange: (selection: ModelSelection) => void; disabled?: boolean; describedBy?: string }) {
  const [catalogue, setCatalogue] = useState<AgentModelCatalogue | null>(null);
  const [typing, setTyping] = useState(false);
  useEffect(() => {
@@ -30,12 +30,12 @@ export function ModelPicker({ provider, label, presets, selection, onChange, dis
  const value = selectValue(selection, models, typing);
  const note = provider ? catalogueNote(catalogue) : '';
  return <div className="model-picker">
-  <label>{label}<select aria-label={label} disabled={disabled} value={value} onChange={e => { const next = parseSelectValue(e.target.value); setTyping(next === 'other'); onChange(next === 'other' ? { model: '' } : next); }}>
+  <label>{label}<select aria-label={label} disabled={disabled} aria-describedby={describedBy} value={value} onChange={e => { const next = parseSelectValue(e.target.value); setTyping(next === 'other'); onChange(next === 'other' ? { model: '' } : next); }}>
    {presets.map(preset => <option key={preset.key} value={'preset:' + preset.key}>{preset.label}{preset.key === 'default' && catalogue?.defaultLastRan ? ` · last ran as ${catalogue.defaultLastRan}` : ''}</option>)}
    {models.length > 0 && <optgroup label={catalogue?.source === 'configuration' ? 'Configured models' : 'Available models'}>{models.map(model => <option key={model.id} value={'model:' + model.id}>{modelLabel(model)}</option>)}</optgroup>}
    <option value="other">Other model…</option>
   </select></label>
-  {value === 'other' && <label>{label} ID or alias<input aria-label={`${label} ID or alias`} required maxLength={200} disabled={disabled} value={'model' in selection ? selection.model : ''} onChange={e => onChange({ model: e.target.value })} placeholder="Enter a model available to your account" autoFocus={typing}/></label>}
+  {value === 'other' && <label>{label} ID or alias<input aria-label={`${label} ID or alias`} required maxLength={200} disabled={disabled} aria-describedby={describedBy} value={'model' in selection ? selection.model : ''} onChange={e => onChange({ model: e.target.value })} placeholder="Enter a model available to your account" autoFocus={typing}/></label>}
   {note && <small className="model-picker-note">{note}</small>}
  </div>;
 }

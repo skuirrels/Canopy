@@ -8,7 +8,7 @@ import type { AgentConnection, AgentExecutionSettings, AgentId, AgentProviders }
 
 type RepositoryRefs = { root: string; isRepository: boolean; isRoot: boolean; hasCommits: boolean; hasFiles: boolean; current: string | null; branches: string[] };
 import { Dialog } from './ui/dialog';
-import { Button } from './ui/button';
+import { BlockedNote, Button } from './ui/button';
 import { ModelPicker } from './ModelPicker';
 import './agents.css';
 
@@ -45,6 +45,7 @@ export function AgentConnectionDialog({ projectId, onClose }: { projectId: strin
   try { const value = await agentRequest<RepositoryRefs>('/repository-init', 'POST', { path: path.trim(), includeFiles }); setRefs(value); setBaseRef(value.current ?? ''); toast.success('Git repository ready'); }
   catch (e) { setError((e as Error).message); } finally { setInitialising(false); }
  }
+ const soundNote = useId();
  const setup = refs && (!refs.isRepository || (refs.isRoot && !refs.hasCommits));
  async function browse() {
   setBrowsing(true); setError('');
@@ -65,8 +66,9 @@ export function AgentConnectionDialog({ projectId, onClose }: { projectId: strin
    <fieldset className="agent-build-effects"><legend>Build effects</legend>
     <div className="agent-build-effects-controls">
      <label><input type="checkbox" role="switch" aria-label="Build graphics" checked={enabled} onChange={event => setEnabled(event.target.checked)}/><span>Build graphics</span><small aria-hidden="true">{enabled ? 'On' : 'Off'}</small></label>
-     <label><input type="checkbox" role="switch" aria-label="Build sound" checked={enabled && soundWanted} disabled={!enabled} onChange={event => setSoundWanted(event.target.checked)}/><span>Build sound</span><small aria-hidden="true">{enabled && soundWanted ? 'On' : 'Off'}</small></label>
+     <label><input type="checkbox" role="switch" aria-label="Build sound" checked={enabled && soundWanted} disabled={!enabled} aria-describedby={enabled ? undefined : soundNote} onChange={event => setSoundWanted(event.target.checked)}/><span>Build sound</span><small aria-hidden="true">{enabled && soundWanted ? 'On' : 'Off'}</small></label>
     </div>
+    <BlockedNote id={soundNote} reason={!enabled && 'Turn on build graphics to use build sound.'}/>
     <p className="agent-note">Graphics and sound during agent builds. Saves immediately for all projects in this browser. Turning effects off keeps builds running.</p>
    </fieldset>
    <div className="agent-connection-workspace">
@@ -84,7 +86,7 @@ export function AgentConnectionDialog({ projectId, onClose }: { projectId: strin
    </fieldset>
    <p className="agent-note">Uses the installed CLI’s sign-in. Implementation changes stay in a separate Git worktree for review.</p>
    {error && <p role="alert" className="agent-error">{error}</p>}
-   <div className="dialog-footer">{connection && <Button type="button" variant="ghost" disabled={busy} onClick={() => { setBusy(true); void agentRequest(`/projects/${projectId}/connection?expectedRevision=${data.projects.find(p => p.id === projectId)!.revision}`, 'DELETE').then(async () => { await refresh(); onClose(); toast.success('Project disconnected'); }).catch(e => { setError((e as Error).message); void refresh(); }).finally(() => setBusy(false)); }}><Unplug size={14}/>Disconnect</Button>}<Button type="button" variant="ghost" onClick={onClose}>Cancel</Button><Button disabled={busy || !providers}>{busy ? <Loader2 size={14} className="spin"/> : <Bot size={14}/>}Save connection</Button></div>
+   <div className="dialog-footer">{connection && <Button type="button" variant="ghost" disabled={busy} onClick={() => { setBusy(true); void agentRequest(`/projects/${projectId}/connection?expectedRevision=${data.projects.find(p => p.id === projectId)!.revision}`, 'DELETE').then(async () => { await refresh(); onClose(); toast.success('Project disconnected'); }).catch(e => { setError((e as Error).message); void refresh(); }).finally(() => setBusy(false)); }}><Unplug size={14}/>Disconnect</Button>}<Button type="button" variant="ghost" onClick={onClose}>Cancel</Button><Button disabled={busy} blockedReason={!providers && "The agent list didn't load. Close and reopen to retry."}>{busy ? <Loader2 size={14} className="spin"/> : <Bot size={14}/>}Save connection</Button></div>
   </form>}
   {loading && error && <p role="alert" className="agent-error">{error}</p>}
  </Dialog>;

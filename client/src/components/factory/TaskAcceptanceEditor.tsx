@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Plus, Save, Trash2 } from 'lucide-react';
 import { factoryRequest } from '../../lib/factory';
 import type { AcceptanceCriteriaDetail, AcceptanceCriterion } from '../../lib/factory-quality';
 import { useWorkspace } from '../../lib/workspace';
-import { Button } from '../ui/button';
+import { BlockedNote, Button } from '../ui/button';
+import { blockedBy } from '../../lib/blocked';
 
 export function TaskAcceptanceEditor({ itemId, beforeChange, onDirtyChange }: { itemId: string; beforeChange: () => Promise<void>; onDirtyChange: (dirty: boolean) => void }) {
  const { refresh } = useWorkspace();
@@ -23,7 +24,7 @@ export function TaskAcceptanceEditor({ itemId, beforeChange, onDirtyChange }: { 
    } }).catch(cause => { if (!controller.signal.aborted) setError((cause as Error).message); });
   return () => controller.abort();
  }, [itemId, epoch, cacheKey]);
- const dirty = !!saved && JSON.stringify(draft) !== JSON.stringify(saved.criteria);
+ const dirty = !!saved && JSON.stringify(draft) !== JSON.stringify(saved.criteria), reloadNote = useId();
  useEffect(() => { onDirtyChange(dirty || !saved); return () => onDirtyChange(false); }, [dirty, saved, onDirtyChange]);
  useEffect(() => {
   if (!saved) return;
@@ -48,7 +49,7 @@ export function TaskAcceptanceEditor({ itemId, beforeChange, onDirtyChange }: { 
  {!saved ? <Button disabled={busy} variant="ghost" onClick={() => setEpoch(value => value + 1)}>Reload criteria</Button> : <>
  {!draft.length && <p className="factory-help">No criteria yet. Execution success alone cannot establish acceptance.</p>}
  <fieldset disabled={busy} className="factory-step-fields">{draft.map((criterion, index) => <fieldset key={criterion.id} className="factory-fieldset"><legend>Criterion {index + 1}</legend><label>Criterion description<input maxLength={200} value={criterion.description} onChange={event => change(criterion.id, 'description', event.target.value)}/></label><label>Observable expected result<textarea rows={2} value={criterion.expectedResult} onChange={event => change(criterion.id, 'expectedResult', event.target.value)}/></label><label>Verification method<textarea rows={2} value={criterion.verificationMethod} onChange={event => change(criterion.id, 'verificationMethod', event.target.value)}/></label><label className="factory-checkbox"><input type="checkbox" checked={criterion.needsClarification} onChange={event => change(criterion.id, 'needsClarification', event.target.checked)}/>Needs clarification (vague or unmeasurable)</label>{(criterion.needsClarification || !criterion.expectedResult.trim() || !criterion.verificationMethod.trim()) && <p className="factory-help">Review needed: clarify the expected result and verification method before QA.</p>}<small className="factory-help">Stable ID: {criterion.id}</small><button type="button" className="text-button" onClick={() => setDraft(current => current.filter(value => value.id !== criterion.id))}><Trash2 size={12}/>Remove criterion {index + 1}</button></fieldset>)}</fieldset>
- <div className="factory-task-actions"><Button variant="secondary" disabled={busy || draft.length >= 100} onClick={() => setDraft(current => [...current, { id: crypto.randomUUID(), description: '', expectedResult: '', verificationMethod: '', needsClarification: true }])}><Plus size={13}/>Add criterion</Button><Button disabled={busy || !dirty || draft.some(value => !value.description.trim())} onClick={() => { void save(); }}><Save size={13}/>{busy ? 'Saving criteria…' : 'Save criteria'}</Button>{dirty && <button type="button" className="text-button" disabled={busy} onClick={() => { setDraft(saved.criteria); setBase(JSON.stringify(saved.criteria)); setError(''); }}>Discard criterion edits</button>}<button type="button" className="text-button" disabled={busy || dirty} onClick={() => setEpoch(value => value + 1)}>Reload criteria</button></div>{dirty && <p role="status" className="factory-help">Unsaved criteria. Save before preparing work or leaving this task.</p>}
+ <div className="factory-task-actions"><Button variant="secondary" disabled={busy} blockedReason={draft.length >= 100 && 'A task can have up to 100 criteria. Remove one first.'} onClick={() => setDraft(current => [...current, { id: crypto.randomUUID(), description: '', expectedResult: '', verificationMethod: '', needsClarification: true }])}><Plus size={13}/>Add criterion</Button><Button disabled={busy} blockedReason={blockedBy([!dirty, 'No unsaved changes. Edit a criterion to save.'], [draft.some(value => !value.description.trim()), 'Describe every criterion before saving.'])} onClick={() => { void save(); }}><Save size={13}/>{busy ? 'Saving criteria…' : 'Save criteria'}</Button>{dirty && <button type="button" className="text-button" disabled={busy} onClick={() => { setDraft(saved.criteria); setBase(JSON.stringify(saved.criteria)); setError(''); }}>Discard criterion edits</button>}<button type="button" className="text-button" disabled={busy || dirty} aria-describedby={dirty ? reloadNote : undefined} onClick={() => setEpoch(value => value + 1)}>Reload criteria</button></div><BlockedNote id={reloadNote} reason={dirty && 'Save or discard your edits before reloading criteria.'}/>{dirty && <p role="status" className="factory-help">Unsaved criteria. Save before preparing work or leaving this task.</p>}
  </>}
  </section>;
 }

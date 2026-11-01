@@ -26,19 +26,20 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
     {
         var item = Item(data, itemId); var revision = data.Graph(item.ProjectId).Project.Revision;
         var checks = TaskAcceptanceCriteria.Check(data.AcceptanceCriteria.SingleOrDefault(x => x.Id == itemId)?.Criteria ?? []).ToList();
-        var attachment = data.TaskFactoryConfigurations.SingleOrDefault(x => x.Id == itemId);
+        var attachment = FactoryAttachments.Effective(data, itemId);
         if (attachment is null) return new(revision, false, "notEvaluated", DateTime.UtcNow,
-            [new("attachment.required", "error", "Apply a published pipeline to this task first.")], null);
-        var version = data.PipelineVersions.Single(x => x.Id == attachment.PipelineVersionId);
+            [new("attachment.required", "error", "Set up the factory for this project first.")], null);
+        var version = attachment.Version;
         if (data.FactoryPipelines.Single(x => x.Id == version.PipelineId).Archived)
             checks.Add(new("pipeline.archived", "error", "Choose an active pipeline before preparing new work."));
-        if (((data.Deliveries.Any(x => x.ItemId == itemId && x.Open) || data.RepairLoops.Any(x => x.ItemId == itemId && x.Open)) || data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) checks.Add(new("task.busy", "error", "Stop the repair loop or close the delivery, or wait for active execution."));
-        if (data.Dependencies.Where(x => x.ItemId == itemId).Any(d => !data.Statuses.Single(s => s.Id == data.Items.Single(i => i.Id == d.DependsOnId).StatusId).IsCompleted))
-            checks.Add(new("task.blocked", "error", "Complete prerequisite tasks before preparing pipeline work."));
+        if (((data.Deliveries.Any(x => x.ItemId == itemId && x.Open) || data.RepairLoops.Any(x => x.ItemId == itemId && x.Open)) || data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) checks.Add(new("task.busy", "error", "This task is already being built or delivered. Wait for that to finish, or stop it from Advanced tools."));
+        var open = FactoryAttachments.OpenPrerequisites(data, itemId);
+        if (open.Count > 0)
+            checks.Add(new("task.blocked", "error", $"Waiting on {(open.Count == 1 ? "a prerequisite" : $"{open.Count} prerequisites")} to finish: {string.Join("; ", open.Select(x => x.Title))}."));
         if (data.CalibrationBusy(itemId)) checks.Add(new("task.calibration", "error", "Finish or reconcile active task calibration first."));
         var definition = FactoryRules.Resolve(version.Definition, attachment.Overrides);
         if (definition.Stages.Any(s => s.Steps.Any(step => step.Kind == "agent" && step.Role == "implementation")) && !AgentRun.HasSpec(item.SpecJson))
-            checks.Add(new("task.specification", "error", "Write a task specification before preparing implementation work."));
+            checks.Add(new("task.specification", "error", "Write a description for this task first, so the agent knows what to build."));
         foreach (var issue in FactoryRules.Validate(definition).Diagnostics)
             checks.Add(new(issue.Code, issue.Severity, issue.Message, issue.StageId, issue.StepId));
         var policyInspection = await FactoryExecutionPolicyService.Inspect(data, item.ProjectId, definition, data.AgentConnections.SingleOrDefault(x => x.ProjectId == item.ProjectId), environment, ct, attachment.Overrides);
@@ -46,7 +47,9 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
         checks.AddRange(inspection.Checks);
         return new(revision, inspection.Environment is not null && checks.All(x => x.Severity != "error"), "notEvaluated", DateTime.UtcNow, checks, inspection.Environment, policyInspection.Execution);
     }
-    public async Task<FactoryRunDetail> Prepare(Guid itemId, PrepareFactoryRun input, CancellationToken ct)
+    public Task<FactoryRunDetail> Prepare(Guid itemId, PrepareFactoryRun input, CancellationToken ct) => Prepare(itemId, input, null, null, ct);
+    // A guided revision keeps the first build's starting commit, so its changes are always measured from the same point.
+    public async Task<FactoryRunDetail> Prepare(Guid itemId, PrepareFactoryRun input, FactoryGuidedBuild? guided, string? baseCommit, CancellationToken ct)
     {
         if (input.RequestId == Guid.Empty) throw new RuleException("A unique request ID is required.");
         var before = await store.ReadAsync(ct);
@@ -54,18 +57,19 @@ public sealed class FactoryRunService(IWorkspaceStore store, IFactoryEnvironment
         if (duplicate is not null) return Replay(before, duplicate, itemId);
         var item = Item(before, itemId); before.Graph(item.ProjectId, input.ExpectedRevision);
         var readiness = await Inspect(before, itemId, ct);
-        if (!readiness.CanPrepare) throw new RuleException("Resolve readiness errors before preparing a run.");
-        var attachment = before.TaskFactoryConfigurations.Single(x => x.Id == itemId);
-        var version = before.PipelineVersions.Single(x => x.Id == attachment.PipelineVersionId);
+        if (!readiness.CanPrepare) throw new RuleException(readiness.Checks.FirstOrDefault(x => x.Severity == "error")?.Message ?? "Resolve readiness errors before preparing a run.");
+        var attachment = FactoryAttachments.Effective(before, itemId)!;
+        var version = attachment.Version;
         var snapshot = new FactoryRunSnapshot(version.Id, version.Number, version.Name, version.Source, item.Title, item.SpecJson,
-            input.ExpectedRevision, attachment.Overrides, readiness.Environment!, readiness.Checks, readiness.CheckedAt, before.AcceptanceCriteria.SingleOrDefault(x => x.Id == itemId)?.Criteria ?? [], Execution: readiness.Execution);
+            input.ExpectedRevision, attachment.Overrides, baseCommit is null ? readiness.Environment! : readiness.Environment! with { BaseCommit = baseCommit },
+            readiness.Checks, readiness.CheckedAt, before.AcceptanceCriteria.SingleOrDefault(x => x.Id == itemId)?.Criteria ?? [], Execution: readiness.Execution, Guided: guided);
         var run = FactoryRun.Prepare(input.RequestId, item, snapshot);
         var saved = await store.WriteAsync(data =>
         {
             var existing = data.FactoryRuns.SingleOrDefault(x => x.RequestId == input.RequestId);
             if (existing is not null) { Replay(data, existing, itemId); return; }
             data.ForItem(itemId, input.ExpectedRevision);
-            if (((data.Deliveries.Any(x => x.ItemId == itemId && x.Open) || data.RepairLoops.Any(x => x.ItemId == itemId && x.Open)) || data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) throw new RuleException("Stop the repair loop or close the delivery, or wait for active execution.", 409);
+            if (((data.Deliveries.Any(x => x.ItemId == itemId && x.Open) || data.RepairLoops.Any(x => x.ItemId == itemId && x.Open)) || data.AgentRuns.Any(x => x.ItemId == itemId && x.Active) || data.FactoryRuns.Any(x => x.ItemId == itemId && x.Active))) throw new RuleException("This task is already being built or delivered. Wait for that to finish, or stop it from Advanced tools.", 409);
             if (data.CalibrationBusy(itemId)) throw new RuleException("Finish or reconcile active task calibration first.", 409);
             FactoryExecutionPolicyService.RequireCurrent(data, item.ProjectId, snapshot.Execution);
             data.FactoryRuns.Add(run);

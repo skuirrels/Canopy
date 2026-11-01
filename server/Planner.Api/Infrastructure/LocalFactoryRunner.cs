@@ -38,7 +38,8 @@ public sealed class LocalFactoryRunner(IWorkspaceStore store, LocalAgentEnvironm
                 if (FactoryDispatchService.Find(begun, id).State != "running") return;
                 ApplyDeadline(begun, FactoryDispatchService.Find(begun, id), lifetime, activeDeadline);
                 Directory.CreateDirectory(options.WorkspaceRoot);
-                await agents.Git(run.Snapshot.Environment.RepositoryPath, ["worktree", "add", "--detach", workspace, run.Snapshot.Environment.BaseCommit], ct);
+                // A guided revision continues from the previous build's committed result.
+                await agents.Git(run.Snapshot.Environment.RepositoryPath, ["worktree", "add", "--detach", workspace, run.Snapshot.Guided?.StartCommit ?? run.Snapshot.Environment.BaseCommit], ct);
                 if (run.Snapshot.Repair is { } lineage)
                     await repairWorkspace.Fork(FactoryDispatchService.Find(begun, lineage.ParentRunId), FactoryDispatchService.Find(begun, id), lineage.ParentContext, ct);
             }
@@ -60,12 +61,18 @@ public sealed class LocalFactoryRunner(IWorkspaceStore store, LocalAgentEnvironm
             if (next.Step.Kind == "manual")
             {
                 executor.CheckInputs(data, run.Id, next.Step);
+                // In a guided build, pressing Build approves any confirmation that comes before work exists.
+                // A manual step that consumes results is the person's keep-or-revise decision, so it waits.
+                var startedWithBuild = run.Snapshot.Guided is not null && !(next.Step.Consumes?.Any() ?? false);
                 await store.WriteAsync(current =>
                 {
                     var saved = FactoryDispatchService.Find(current, id); if (saved.State != "running") return;
                     var stage = current.FactoryStageRuns.Single(x => x.Id == next.StageRun.Id); var step = current.FactoryStepRuns.Single(x => x.Id == next.StepRun.Id);
                     FactoryExecutionPolicyService.Require(current, saved);
                     stage.Begin(); step.Begin(); step.Wait(); stage.Wait(); saved.Wait();
+                    if (!startedWithBuild) return;
+                    step.Decide(saved.StartRequestId!.Value, true, "Approved by pressing Build.");
+                    FactoryDispatchService.Capture(current, saved, step, next.Step); stage.Continue(); saved.Continue();
                 }, ct);
                 return;
             }

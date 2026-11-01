@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { factoryRequest } from '../../lib/factory';
 import { ApiError } from '../../lib/api';
 import { agentRequest } from '../../lib/agents';
 import type { CalibrationJob, CalibrationLibrary } from '../../lib/factory-calibration';
 import { Button } from '../ui/button';
+import { blockedBy } from '../../lib/blocked';
 import { Dialog } from '../ui/dialog';
 import { FactoryCalibrationPolicy } from './FactoryCalibrationPolicy';
 
@@ -12,7 +13,7 @@ export function FactoryCalibrationPanel({ deliveryId, projectId }: { deliveryId:
  const [library, setLibrary] = useState<CalibrationLibrary | null>(null), [selected, setSelected] = useState(''), [job, setJob] = useState<CalibrationJob | null>(null);
  const [error, setError] = useState(''), [busy, setBusy] = useState(false), [editing, setEditing] = useState(false), [pending, setPending] = useState<Request | null>(null), [confirm, setConfirm] = useState<{ action: string; request: Request } | null>(null), [note, setNote] = useState('');
  const [agent, setAgent] = useState<{ result: string; output: string; error: string | null; usage: unknown } | null>(null);
- const alive = useRef(true), sequence = useRef(0);
+ const alive = useRef(true), sequence = useRef(0), pendingNote = useId(), held = pending ? pendingNote : undefined;
  const refresh = useCallback(async () => {
   const n = ++sequence.current;
   try { const value = await factoryRequest<CalibrationLibrary>(`/deliveries/${deliveryId}/calibrations`, 'GET');
@@ -47,12 +48,12 @@ export function FactoryCalibrationPanel({ deliveryId, projectId }: { deliveryId:
  }
  return <section className="factory-calibration" aria-label="Post-delivery skill calibration"><h4>Post-delivery skill calibration</h4>
  <p className="factory-help">Verified delivery can produce isolated improvements to explicitly selected existing skills. Learning does not accept the task or publish skills.</p>
- <div className="factory-task-actions"><Button variant="ghost" disabled={busy} onClick={() => { setError(''); void refresh(); }}>Refresh calibration</Button><Button variant="secondary" disabled={busy || !!pending} onClick={() => setEditing(true)}>Configure calibration</Button></div>
+ <div className="factory-task-actions"><Button variant="ghost" disabled={busy} onClick={() => { setError(''); void refresh(); }}>Refresh calibration</Button><Button variant="secondary" disabled={busy || !!pending} aria-describedby={held} onClick={() => setEditing(true)}>Configure calibration</Button></div>
  {error && <p role="alert" className="factory-error">{error}</p>}
- {pending && <p role="status">The response was uncertain. Inspect saved state before retrying the same request. <Button disabled={busy} onClick={() => { void send(pending); }}>Retry saved calibration request</Button></p>}
+ {pending && <p role="status"><span id={pendingNote}>The response was uncertain. Inspect saved state before retrying the same request. Other calibration actions wait until then.</span> <Button disabled={busy} onClick={() => { void send(pending); }}>Retry saved calibration request</Button></p>}
  {library && <>
   {!!library.readiness.errors.length && <ul className="factory-help">{library.readiness.errors.map(value => <li key={value}>{value}</li>)}</ul>}
-  <Button disabled={busy || !!pending || !library.readiness.ready} onClick={() => { void send({ path: `/deliveries/${deliveryId}/calibrations`, body: { requestId: crypto.randomUUID(), expectedRevision: library.readiness.deliveryRevision } }); }}>Prepare calibration</Button>
+  <Button disabled={busy || !!pending} aria-describedby={held} blockedReason={blockedBy([!library.readiness.ready && library.readiness.errors.length, 'Resolve the readiness issues listed above first.'], [!library.readiness.ready, 'This delivery is not ready for calibration yet.'])} onClick={() => { void send({ path: `/deliveries/${deliveryId}/calibrations`, body: { requestId: crypto.randomUUID(), expectedRevision: library.readiness.deliveryRevision } }); }}>Prepare calibration</Button>
   <p className="factory-help">Preparation captures bounded evidence and current skill versions. Start the captured work explicitly or configure automatic execution for new deliveries.</p>
   {!!library.jobs.length && <label>Calibration history<select value={selected || job?.id || ''} onChange={e => setSelected(e.target.value)}>{library.jobs.map(value => <option key={value.id} value={value.id}>{new Date(value.createdAt).toLocaleString()} · {value.id === job?.id ? job.state : value.state}</option>)}</select></label>}
   {!!library.triggers.length && <details><summary>Automatic eligibility observations · {library.triggers.length}</summary>{library.triggers.map(value => <p key={value.id}>{new Date(value.createdAt).toLocaleString()} · {value.state}{value.error && ` · ${value.error}`}</p>)}</details>}
@@ -60,9 +61,9 @@ export function FactoryCalibrationPanel({ deliveryId, projectId }: { deliveryId:
  {job && <>
   <p role="status">Calibration: <strong>{job.state}</strong></p>{job.error && <p className="factory-error">{job.error}</p>}
   <dl className="factory-runtime-facts"><div><dt>Verified merge</dt><dd><code>{job.capture.mergeSha}</code></dd></div><div><dt>Installed calibrator</dt><dd>{job.capture.calibrator.reference.id} · {job.capture.calibrator.reference.source}</dd></div><div><dt>Evidence hash</dt><dd><code>{job.capture.evidenceHash}</code></dd></div></dl>
-  <div className="factory-task-actions">{job.state === 'prepared' && <Button disabled={busy || !!pending} onClick={() => action('start')}>Start captured calibration</Button>}{['prepared', 'queued', 'preparing', 'running', 'proposed'].includes(job.state) && <Button variant="secondary" disabled={busy || !!pending} onClick={() => action('cancel')}>Stop calibration</Button>}{job.state === 'proposed' && <Button disabled={busy || !!pending} onClick={() => action('apply')}>Adopt reviewed skill proposal</Button>}{job.state === 'needsAttention' && <Button disabled={busy || !!pending} onClick={() => action('reconcile')}>Reconcile canonical files</Button>}</div>
+  <div className="factory-task-actions">{job.state === 'prepared' && <Button disabled={busy || !!pending} aria-describedby={held} onClick={() => action('start')}>Start captured calibration</Button>}{['prepared', 'queued', 'preparing', 'running', 'proposed'].includes(job.state) && <Button variant="secondary" disabled={busy || !!pending} aria-describedby={held} onClick={() => action('cancel')}>Stop calibration</Button>}{job.state === 'proposed' && <Button disabled={busy || !!pending} aria-describedby={held} onClick={() => action('apply')}>Adopt reviewed skill proposal</Button>}{job.state === 'needsAttention' && <Button disabled={busy || !!pending} aria-describedby={held} onClick={() => action('reconcile')}>Reconcile canonical files</Button>}</div>
   {job.capture.policy.autoApply && <p className="factory-help">This captured policy permits automatic adoption after the host validates actual changes.</p>}
-  {job.state === 'needsAttention' && <><label>Partial outcome acknowledgment<textarea value={note} onChange={e => setNote(e.target.value)} rows={3}/></label><Button variant="secondary" disabled={busy || !!pending || !note.trim()} onClick={() => action('close')}>Close tracking with this acknowledgment</Button><p className="factory-help">Closing preserves the journal and remaining diff. It does not retry, revert or certify unavailable file outcomes.</p></>}
+  {job.state === 'needsAttention' && <><label>Partial outcome acknowledgment<textarea value={note} onChange={e => setNote(e.target.value)} rows={3}/></label><Button variant="secondary" disabled={busy || !!pending} aria-describedby={held} blockedReason={blockedBy([!note.trim(), 'Enter an acknowledgment to close tracking.'])} onClick={() => action('close')}>Close tracking with this acknowledgment</Button><p className="factory-help">Closing preserves the journal and remaining diff. It does not retry, revert or certify unavailable file outcomes.</p></>}
   <details><summary>Captured targets · {job.capture.targets.length}</summary>{job.capture.targets.map((target, index) => <div className="factory-runtime-worktree" key={index}><strong>{target.reference.id} · {target.reference.source}</strong><code>{target.path}</code><small>Before: {target.hash}</small></div>)}</details>
   {job.edits.map(edit => { const target = job.capture.targets[edit.target], write = job.writes.find(value => value.target === edit.target); return <details className="factory-inherited" key={edit.target} open><summary>{target.reference.id} · actual proposed diff</summary><code>{target.path}</code><p className="factory-help">Before {edit.beforeHash}<br/>After {edit.afterHash}</p><pre tabIndex={0}>{edit.diff}</pre>{write && <p>{write.state} · {write.actualHash || 'Actual hash unavailable'} {write.error}</p>}</details>; })}
   {job.workspacePath && <div className="factory-runtime-worktree"><h5>Retained proposal workspace</h5><code>{job.workspacePath}</code></div>}

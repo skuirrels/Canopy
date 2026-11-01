@@ -14,7 +14,7 @@ public sealed record ChangeFactoryPipeline(long ExpectedRevision, long ExpectedD
 public sealed record AttachFactoryPipeline(long ExpectedRevision, Guid PipelineVersionId, FactoryOverrides Overrides);
 public sealed record FactoryPipelineDetail(long ProjectRevision, FactoryPipeline Pipeline, IReadOnlyList<PipelineVersion> Versions);
 public sealed record FactoryPipelineList(long ProjectRevision, IReadOnlyList<FactoryPipeline> Pipelines);
-public sealed record TaskFactoryDetail(long ProjectRevision, TaskFactoryConfiguration? Configuration, PipelineVersion? Version, FactoryDefinition? ResolvedDefinition, bool UpdateAvailable, bool Archived);
+public sealed record TaskFactoryDetail(long ProjectRevision, TaskFactoryConfiguration? Configuration, PipelineVersion? Version, FactoryDefinition? ResolvedDefinition, bool UpdateAvailable, bool Archived, bool Inherited = false);
 
 public sealed class FactoryService(IWorkspaceStore store, IReadOnlyList<FactoryTemplate> templates)
 {
@@ -107,7 +107,13 @@ public sealed class FactoryService(IWorkspaceStore store, IReadOnlyList<FactoryT
         var item = data.Items.SingleOrDefault(x => x.Id == id) ?? throw new RuleException("Task not found.", 404);
         var revision = data.Graph(item.ProjectId).Project.Revision;
         var config = data.TaskFactoryConfigurations.SingleOrDefault(x => x.Id == id);
-        if (config is null) return new(revision, null, null, null, false, false);
+        if (config is null)
+        {
+            // No attachment of its own: the task follows the project workflow, always at its current version.
+            var inherited = FactoryAttachments.Effective(data, id);
+            return inherited is null ? new(revision, null, null, null, false, false)
+                : new(revision, null, inherited.Version, inherited.Version.Definition, false, false, true);
+        }
         var version = FindVersion(data, config.PipelineVersionId); var pipeline = Find(data, version.PipelineId);
         return new(revision, config, version, FactoryRules.Resolve(version.Definition, config.Overrides),
             data.PipelineVersions.Any(x => x.PipelineId == pipeline.Id && x.Number > version.Number), pipeline.Archived);
