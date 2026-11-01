@@ -155,6 +155,29 @@ public static class FactoryEndpoints
         }).WithDescription("Prepare an immutable run snapshot and pending stage/step records. Reusing a requestId for this task returns the original snapshot. Does not dispatch execution.")
             .Produces<FactoryRunDetail>(201).ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
         group.MapGet("/runs/{id:guid}", (Guid id, FactoryRunService service, CancellationToken ct) => service.Read(id, ct)).ProducesProblem(403).ProducesProblem(404);
+        group.MapPost("/tasks/{id:guid}/build", async (Guid id, StartBuild input, FactoryBuildService service, CancellationToken ct) =>
+        {
+            var build = await service.Build(id, input, ct);
+            return Results.Created($"/api/factory/builds/{build.RunId}", build);
+        }).WithSummary("Build a task with the project workflow")
+            .WithDescription("Prepares and starts a run in one step; pressing Build approves confirmations that come before any work. The agent's work is committed before checks run. expectedRevision is the project revision. Reusing a requestId returns the same build.")
+            .Produces<BuildSummary>(201).ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapGet("/tasks/{id:guid}/build", async (Guid id, FactoryBuildService service, CancellationToken ct) => await service.Latest(id, ct) is { } build ? Results.Ok(build) : Results.NoContent())
+            .WithSummary("Read the task's latest build").Produces<BuildSummary>().Produces(204).ProducesProblem(403).ProducesProblem(404);
+        group.MapGet("/projects/{id:guid}/builds", (Guid id, FactoryBuildService service, CancellationToken ct) => service.List(id, ct))
+            .WithSummary("List each task's latest build in a project").ProducesProblem(403).ProducesProblem(404);
+        group.MapGet("/builds/{id:guid}", (Guid id, FactoryBuildService service, CancellationToken ct) => service.Summary(id, ct))
+            .WithSummary("Read a build's progress and result").WithDescription("Phase is one of starting, writing, testing, checking, yourTurn, kept, changesRequested, finished, failed or stopped.")
+            .ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapPost("/builds/{id:guid}/keep", (Guid id, KeepBuild input, FactoryBuildService service, CancellationToken ct) => service.Keep(id, input, ct))
+            .WithSummary("Keep a build").WithDescription("Merges the build's commit into the project's local base branch and marks the task done. Refuses when the branch is checked out with uncommitted changes or the merge conflicts. expectedRevision is the build's revision.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapPost("/builds/{id:guid}/changes", (Guid id, RequestBuildChanges input, FactoryBuildService service, CancellationToken ct) => service.RequestChanges(id, input, ct))
+            .WithSummary("Ask for changes to a build").WithDescription("Declines a build waiting for you, or follows a failed one, and starts a revision from its committed result with your note. Returns the new build. expectedRevision is the build's revision.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        group.MapPost("/builds/{id:guid}/again", (Guid id, KeepBuild input, FactoryBuildService service, CancellationToken ct) => service.BuildAgain(id, input, ct))
+            .WithSummary("Build a task again from the latest base branch").WithDescription("Sets aside a build that is waiting for you, for example because the base branch changed and it no longer merges, and starts a new build of the task from the base branch as it is now. Returns the new build. expectedRevision is the build's revision; retrying with the same requestId returns the same new build.")
+            .ProducesProblem(400).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
         group.MapGet("/templates", (FactoryService service) => service.Templates()).ProducesProblem(403);
         group.MapPost("/validate", (FactoryDefinition input, FactoryService service) => service.Validate(input))
             .WithDescription("Read-only structural validation. Valid does not certify skill availability, provider access, command execution or execution readiness.")

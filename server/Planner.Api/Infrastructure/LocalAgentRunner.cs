@@ -201,7 +201,7 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
     {
         using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
         lifetime.CancelAfter(TimeSpan.FromMinutes(options.MaxRunMinutes)); environment.Register(run.Id, lifetime);
-        var result = ""; var diff = ""; string? providerError = null;
+        var result = ""; var diff = ""; string? providerError = null; var refused = new List<string>();
         var gemini = run.Provider == "gemini" ? new LocalGeminiOutput(options.MaxOutputCharacters) : null;
         var workspace = run.WorkspacePath ?? (run.ExecutionPermission == "workspace-write" ? Path.Combine(options.WorkspaceRoot, run.Id.ToString()) : run.RepositoryPath);
         try
@@ -260,7 +260,7 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
                             {
                                 if (root.TryGetProperty("result", out var final)) result = final.GetString() ?? "";
                                 if (root.TryGetProperty("is_error", out var errorFlag) && errorFlag.GetBoolean()) providerError = result.Length > 0 ? result : "The agent reported an error.";
-                                if (root.TryGetProperty("permission_denials", out var denials) && denials.GetArrayLength() > 0) providerError = "The agent could not obtain required tool permissions. Review the output and continue with revised instructions.";
+                                if (root.TryGetProperty("permission_denials", out var denials)) refused.AddRange(denials.EnumerateArray().Select(Refused));
                                 progress = result;
                             }
                             if (type is "turn.failed" or "error") { providerError = line; progress = line; }
@@ -275,6 +275,14 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
             // diff. Its untrusted workspace may contain pipes or other special
             // files; do not feed those to the human-readable Git diff collector.
             if (run.ExecutionPermission == "workspace-write" && run.CalibrationJobId is null) diff = await CaptureDiff(workspace, commit, ct);
+            if (refused.Count > 0)
+            {
+                // A guided build checks the work by running the project's tests and a review straight after, so a refused
+                // command is reported there rather than discarding finished work. Every other run stops on a refusal.
+                var list = string.Join("; ", refused.Distinct().Take(5));
+                if (await GuidedBuild(run, lifetime.Token)) result += $"\n\nCanopy refused: {list}";
+                else providerError ??= $"The agent tried to do something it isn't allowed to do here, so it stopped. It was refused: {list}";
+            }
             if (result.Length > options.MaxOutputCharacters) { result = ""; providerError = "The result exceeded the configured output limit. Review the activity output or increase Agents:MaxOutputCharacters before retrying."; }
             var succeeded = code == 0 && providerError is null && (gemini is null || gemini.Completed) && !string.IsNullOrWhiteSpace(result);
             await Finish(run.Id, succeeded ? "succeeded" : "failed", result, diff, succeeded ? null : providerError ?? $"Agent exited with code {code}. No completed result was received; inspect the output.");
@@ -308,6 +316,20 @@ public sealed class LocalAgentRunner(IWorkspaceStore store, LocalAgentEnvironmen
             if (diff.Length >= options.MaxOutputCharacters) break;
         }
         return diff.Length >= options.MaxOutputCharacters ? diff[..options.MaxOutputCharacters] + "\n[Diff reached the configured output limit. Inspect the retained workspace for the complete changes.]" : diff;
+    }
+    private static string Refused(JsonElement denial)
+    {
+        var tool = denial.TryGetProperty("tool_name", out var name) ? name.GetString() ?? "a tool" : "a tool";
+        if (!denial.TryGetProperty("tool_input", out var input) || input.ValueKind != JsonValueKind.Object) return tool;
+        var detail = input.TryGetProperty("command", out var command) ? command.GetString() : input.TryGetProperty("file_path", out var file) ? file.GetString() : null;
+        return detail is null ? tool : $"{tool} `{(detail.Length > 160 ? detail[..160] + "…" : detail)}`";
+    }
+    private async Task<bool> GuidedBuild(AgentRun run, CancellationToken ct)
+    {
+        if (run.FactoryStepRunId is not { } stepId) return false;
+        var data = await store.ReadAsync(ct);
+        var step = data.FactoryStepRuns.SingleOrDefault(x => x.Id == stepId);
+        return step is not null && data.FactoryRuns.SingleOrDefault(x => x.Id == step.RunId)?.Snapshot.Guided is not null;
     }
     private static IReadOnlyList<string> Arguments(AgentRun run)
     {

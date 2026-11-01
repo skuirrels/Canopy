@@ -46,6 +46,8 @@ builder.Services.AddSingleton<IFactoryEnvironment, LocalFactoryEnvironment>();
 builder.Services.AddSingleton<IFactoryParallelWorkspace, LocalFactoryParallelWorkspace>();
 builder.Services.AddSingleton<LocalFactoryStepExecutor>();
 builder.Services.AddScoped<FactoryRunService>();
+builder.Services.AddScoped<FactoryBuildService>();
+builder.Services.AddSingleton<IBuildRepository, LocalBuildRepository>();
 builder.Services.AddSingleton<FactoryExecutionPolicyService>();
 builder.Services.AddHostedService<LocalFactoryPolicyMonitor>();
 builder.Services.AddSingleton<LocalVerificationEnvironment>();

@@ -1,11 +1,13 @@
 # Guided factory setup
 
-The planner works as before. Factory setup, task preparation, execution and
-acceptance remain separate actions. No existing project is configured by upgrade.
+The Software Factory tab opens on the guided build: see [Build a task](FACTORY-BUILD.md).
+This page describes the setup dialog and per-task controls under **Advanced tools**,
+where factory setup, task preparation, execution and acceptance remain separate
+actions. No existing project is configured by upgrade.
 
 ## Configure once
 
-1. Open a project's **Software Factory → Set up automatically**.
+1. Open a project's **Software Factory → Advanced tools → Project setup**.
 2. Connect its actual repository and agent, or reuse its saved connection.
 3. Choose a work type from the configured templates.
 4. For a workflow with verification, review the checks. Canopy reads the

@@ -1,3 +1,4 @@
+using Planner.Api.Domain;
 namespace Planner.Api.Application;
 
 // Runs before HTTP/worker startup, so new requests cannot be mistaken for work
@@ -23,6 +24,7 @@ public sealed class StartupRunRecovery(IWorkspaceStore store)
         }
         foreach (var loop in data.RepairLoops.Where(x => x.Open)) loop.End(false, "Canopy restarted. Unfinished repair loops are stopped without replay; inspect retained attempts before explicitly preparing new work.");
         foreach (var child in data.AgentRuns.Where(x => x.Active)) child.Finish("interrupted", child.Result, child.Diff, "Canopy restarted before this run finished. Review its workspace before continuing.");
-        foreach (var run in data.FactoryRuns.Where(x => x.Active)) FactoryDispatchService.End(data, run, "interrupted", "Canopy restarted. Review the retained worktree and evidence before preparing new work.");
+        // A guided build waiting for the person to keep it has nothing executing, so it keeps waiting across a restart.
+        foreach (var run in data.FactoryRuns.Where(x => x.Active && !(x.State == "waiting" && x.Snapshot.Guided is not null && !FactoryParallel.Enabled(x)))) FactoryDispatchService.End(data, run, "interrupted", "Canopy restarted. Review the retained worktree and evidence before preparing new work.");
     }, ct);
 }

@@ -5876,6 +5876,502 @@
           }
         }
       }
+    },
+    "/api/factory/tasks/{id}/build": {
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Build a task with the project workflow",
+        "description": "Prepares and starts a run in one step; pressing Build approves confirmations that come before any work. The agent's work is committed before checks run. expectedRevision is the project revision. Reusing a requestId returns the same build.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartBuild"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Read the task's latest build",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildSummary"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/projects/{id}/builds": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "List each task's latest build in a project",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BuildListItem"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/builds/{id}": {
+      "get": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Read a build's progress and result",
+        "description": "Phase is one of starting, writing, testing, checking, yourTurn, kept, changesRequested, finished, failed or stopped.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildSummary"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/builds/{id}/keep": {
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Keep a build",
+        "description": "Merges the build's commit into the project's local base branch and marks the task done. Refuses when the branch is checked out with uncommitted changes or the merge conflicts. expectedRevision is the build's revision.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KeepBuild"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/builds/{id}/changes": {
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Ask for changes to a build",
+        "description": "Declines a build waiting for you, or follows a failed one, and starts a revision from its committed result with your note. Returns the new build. expectedRevision is the build's revision.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestBuildChanges"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/factory/builds/{id}/again": {
+      "post": {
+        "tags": [
+          "Software Factory configuration"
+        ],
+        "summary": "Build a task again from the latest base branch",
+        "description": "Sets aside a build that is waiting for you, for example because the base branch changed and it no longer merges, and starts a new build of the task from the base branch as it is now. Returns the new build. expectedRevision is the build's revision; retrying with the same requestId returns the same new build.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KeepBuild"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -7718,6 +8214,10 @@
           },
           "archived": {
             "type": "boolean"
+          },
+          "inherited": {
+            "type": "boolean",
+            "default": false
           }
         }
       },
@@ -8067,6 +8567,16 @@
               },
               {
                 "$ref": "#/components/schemas/FactoryExecutionSnapshot"
+              }
+            ]
+          },
+          "guided": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/FactoryGuidedBuild"
               }
             ]
           }
@@ -14165,7 +14675,8 @@
           "connection",
           "providers",
           "templates",
-          "defaults"
+          "defaults",
+          "suggestedChecks"
         ],
         "type": "object",
         "properties": {
@@ -14224,6 +14735,12 @@
           },
           "defaults": {
             "$ref": "#/components/schemas/FactorySetupOptions"
+          },
+          "suggestedChecks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SuggestedCheckGroup"
+            }
           }
         }
       },
@@ -14240,6 +14757,20 @@
               "items": {
                 "$ref": "#/components/schemas/FactorySkill"
               }
+            }
+          },
+          "defaultCheckTimeoutSeconds": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "starterChecks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StarterCheckGroup"
             }
           }
         }
@@ -14334,7 +14865,10 @@
             ],
             "description": "Existing absolute folder the dialog opens at."
           }
-        }
+        },
+        "required": [
+          "start"
+        ]
       },
       "FolderChoice": {
         "type": "object",
@@ -14346,7 +14880,10 @@
             ],
             "description": "Chosen absolute folder, or null when cancelled."
           }
-        }
+        },
+        "required": [
+          "path"
+        ]
       },
       "ReadRepositoryRefs": {
         "required": [
@@ -14416,6 +14953,397 @@
           "includeFiles": {
             "type": "boolean",
             "description": "Commit the folder's current files in the first commit. Otherwise the first commit is empty."
+          }
+        }
+      },
+      "BuildChanges": {
+        "required": [
+          "files",
+          "truncated"
+        ],
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BuildFile"
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "BuildFile": {
+        "required": [
+          "path",
+          "added",
+          "removed",
+          "new"
+        ],
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "added": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "removed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "new": {
+            "type": "boolean"
+          }
+        }
+      },
+      "BuildListItem": {
+        "required": [
+          "runId",
+          "itemId",
+          "title",
+          "phase",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "phase": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "BuildSummary": {
+        "required": [
+          "runId",
+          "itemId",
+          "title",
+          "revision",
+          "state",
+          "phase",
+          "failedWhile",
+          "problem",
+          "agent",
+          "model",
+          "changes",
+          "builderReport",
+          "reviewReport",
+          "tests",
+          "changeRequest",
+          "previousRunId",
+          "nextRunId",
+          "keptInto",
+          "keptCommit",
+          "taskDone",
+          "createdAt",
+          "finishedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "revision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "state": {
+            "type": "string"
+          },
+          "phase": {
+            "type": "string"
+          },
+          "failedWhile": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "problem": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "agent": {
+            "type": "string"
+          },
+          "model": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "changes": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BuildChanges"
+              }
+            ]
+          },
+          "builderReport": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "reviewReport": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "tests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BuildTest"
+            }
+          },
+          "changeRequest": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "previousRunId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "nextRunId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "keptInto": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "keptCommit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "taskDone": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finishedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "BuildTest": {
+        "required": [
+          "command",
+          "state",
+          "exitCode",
+          "output"
+        ],
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "exitCode": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "output": {
+            "type": "string"
+          }
+        }
+      },
+      "FactoryGuidedBuild": {
+        "type": "object",
+        "properties": {
+          "previousRunId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "startCommit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "changeRequest": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "KeepBuild": {
+        "required": [
+          "requestId",
+          "expectedRevision"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RequestBuildChanges": {
+        "required": [
+          "requestId",
+          "expectedRevision",
+          "note"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StartBuild": {
+        "required": [
+          "requestId",
+          "expectedRevision"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StarterCheckGroup": {
+        "type": "object",
+        "properties": {
+          "ecosystem": {
+            "type": "string"
+          },
+          "commands": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "SuggestedCheckGroup": {
+        "required": [
+          "ecosystem",
+          "evidence",
+          "checks"
+        ],
+        "type": "object",
+        "properties": {
+          "ecosystem": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactoryCommand"
+            }
           }
         }
       }
