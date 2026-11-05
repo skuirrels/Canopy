@@ -9,6 +9,11 @@ export function assigneeSuggestions(people: Person[], query: string) {
   canCreate: !!name && !people.some(person => person.name.toLowerCase() === folded),
  };
 }
+/** The pinned create row: always offered unless the typed name already exists. */
+export function createAssigneeOption(suggestions: ReturnType<typeof assigneeSuggestions>, naming: boolean) {
+ if (suggestions.name) return suggestions.canCreate ? { label: `Add and assign “${suggestions.name}”`, ready: true } : null;
+ return { label: naming ? 'Type their name, then press Enter' : 'New assignee', ready: false };
+}
 export function toggleAssignee(ids: string[], id: string) {
  return ids.includes(id) ? ids.filter(value => value !== id) : [...ids, id];
 }
