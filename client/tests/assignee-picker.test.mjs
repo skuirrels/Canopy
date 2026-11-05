@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assigneeSuggestions, toggleAssignee, createdAssignee } from '../src/lib/assignee-picker.ts';
+import { assigneeSuggestions, createAssigneeOption, toggleAssignee, createdAssignee } from '../src/lib/assignee-picker.ts';
 
 const people = [{ id: 'a', name: 'Alex Green' }, { id: 'b', name: 'Sam Lee' }];
 test('inline suggestions search case-insensitively and trim input without altering workspace names', () => {
@@ -25,4 +25,11 @@ test('new assignment uses the actual server-created person ID, even with concurr
  assert.equal(createdAssignee(people, [...people, { id: 'other', name: 'Unrelated' }, added], ' Jo '), added);
  assert.throws(() => createdAssignee(people, people, 'Alex Green'), /could not be identified/);
  assert.throws(() => createdAssignee(people, [...people, added, { id: 'duplicate', name: 'Jo' }], 'Jo'), /could not be identified/);
+});
+test('a new assignee can always be started from the picker, without duplicating an existing name', () => {
+ assert.deepEqual(createAssigneeOption(assigneeSuggestions(people, ''), false), { label: 'New assignee', ready: false });
+ assert.deepEqual(createAssigneeOption(assigneeSuggestions([], ''), false), { label: 'New assignee', ready: false });
+ assert.deepEqual(createAssigneeOption(assigneeSuggestions(people, ''), true), { label: 'Type their name, then press Enter', ready: false });
+ assert.deepEqual(createAssigneeOption(assigneeSuggestions(people, ' Alex '), true), { label: 'Add and assign “Alex”', ready: true });
+ assert.equal(createAssigneeOption(assigneeSuggestions(people, 'alex green'), true), null);
 });
