@@ -19,6 +19,8 @@ public sealed record OrderStatuses(long ExpectedRevision, List<Guid> StatusIds);
 public sealed record OrderSiblings(long ExpectedRevision, Guid? ParentId, List<Guid> ItemIds);
 public sealed record CreateStatus(long ExpectedRevision, string Name, string Color);
 public sealed record EditStatus(long ExpectedRevision, string Name, string Color, bool IsCompleted);
+public sealed record CreateComponentNote(long ExpectedRevision, string? Title, DateOnly? HeldOn, string? Markdown);
+public sealed record EditComponentNote(long ExpectedRevision, string? Title, DateOnly? HeldOn, string? Markdown);
 public sealed record CreatePerson(string Name);
 public sealed record EditPerson(string Name);
 public sealed record WorkflowDefault(string Name, string Color, bool IsCompleted);
@@ -63,6 +65,7 @@ public sealed class WorkspaceData
     [JsonIgnore] public List<PipelineVersion> PipelineVersions { get; init; } = [];
     [JsonIgnore] public List<TaskFactoryConfiguration> TaskFactoryConfigurations { get; init; } = [];
     public List<SpecFileLink> SpecFiles { get; init; } = [];
+    public List<ComponentNote> Notes { get; init; } = [];
     [JsonIgnore] public List<ProjectAgentConnection> AgentConnections { get; init; } = [];
     [JsonIgnore] public List<AgentRun> AgentRuns { get; init; } = [];
     public List<Project> Projects { get; init; } = [];

@@ -34,7 +34,17 @@ The database uses logical relationships validated in the domain aggregate and co
 
 Linked local Markdown files use `/api/spec-files` endpoints and add `specFiles` to workspace snapshots. See [linked specification contract](LINKED-SPECIFICATIONS.md) for preview/load/write/unlink payloads, local access rules and filesystem conflict semantics.
 
-## Import a plan draft
+## Component notes
+
+Notes keep what was discussed about a component, such as a call, apart from its specification. Workspace snapshots expose `notes[{id,projectId,itemId,title,heldOn,markdown,createdAt,updatedAt}]`, newest `heldOn` first.
+
+POST /api/items/{id}/notes: expectedRevision, title?, heldOn?, markdown. Adds a note to a task or component in the item's project.
+PATCH /api/notes/{id}: expectedRevision, title?, heldOn?, markdown. Replaces all three fields.
+DELETE /api/notes/{id}?expectedRevision=: permanently removes one note.
+
+`title` is trimmed and may be empty (at most 200 characters). `heldOn` is an optional ISO date. `markdown` is required raw text, stored exactly as sent, up to 2 MB; send an empty string for a blank note. Notes never change the specification, workflow status, dates, hierarchy or layout. Each change advances the project revision; stale revisions return 409 without changing data. Deleting a task subtree or project removes its notes.
+
+
 
 `POST /api/projects/{id}/plan-imports` accepts `expectedRevision`, `source` (a stable, nonempty plan name), `sourceHash` (lowercase SHA-256 of the original Markdown) and a nonempty `items` array. Each item supplies `key`, `title`, `parentKey` (null for components), `specJson`, `priority`, `dependencyKeys` and native `criteria`. An optional `existingItemId` explicitly adopts an existing task in this project without editing it. Parent and dependency keys refer to entries in this draft; they need not be ordered.
 

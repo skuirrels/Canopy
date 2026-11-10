@@ -37,7 +37,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             var executionPolicies = data.ExecutionPolicies.ToList();
             var artifacts = data.FactoryArtifacts.ToList();
             var factoryRuns = data.FactoryRuns.ToList(); var stageRuns = data.FactoryStageRuns.ToList(); var stepRuns = data.FactoryStepRuns.ToList();
-            var specFiles = data.SpecFiles.ToList();
+            var specFiles = data.SpecFiles.ToList(); var notes = data.Notes.ToList();
             var pipelines = data.FactoryPipelines.ToList(); var versions = data.PipelineVersions.ToList(); var taskFactory = data.TaskFactoryConfigurations.ToList();
             change(data);
             Sync(db, planImports, data.PlanImports);
@@ -58,7 +58,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
             Sync(db, executionPolicies, data.ExecutionPolicies);
             Sync(db, artifacts, data.FactoryArtifacts);
             Sync(db, factoryRuns, data.FactoryRuns); Sync(db, stageRuns, data.FactoryStageRuns); Sync(db, stepRuns, data.FactoryStepRuns);
-            Sync(db, specFiles, data.SpecFiles);
+            Sync(db, specFiles, data.SpecFiles); Sync(db, notes, data.Notes);
             Sync(db, pipelines, data.FactoryPipelines); Sync(db, versions, data.PipelineVersions); Sync(db, taskFactory, data.TaskFactoryConfigurations);
             await db.SaveChangesAsync(ct);
             // Return the database's actual representation, including timestamp precision,
@@ -93,6 +93,7 @@ public sealed class DuckDbWorkspaceStore(IDbContextFactory<PlannerDb> factory) :
         FactoryStageRuns = await db.FactoryStageRuns.ToListAsync(ct), FactoryStepRuns = await db.FactoryStepRuns.ToListAsync(ct),
         Projects = await db.Projects.OrderBy(x => x.CreatedAt).ToListAsync(ct),
         SpecFiles = await db.SpecFiles.ToListAsync(ct),
+        Notes = await db.Notes.OrderByDescending(x => x.HeldOn).ThenByDescending(x => x.CreatedAt).ToListAsync(ct),
         FactoryPipelines = await db.FactoryPipelines.OrderBy(x => x.CreatedAt).ToListAsync(ct),
         PipelineVersions = await db.PipelineVersions.OrderBy(x => x.Number).ToListAsync(ct),
         TaskFactoryConfigurations = await db.TaskFactoryConfigurations.ToListAsync(ct),
