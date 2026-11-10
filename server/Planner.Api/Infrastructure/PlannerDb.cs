@@ -47,6 +47,7 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
     public DbSet<ProjectAgentConnection> AgentConnections => Set<ProjectAgentConnection>();
     public DbSet<AgentRun> AgentRuns => Set<AgentRun>();
     public DbSet<SpecFileLink> SpecFiles => Set<SpecFileLink>();
+    public DbSet<ComponentNote> Notes => Set<ComponentNote>();
     public DbSet<FactoryPipeline> FactoryPipelines => Set<FactoryPipeline>();
     public DbSet<PipelineVersion> PipelineVersions => Set<PipelineVersion>();
     public DbSet<TaskFactoryConfiguration> TaskFactoryConfigurations => Set<TaskFactoryConfiguration>();
@@ -181,6 +182,10 @@ public sealed class PlannerDb(DbContextOptions<PlannerDb> options) : DbContext(o
         model.Entity<ProjectAgentConnection>().HasIndex(x => x.ProjectId).IsUnique();
         model.Entity<AgentRun>().HasKey(x => x.Id);
         model.Entity<SpecFileLink>().HasKey(x => x.Id);
+        model.Entity<ComponentNote>().HasKey(x => x.Id);
+        model.Entity<ComponentNote>().HasIndex(x => x.ItemId);
+        model.Entity<ComponentNote>().Property(x => x.CreatedAt).HasConversion(value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));
+        model.Entity<ComponentNote>().Property(x => x.UpdatedAt).HasConversion(value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));
         model.Entity<FactoryPipeline>().HasKey(x => x.Id);
         model.Entity<FactoryPipeline>().Ignore(x => x.Definition);
         model.Entity<FactoryPipeline>().Property(x => x.CreatedAt).HasConversion(value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc));

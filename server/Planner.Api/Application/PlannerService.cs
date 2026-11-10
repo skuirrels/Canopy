@@ -26,6 +26,7 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
         data.RemoveFactoryRuns(data.FactoryRuns.Where(x => x.ProjectId == id).Select(x => x.Id));
         data.AgentConnections.RemoveAll(x => x.ProjectId == id); data.AgentRuns.RemoveAll(x => x.ProjectId == id);
         data.SpecFiles.RemoveAll(x => x.ProjectId == id);
+        data.Notes.RemoveAll(x => x.ProjectId == id);
         data.PlanImports.RemoveAll(x => x.ProjectId == id);
         data.TaskFactoryConfigurations.RemoveAll(x => x.ProjectId == id);
         data.FactoryProjectSetups.RemoveAll(x => x.Id == id);
@@ -65,6 +66,7 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
         data.RemoveFactoryRuns(data.FactoryRuns.Where(x => deleted.Contains(x.ItemId)).Select(x => x.Id));
         data.AgentRuns.RemoveAll(x => deleted.Contains(x.ItemId));
         data.SpecFiles.RemoveAll(x => deleted.Contains(x.Id));
+        data.Notes.RemoveAll(x => deleted.Contains(x.ItemId));
         data.PlanImports.RemoveAll(x => deleted.Contains(x.ItemId));
         data.AcceptanceCriteria.RemoveAll(x => deleted.Contains(x.Id));
         data.TaskFactoryConfigurations.RemoveAll(x => deleted.Contains(x.Id));
@@ -101,6 +103,21 @@ public sealed class PlannerService(IWorkspaceStore store, IReadOnlyList<Workflow
         if (graph.Statuses.Count <= 1) throw new RuleException("Keep at least one workflow column.");
         if (graph.Items.Any(x => x.StatusId == id)) throw new RuleException("Move this column’s tasks before deleting it.");
         data.Statuses.Remove(status); graph.Project.Touch();
+    }, ct);
+    public Task<WorkspaceData> AddNote(Guid itemId, CreateComponentNote input, CancellationToken ct) => store.WriteAsync(data =>
+    {
+        var graph = data.ForItem(itemId, input.ExpectedRevision); graph.Item(itemId);
+        data.Notes.Add(ComponentNote.Create(graph.Project.Id, itemId, input.Title, input.HeldOn, input.Markdown)); graph.Project.Touch();
+    }, ct);
+    public Task<WorkspaceData> UpdateNote(Guid id, EditComponentNote input, CancellationToken ct) => store.WriteAsync(data =>
+    {
+        var note = data.Notes.SingleOrDefault(x => x.Id == id) ?? throw new RuleException("Note not found.", 404);
+        var graph = data.Graph(note.ProjectId, input.ExpectedRevision); note.Edit(input.Title, input.HeldOn, input.Markdown); graph.Project.Touch();
+    }, ct);
+    public Task<WorkspaceData> DeleteNote(Guid id, long revision, CancellationToken ct) => store.WriteAsync(data =>
+    {
+        var note = data.Notes.SingleOrDefault(x => x.Id == id) ?? throw new RuleException("Note not found.", 404);
+        var graph = data.Graph(note.ProjectId, revision); data.Notes.Remove(note); graph.Project.Touch();
     }, ct);
     public Task<WorkspaceData> RemovePerson(Guid id, CancellationToken ct) => store.WriteAsync(data =>
     {

@@ -123,6 +123,16 @@ app.MapPost("/api/projects/{id:guid}/plan-imports", (Guid id, ImportPlan input, 
 app.MapPatch("/api/items/{id:guid}", (Guid id, EditItem input, PlannerService service, CancellationToken ct) => service.UpdateItem(id, input, ct));
 app.MapPost("/api/items/{id:guid}/move", (Guid id, MoveItem input, PlannerService service, CancellationToken ct) => service.Move(id, input, ct));
 app.MapDelete("/api/items/{id:guid}", (Guid id, long expectedRevision, PlannerService service, CancellationToken ct) => service.DeleteItem(id, expectedRevision, ct));
+app.MapPost("/api/items/{id:guid}/notes", (Guid id, CreateComponentNote input, PlannerService service, CancellationToken ct) => service.AddNote(id, input, ct))
+    .WithSummary("Add a note to a component")
+    .WithDescription("Creates a Markdown note, such as call notes, on a task or component. title is optional (at most 200 characters), heldOn is an optional ISO date and markdown is raw text up to 2 MB. Notes never change the specification, status, dates or hierarchy.")
+    .Produces<WorkspaceData>().ProducesProblem(400).ProducesProblem(404).ProducesProblem(409);
+app.MapPatch("/api/notes/{id:guid}", (Guid id, EditComponentNote input, PlannerService service, CancellationToken ct) => service.UpdateNote(id, input, ct))
+    .WithSummary("Edit a component note")
+    .Produces<WorkspaceData>().ProducesProblem(400).ProducesProblem(404).ProducesProblem(409);
+app.MapDelete("/api/notes/{id:guid}", (Guid id, long expectedRevision, PlannerService service, CancellationToken ct) => service.DeleteNote(id, expectedRevision, ct))
+    .WithSummary("Delete a component note")
+    .Produces<WorkspaceData>().ProducesProblem(404).ProducesProblem(409);
 app.MapPut("/api/projects/{id:guid}/layout", (Guid id, SaveLayout input, PlannerService service, CancellationToken ct) => service.Layout(id, input, ct));
 app.MapPost("/api/projects/{id:guid}/status-order", (Guid id, OrderStatuses input, PlannerService service, CancellationToken ct) => service.ReorderStatuses(id, input, ct));
 app.MapPost("/api/projects/{id:guid}/sibling-order", (Guid id, OrderSiblings input, PlannerService service, CancellationToken ct) => service.ReorderSiblings(id, input, ct));

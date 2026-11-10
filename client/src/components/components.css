@@ -48,7 +48,7 @@
  .epic-component-header{padding:10px 14px 14px}
  .epic-component-top{margin-bottom:2px}
  .epic-component-actions>.icon-button{width:44px;height:44px}
- .epic-component-actions>.icon-button:first-child{display:none}
+ .epic-component-actions>.icon-button:nth-child(2){display:none}
  .epic-component-grip{width:44px;height:44px}
  .epic-component h2{font-size:22px}
  .epic-component h2>button{min-height:44px}
@@ -110,3 +110,11 @@ button.task-completion:focus-visible{outline:2px solid var(--accent);outline-off
 .task-completion-note{display:block;margin-top:8px;color:var(--secondary-text);font-size:13px}
 .task-completion-dialog .dialog-footer{margin-top:16px;padding-top:14px}
 @media(max-width:550px){.task-completion{width:44px;height:44px}.task-completion-dialog .button{min-height:44px}}
+.epic-notes{display:flex;align-items:center;gap:6px;width:100%;margin-top:10px;padding:7px 9px;border-radius:7px;border:1px solid var(--line);background:var(--surface-subtle);font-size:13px;color:var(--secondary-text);text-align:left;min-width:0}
+.epic-notes:hover{border-color:var(--border-hover);color:var(--foreground)}
+.epic-notes svg{color:var(--accent);flex-shrink:0}
+.epic-notes strong{font-weight:600;color:var(--heading);flex-shrink:0}
+.epic-notes span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.icon-button.has-count{position:relative}
+.icon-button .icon-count{position:absolute;top:1px;right:0;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--accent-fill);color:var(--on-accent-muted);font-size:10px;font-weight:650;line-height:15px;text-align:center}
+.button-count{min-width:18px;padding:0 5px;border-radius:9px;background:var(--surface-hover);color:var(--heading);font-size:11px;font-weight:650;line-height:18px;text-align:center}

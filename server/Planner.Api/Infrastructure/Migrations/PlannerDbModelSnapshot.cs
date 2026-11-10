@@ -195,6 +195,41 @@ namespace Planner.Api.Infrastructure.Migrations
                     b.ToTable("CalibrationTriggers");
                 });
 
+            modelBuilder.Entity("Planner.Api.Domain.ComponentNote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.Property<DateOnly?>("HeldOn")
+                        .HasColumnType("DATE");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Markdown")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("Notes");
+                });
+
             modelBuilder.Entity("Planner.Api.Domain.Dependency", b =>
                 {
                     b.Property<Guid>("Id")
